@@ -26,7 +26,7 @@ A comprehensive web-based control panel and toolset for the Commodore 64 Ultimat
 
 - Commodore 64 Ultimate device (Ultimate 64, Ultimate II+, etc.)
 - Local network connection (WiFi or Ethernet)
-- FTP client or file explorer with FTP support
+- FTP client or file explorer with FTP support (Windows File Explorer works fine)
 - Web browser (Chrome, Firefox, Edge, Safari, etc.)
 
 ### Configuration Steps
