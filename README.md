@@ -1,4 +1,4 @@
-# Ultimate Control Panel
+# C64 Ultimate Control Panel
 
 A comprehensive web-based control panel and toolset for the Commodore 64 Ultimate (C64U) devices, providing remote access to system management, configuration, drive control, and more through your browser on any device.
 
@@ -97,7 +97,7 @@ http://<your_c64u_ip>
 
 ![Ultimate Control Panel](pics/control-panel-full.png)
 
-The Control Panel serves as the central hub for all system operations and provides direct access to the C64U's REST API. It features a clean, organized interface divided into functional sections.
+The Control Panel serves as the central hub for all system operations and provides direct access to the C64U's REST API. It features a clean, organized interface divided into functional sections and tools.
 
 ### System Information
 
@@ -181,7 +181,7 @@ A handy tool designed specifically for managing multi-disk games and application
 
 1. Enter the file paths for each disk in your set (e.g., `/usb0/games/game_disk1.d64`, `/usb0/games/game_disk2.d64`)
 2. Select the target drive (default A)
-3. Click the disk buttons **1**, **2**, **3** to mount the corresponding disks immediately
+3. Click the disk buttons **1**, **2**, **3**, etc to mount the corresponding disks immediately
 
 The file paths are saved persistently in the browser's local storage.
 
@@ -201,9 +201,9 @@ Manages the C64U's data streaming capabilities, which allow real-time transmissi
 
 For each stream, configure:
 
-- **Enable/Disable** - Turn the stream on or off
 - **Target IP** - Destination IP address for the stream data
 - **Target Port** - Destination port number (optional, uses device defaults if empty)
+- **Start/Stop** - Turn the stream on or off
 
 ### Data Streams Configuration
 
@@ -256,7 +256,7 @@ This project is open source and available under the MIT License.
 
 ## Credits
 
-Developed by Angel Garcia "Edy" for the Commodore 64 Ultimate community. Special thanks to Gideon Zweijtzer, Peri Fractic and the Commodore team for creating this amazing piece of technology and providing such a comprehensive REST API.
+Developed by Angel Garcia "Edy" for the Commodore 64 Ultimate community. Special thanks to Gideon Zweijtzer, Peri Fractic and the [Commodore](http://www.commodore.net) team for creating this amazing piece of technology and providing such a comprehensive REST API.
 
 ## Contributing
 
