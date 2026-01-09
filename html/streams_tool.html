@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Data Streams Tool</title>
+    <script src="https://cdn.jsdelivr.net/npm/jquery"></script>
+    <style>
+        :root {
+            --primary: #3498db;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --bg: #1a1c1e;
+            --card-bg: #25282c;
+            --text: #e0e0e0;
+            --text-dim: #a0a0a0;
+            --border: #3a3f44;
+            --input-bg: #2d3136;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+            color: var(--text);
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+        }
+        h1 { margin: 0; font-size: 24px; color: var(--primary); }
+        .back-link { font-size: 12px; color: var(--text-dim); text-decoration: none; margin-top: 5px; display: inline-block; }
+        .back-link:hover { color: var(--primary); }
+        
+        .streams-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stream-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            padding: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        .stream-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .param-field {
+            margin-bottom: 10px;
+        }
+        
+        .param-field label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-bottom: 4px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 8px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 13px;
+            color: var(--text);
+            box-sizing: border-box;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+            transition: opacity 0.2s;
+        }
+        
+        button:hover { opacity: 0.8; }
+        
+        .btn-start {
+            background: var(--success);
+            color: white;
+        }
+        
+        .btn-stop {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .result-box {
+            margin-top: 10px;
+            background: #121416;
+            color: #7fdbff;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            max-height: 150px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            display: none;
+            border: 1px solid #333;
+        }
+        
+        .config-section {
+            background: var(--card-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        .control-title {
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            margin-bottom: 15px;
+        }
+        
+        .config-note {
+            background: rgba(52, 152, 219, 0.1);
+            border-left: 3px solid var(--primary);
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+        
+        .config-list {
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .config-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .config-item:last-child {
+            border-bottom: none;
+        }
+        
+        .config-label {
+            color: var(--text-dim);
+            font-weight: bold;
+        }
+        
+        .config-value {
+            font-family: monospace;
+            color: var(--text);
+        }
+        
+        .btn-refresh {
+            background: var(--primary);
+            color: white;
+            padding: 8px 16px;
+            margin-top: 10px;
+        }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div>
+                <h1>Ultimate Data Streams Tool</h1>
+                <a href="control.html" class="back-link">← Back to Control Panel</a>
+            </div>
+            <div>
+                <form autocomplete="on">
+                    <input type="text" name="username" value="ultimate-api" autocomplete="username" style="display: none;">
+                    <input type="password" id="apiPassword" name="ultimate-api-password" placeholder="API Password" autocomplete="current-password" style="width: 150px; font-family: monospace;">
+                </form>
+            </div>
+        </header>
+
+        <!-- Stream Controls -->
+        <div class="streams-grid">
+            <!-- Video Stream -->
+            <div class="stream-card">
+                <div class="stream-title">Video Stream</div>
+                <div class="param-field">
+                    <label>Target IP</label>
+                    <input type="text" id="videoIp" placeholder="192.168.1.100" value="">
+                </div>
+                <div class="param-field">
+                    <label>Port (Optional, default: 11000)</label>
+                    <input type="text" id="videoPort" placeholder="11000">
+                </div>
+                <div class="button-group">
+                    <button class="btn-start" onclick="startStream('video')">Start</button>
+                    <button class="btn-stop" onclick="stopStream('video')">Stop</button>
+                </div>
+                <div class="result-box" id="videoResult"></div>
+            </div>
+
+            <!-- Audio Stream -->
+            <div class="stream-card">
+                <div class="stream-title">Audio Stream</div>
+                <div class="param-field">
+                    <label>Target IP</label>
+                    <input type="text" id="audioIp" placeholder="192.168.1.100" value="">
+                </div>
+                <div class="param-field">
+                    <label>Port (Optional, default: 11001)</label>
+                    <input type="text" id="audioPort" placeholder="11001">
+                </div>
+                <div class="button-group">
+                    <button class="btn-start" onclick="startStream('audio')">Start</button>
+                    <button class="btn-stop" onclick="stopStream('audio')">Stop</button>
+                </div>
+                <div class="result-box" id="audioResult"></div>
+            </div>
+
+            <!-- Debug Stream -->
+            <div class="stream-card">
+                <div class="stream-title">Debug Stream</div>
+                <div class="param-field">
+                    <label>Target IP</label>
+                    <input type="text" id="debugIp" placeholder="192.168.1.100" value="">
+                </div>
+                <div class="param-field">
+                    <label>Port (Optional, default: 11002)</label>
+                    <input type="text" id="debugPort" placeholder="11002">
+                </div>
+                <div class="button-group">
+                    <button class="btn-start" onclick="startStream('debug')">Start</button>
+                    <button class="btn-stop" onclick="stopStream('debug')">Stop</button>
+                </div>
+                <div class="result-box" id="debugResult"></div>
+            </div>
+        </div>
+
+        <!-- Configuration Section -->
+        <div class="config-section">
+            <div class="control-title">Data Streams Configuration</div>
+            <div class="config-note">
+                <strong>Note:</strong> These settings can be modified in the Configuration Tool under "Data Streams" category.
+            </div>
+            <div class="config-list" id="configList">
+                <div style="text-align: center; color: var(--text-dim);">Click "Refresh" to load configuration</div>
+            </div>
+            <button class="btn-refresh" onclick="loadConfig()">Refresh</button>
+            <div class="result-box" id="configResult"></div>
+        </div>
+    </div>
+
+    <script>
+        function getPassword() {
+            return $('#apiPassword').val();
+        }
+
+        function showResult(elementId, message, isError = false) {
+            const resultBox = $('#' + elementId);
+            resultBox.text(message);
+            resultBox.css('color', isError ? '#ff6b6b' : '#7fdbff');
+            resultBox.show();
+        }
+
+        function startStream(streamName) {
+            const ip = $('#' + streamName + 'Ip').val().trim();
+            const port = $('#' + streamName + 'Port').val().trim();
+            const resultId = streamName + 'Result';
+
+            if (!ip) {
+                showResult(resultId, 'Error: IP address is required', true);
+                return;
+            }
+
+            // Construct IP with optional port
+            const ipParam = port ? `${ip}:${port}` : ip;
+
+            $.ajax({
+                url: `/v1/streams/${streamName}:start?ip=${encodeURIComponent(ipParam)}`,
+                type: 'PUT',
+                headers: { 'X-Password': getPassword() },
+                success: function(data) {
+                    if (data.errors && data.errors.length > 0) {
+                        showResult(resultId, 'Error: ' + data.errors.join(', '), true);
+                    } else {
+                        showResult(resultId, `Success: ${streamName.charAt(0).toUpperCase() + streamName.slice(1)} stream started to ${ipParam}`);
+                    }
+                },
+                error: function(xhr) {
+                    showResult(resultId, `Error ${xhr.status}: ${xhr.responseText || 'Failed to start stream'}`, true);
+                }
+            });
+        }
+
+        function stopStream(streamName) {
+            const resultId = streamName + 'Result';
+
+            $.ajax({
+                url: `/v1/streams/${streamName}:stop`,
+                type: 'PUT',
+                headers: { 'X-Password': getPassword() },
+                success: function(data) {
+                    if (data.errors && data.errors.length > 0) {
+                        showResult(resultId, 'Error: ' + data.errors.join(', '), true);
+                    } else {
+                        showResult(resultId, `Success: ${streamName.charAt(0).toUpperCase() + streamName.slice(1)} stream stopped`);
+                    }
+                },
+                error: function(xhr) {
+                    showResult(resultId, `Error ${xhr.status}: ${xhr.responseText || 'Failed to stop stream'}`, true);
+                }
+            });
+        }
+
+        // Auto-fill empty IP fields from device configuration
+        function autoFillFromConfig(categoryData) {
+            // Mapping between config keys and stream IDs
+            const mapping = {
+                'Stream VIC to': 'video',
+                'Stream Audio to': 'audio',
+                'Stream Debug to': 'debug'
+            };
+
+            Object.keys(mapping).forEach(function(configKey) {
+                if (categoryData[configKey]) {
+                    const streamId = mapping[configKey];
+                    const ipField = $('#' + streamId + 'Ip');
+                    
+                    // Only fill Target IP if the field is empty
+                    // Port is left alone so it can remain empty (device default)
+                    if (!ipField.val().trim()) {
+                        const value = categoryData[configKey];
+                        // Parse IP:Port format and extract only the IP
+                        const parts = value.split(':');
+                        if (parts.length >= 1) {
+                            ipField.val(parts[0]);
+                        }
+                    }
+                }
+            });
+        }
+
+        function loadConfig() {
+            $.ajax({
+                url: '/v1/configs/Data%20Streams',
+                type: 'GET',
+                headers: { 'X-Password': getPassword() },
+                success: function(data) {
+                    if (data.errors && data.errors.length > 0) {
+                        showResult('configResult', 'Error: ' + data.errors.join(', '), true);
+                        return;
+                    }
+
+                    const configList = $('#configList');
+                    configList.empty();
+
+                    // The response has the category name as a key, containing key-value pairs
+                    const categoryData = data['Data Streams'];
+                    
+                    if (categoryData && typeof categoryData === 'object') {
+                        const items = Object.keys(categoryData);
+                        if (items.length > 0) {
+                            items.forEach(function(key) {
+                                const itemDiv = $('<div class="config-item"></div>');
+                                itemDiv.append(`<span class="config-label">${key}:</span>`);
+                                itemDiv.append(`<span class="config-value">${categoryData[key]}</span>`);
+                                configList.append(itemDiv);
+                            });
+                            $('#configResult').hide();
+                            
+                            // Auto-fill empty IP fields from device configuration
+                            autoFillFromConfig(categoryData);
+                        } else {
+                            configList.html('<div style="text-align: center; color: var(--text-dim);">No configuration items found</div>');
+                        }
+                    } else {
+                        configList.html('<div style="text-align: center; color: var(--text-dim);">No configuration items found</div>');
+                    }
+                },
+                error: function(xhr) {
+                    showResult('configResult', `Error ${xhr.status}: ${xhr.responseText || 'Failed to load configuration'}`, true);
+                }
+            });
+        }
+
+        // Local Storage Functions
+        function saveToLocalStorage(stream, ip, port) {
+            localStorage.setItem(`stream_${stream}_ip`, ip);
+            localStorage.setItem(`stream_${stream}_port`, port);
+        }
+
+        function loadFromLocalStorage() {
+            ['video', 'audio', 'debug'].forEach(function(stream) {
+                const ip = localStorage.getItem(`stream_${stream}_ip`);
+                const port = localStorage.getItem(`stream_${stream}_port`);
+                if (ip) $('#' + stream + 'Ip').val(ip);
+                if (port) $('#' + stream + 'Port').val(port);
+            });
+        }
+
+        // Auto-save to local storage when inputs change
+        function setupAutoSave() {
+            ['video', 'audio', 'debug'].forEach(function(stream) {
+                $('#' + stream + 'Ip').on('change', function() {
+                    saveToLocalStorage(stream, $(this).val(), $('#' + stream + 'Port').val());
+                });
+                $('#' + stream + 'Port').on('change', function() {
+                    saveToLocalStorage(stream, $('#' + stream + 'Ip').val(), $(this).val());
+                });
+            });
+        }
+
+        // Load configuration on page load
+        $(document).ready(function() {
+            loadFromLocalStorage();
+            setupAutoSave();
+            loadConfig();
+        });
+    </script>
+</body>
+</html>

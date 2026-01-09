@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Disk Flip Tool</title>
+    <script src="https://cdn.jsdelivr.net/npm/jquery"></script>
+    <style>
+        :root { 
+            --primary: #3498db; 
+            --success: #2ecc71; 
+            --danger: #e74c3c; 
+            --bg: #1a1c1e; 
+            --card-bg: #25282c; 
+            --text: #e0e0e0;
+            --text-dim: #a0a0a0;
+            --border: #3a3f44;
+            --input-bg: #2d3136;
+        }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg); 
+            margin: 0; 
+            padding: 20px; 
+            color: var(--text); 
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 20px; 
+            border-bottom: 2px solid var(--primary); 
+            padding-bottom: 10px; 
+        }
+        h1 { margin: 0; font-size: 24px; color: var(--primary); }
+        .back-link { font-size: 12px; color: var(--text-dim); text-decoration: none; margin-top: 5px; display: inline-block; }
+        .back-link:hover { color: var(--primary); }
+        .header-actions { display: flex; gap: 10px; align-items: center; }
+        .auth-box { background: var(--card-bg); padding: 5px 10px; border-radius: 4px; border: 1px solid var(--border); }
+        
+        /* Drive Status Panel - Synchronized with Floppy Drives Tool */
+        .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .drive-card { 
+            background: var(--card-bg); 
+            border-radius: 8px; 
+            border: 1px solid var(--border); 
+            padding: 15px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .drive-header { 
+            font-weight: bold; 
+            font-size: 18px; 
+            margin-bottom: 10px; 
+            color: var(--primary); 
+            border-bottom: 1px solid var(--border); 
+            padding-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .drive-info { font-size: 14px; }
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 2px 0; }
+        .info-label { color: var(--text-dim); }
+        .info-value { font-family: monospace; color: var(--text); }
+        .status-badge { font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 3px; color: white; }
+        .bg-success { background: var(--success); }
+        .bg-danger { background: var(--danger); }
+        
+        /* Sections */
+        .section { 
+            background: var(--card-bg); 
+            border-radius: 8px; 
+            border: 1px solid var(--border); 
+            padding: 20px; 
+            margin-bottom: 20px; 
+        }
+        .section-title { 
+            font-weight: bold; 
+            font-size: 18px; 
+            margin-bottom: 15px; 
+            color: var(--primary); 
+            border-bottom: 1px solid var(--border); 
+            padding-bottom: 5px; 
+        }
+
+        /* Target Selector */
+        .target-selector { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; }
+        .target-btn { 
+            flex: 1; 
+            padding: 10px; 
+            background: var(--input-bg); 
+            border: 1px solid var(--border); 
+            color: var(--text-dim); 
+            cursor: pointer; 
+            border-radius: 4px; 
+            font-weight: bold; 
+        }
+        .target-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* Flip Buttons */
+        .flip-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+        .flip-btn { 
+            padding: 15px; 
+            background: #2c3e50; 
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+            font-size: 18px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: transform 0.1s, background 0.2s;
+        }
+        .flip-btn:hover { background: #34495e; transform: translateY(-2px); }
+        .flip-btn:active { transform: translateY(0); }
+
+        /* Drive Control Sub-section */
+        .control-title { font-size: 14px; font-weight: bold; color: var(--text-dim); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        .control-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .control-btn { padding: 8px; font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; border: none; color: white; }
+        .btn-enable { background: var(--success); }
+        .btn-disable { background: var(--danger); }
+        .btn-remove { background: #f39c12; }
+        .btn-reset { background: #9b59b6; }
+
+        /* Config Inputs */
+        .config-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .config-row { display: flex; align-items: center; gap: 10px; }
+        .config-label { width: 30px; font-weight: bold; color: var(--primary); }
+        
+        /* Saved Configs */
+        .saved-configs-list { margin-top: 15px; border-top: 1px solid var(--border); padding-top: 15px; }
+        .saved-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 8px; 
+            background: rgba(255,255,255,0.03); 
+            border-radius: 4px; 
+            margin-bottom: 5px; 
+            border: 1px solid var(--border);
+        }
+        .saved-name { font-weight: bold; color: var(--text); flex-grow: 1; }
+        .saved-actions { display: flex; gap: 5px; }
+        .btn-small { padding: 4px 8px; font-size: 11px; }
+        input[type="text"], input[type="password"] { 
+            flex-grow: 1; 
+            padding: 8px; 
+            background: var(--input-bg); 
+            border: 1px solid var(--border); 
+            border-radius: 4px; 
+            color: var(--text); 
+            font-family: monospace;
+        }
+        input:focus { outline: none; border-color: var(--primary); }
+
+        button { 
+            padding: 8px 16px; 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-weight: bold; 
+        }
+        button:hover { opacity: 0.8; }
+
+        .result-box { 
+            margin-top: 15px; 
+            background: #121416; 
+            color: #7fdbff; 
+            padding: 10px; 
+            border-radius: 4px; 
+            font-family: monospace; 
+            font-size: 12px; 
+            min-height: 20px; 
+            border: 1px solid #333;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div>
+                <h1>Ultimate Disk Flip Tool</h1>
+                <a href="control.html" class="back-link">← Back to Control Panel</a>
+            </div>
+            <div class="header-actions">
+                <button id="refreshStatus" style="background: var(--success);">Refresh Status</button>
+                <div class="auth-box">
+                    <form autocomplete="on">
+                        <input type="text" name="username" value="ultimate-api" autocomplete="username" style="display: none;">
+                        <input type="password" id="apiPassword" name="ultimate-api-password" placeholder="API Password" autocomplete="current-password" style="width: 120px; border: none; background: transparent; padding: 0;">
+                    </form>
+                </div>
+            </div>
+        </header>
+
+        <!-- Drive Status Panel -->
+        <div class="status-grid">
+            <!-- Drive A -->
+            <div class="drive-card" id="drive-a">
+                <div class="drive-header">
+                    <span class="drive-label">Drive A</span>
+                    <span class="status-badge" id="badge-a"></span>
+                </div>
+                <div class="drive-info" id="content-a">Loading...</div>
+            </div>
+            <!-- Drive B -->
+            <div class="drive-card" id="drive-b">
+                <div class="drive-header">
+                    <span class="drive-label">Drive B</span>
+                    <span class="status-badge" id="badge-b"></span>
+                </div>
+                <div class="drive-info" id="content-b">Loading...</div>
+            </div>
+        </div>
+
+        <!-- Quick Mount Section -->
+        <div class="section">
+            <div class="section-title">Quick Mount</div>
+            <div class="target-selector">
+                <button class="target-btn active" data-target="a">Target Drive A</button>
+                <button class="target-btn" data-target="b">Target Drive B</button>
+            </div>
+            <div class="flip-grid">
+                <button class="flip-btn" data-index="1">1</button>
+                <button class="flip-btn" data-index="2">2</button>
+                <button class="flip-btn" data-index="3">3</button>
+                <button class="flip-btn" data-index="4">4</button>
+                <button class="flip-btn" data-index="5">5</button>
+                <button class="flip-btn" data-index="6">6</button>
+                <button class="flip-btn" data-index="7">7</button>
+                <button class="flip-btn" data-index="8">8</button>
+            </div>
+
+            <div style="margin-top: 25px;">
+                <div class="control-title">Drive Control</div>
+                <div class="control-grid">
+                    <button class="control-btn btn-enable" data-cmd="on">Enable</button>
+                    <button class="control-btn btn-disable" data-cmd="off">Disable</button>
+                    <button class="control-btn btn-remove" data-cmd="remove">Remove Disk</button>
+                    <button class="control-btn btn-reset" data-cmd="reset">Reset Drive</button>
+                </div>
+            </div>
+
+            <div class="result-box" id="operation-result"></div>
+        </div>
+
+        <!-- Configuration Section -->
+        <div class="section">
+            <div class="section-title">Disk Image Configuration</div>
+            <div class="config-grid">
+                <div class="config-row"><span class="config-label">1:</span><input type="text" id="path-1" placeholder="/usb0/games/game_disk1.d64"></div>
+                <div class="config-row"><span class="config-label">2:</span><input type="text" id="path-2" placeholder="/usb0/games/game_disk2.d64"></div>
+                <div class="config-row"><span class="config-label">3:</span><input type="text" id="path-3" placeholder="/usb0/games/game_disk3.d64"></div>
+                <div class="config-row"><span class="config-label">4:</span><input type="text" id="path-4" placeholder="/usb0/games/game_disk4.d64"></div>
+                <div class="config-row"><span class="config-label">5:</span><input type="text" id="path-5" placeholder="/usb0/games/game_disk5.d64"></div>
+                <div class="config-row"><span class="config-label">6:</span><input type="text" id="path-6" placeholder="/usb0/games/game_disk6.d64"></div>
+                <div class="config-row"><span class="config-label">7:</span><input type="text" id="path-7" placeholder="/usb0/games/game_disk7.d64"></div>
+                <div class="config-row"><span class="config-label">8:</span><input type="text" id="path-8" placeholder="/usb0/games/game_disk8.d64"></div>
+            </div>
+            <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px;">
+                <div style="font-size: 12px; color: var(--text-dim);">
+                    * Paths are saved in your browser's local storage for future sessions.
+                </div>
+                <button id="clearAllPaths" style="background: var(--danger); font-size: 12px; padding: 4px 10px;">Clear All</button>
+            </div>
+
+            <!-- Save/Load Feature -->
+            <div class="saved-configs-list">
+                <div class="control-title">Saved Configurations</div>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <input type="text" id="configName" placeholder="Configuration Name (e.g. Defender of the Crown)" style="flex-grow: 1;">
+                    <button id="saveConfig" style="background: var(--success);">Save Current</button>
+                </div>
+                <div id="savedConfigsContainer">
+                    <!-- Saved items will appear here -->
+                </div>
+            </div>
+            <div class="result-box" id="config-result"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentTarget = 'a';
+
+        function updateStatus(clearResults = false) {
+            const password = $('#apiPassword').val();
+            if (clearResults) {
+                $('#operation-result').hide().text('');
+                $('#config-result').hide().text('');
+            }
+
+            $.ajax({
+                url: '/v1/drives',
+                method: 'GET',
+                headers: { "X-Password": password },
+                success: function(data) {
+                    if (!data || !data.drives || !Array.isArray(data.drives)) {
+                        $('.status-content').text('Error: Unexpected data format.');
+                        return;
+                    }
+
+                    const driveMap = {};
+                    data.drives.forEach(item => {
+                        const key = Object.keys(item)[0];
+                        driveMap[key] = item[key];
+                    });
+
+                    ['a', 'b'].forEach(id => {
+                        const drive = driveMap[id];
+                        const $content = $(`#content-${id}`);
+                        const $card = $(`#drive-${id}`);
+                        if (drive) {
+                            const busId = drive.bus_id || '?';
+                            $card.find('.drive-label').text(`Drive ${id.toUpperCase()} (${busId})`);
+                            
+                            let html = `
+                                <div class="info-row"><span class="info-label">Type:</span><span class="info-value">${drive.type}</span></div>
+                                <div class="info-row" style="margin-top:10px; flex-direction:column; border:none;">
+                                    <span class="info-label">Mounted Image:</span>
+                                    <span class="info-value" style="word-break:break-all; color:var(--primary);">${drive.image_file || 'None'}</span>
+                                </div>
+                            `;
+                            $content.html(html);
+                            $(`#badge-${id}`).text(drive.enabled ? 'ON' : 'OFF').removeClass('bg-success bg-danger').addClass(drive.enabled ? 'bg-success' : 'bg-danger');
+                        } else {
+                            $content.text('Drive not found in API response.');
+                        }
+                    });
+                },
+                error: function(jqXHR) {
+                    const errorMsg = `Error fetching status: ${jqXHR.status} ${jqXHR.statusText}`;
+                    $('.drive-info').text(errorMsg).css('color', 'var(--danger)');
+                    $('.status-badge').text('ERR').addClass('bg-danger');
+                }
+            });
+        }
+
+        function showResult(msg, isError = false) {
+            const $box = $('#operation-result');
+            $box.show().text(msg).css('color', isError ? 'var(--danger)' : '#7fdbff');
+        }
+
+        function showConfigResult(msg, isError = false) {
+            const $box = $('#config-result');
+            $box.show().text(msg).css('color', isError ? 'var(--danger)' : '#7fdbff');
+        }
+
+        $(document).ready(function() {
+            // Load saved paths
+            for (let i = 1; i <= 8; i++) {
+                const saved = localStorage.getItem('disk_path_' + i);
+                if (saved) $('#path-' + i).val(saved);
+            }
+
+            // Save paths on change
+            $('input[id^="path-"]').on('input', function() {
+                const id = $(this).attr('id').split('-')[1];
+                localStorage.setItem('disk_path_' + id, $(this).val());
+            });
+
+            updateStatus();
+            $('#refreshStatus').click(() => updateStatus(true));
+
+            $('#clearAllPaths').click(function() {
+                if (confirm('Are you sure you want to clear all disk image paths?')) {
+                    for (let i = 1; i <= 8; i++) {
+                        $('#path-' + i).val('');
+                        localStorage.removeItem('disk_path_' + i);
+                    }
+                    showConfigResult('All paths cleared.');
+                }
+            });
+
+            $('.target-btn').click(function() {
+                $('.target-btn').removeClass('active');
+                $(this).addClass('active');
+                currentTarget = $(this).data('target');
+            });
+
+            // Save/Load Logic
+            function renderSavedConfigs() {
+                const configs = JSON.parse(localStorage.getItem('disk_flip_configs') || '{}');
+                const $container = $('#savedConfigsContainer');
+                $container.empty();
+                
+                const names = Object.keys(configs).sort();
+                if (names.length === 0) {
+                    $container.html('<div style="font-size: 12px; color: var(--text-dim); text-align: center; padding: 10px;">No saved configurations.</div>');
+                    return;
+                }
+
+                names.forEach(name => {
+                    const $item = $(`
+                        <div class="saved-item">
+                            <span class="saved-name">${name}</span>
+                            <div class="saved-actions">
+                                <button class="btn-small load-config" data-name="${name}" style="background: var(--primary);">Load</button>
+                                <button class="btn-small delete-config" data-name="${name}" style="background: var(--danger);">Delete</button>
+                            </div>
+                        </div>
+                    `);
+                    $container.append($item);
+                });
+            }
+
+            $('#saveConfig').click(function() {
+                const name = $('#configName').val().trim();
+                if (!name) {
+                    showConfigResult('Error: Please enter a configuration name.', true);
+                    return;
+                }
+
+                const paths = [];
+                let hasPath = false;
+                for (let i = 1; i <= 8; i++) {
+                    const val = $('#path-' + i).val().trim();
+                    paths.push(val);
+                    if (val) hasPath = true;
+                }
+
+                if (!hasPath) {
+                    showConfigResult('Error: Please enter at least one disk image path before saving.', true);
+                    return;
+                }
+
+                const configs = JSON.parse(localStorage.getItem('disk_flip_configs') || '{}');
+                configs[name] = paths;
+                localStorage.setItem('disk_flip_configs', JSON.stringify(configs));
+                
+                $('#configName').val('');
+                renderSavedConfigs();
+                showConfigResult(`Configuration "${name}" saved.`);
+            });
+
+            $(document).on('click', '.load-config', function() {
+                const name = $(this).data('name');
+                const configs = JSON.parse(localStorage.getItem('disk_flip_configs') || '{}');
+                const paths = configs[name];
+                
+                if (paths && Array.isArray(paths)) {
+                    paths.forEach((path, i) => {
+                        const index = i + 1;
+                        $('#path-' + index).val(path);
+                        localStorage.setItem('disk_path_' + index, path);
+                    });
+                    showConfigResult(`Configuration "${name}" loaded.`);
+                }
+            });
+
+            $(document).on('click', '.delete-config', function() {
+                const name = $(this).data('name');
+                if (confirm(`Are you sure you want to delete "${name}"?`)) {
+                    const configs = JSON.parse(localStorage.getItem('disk_flip_configs') || '{}');
+                    delete configs[name];
+                    localStorage.setItem('disk_flip_configs', JSON.stringify(configs));
+                    renderSavedConfigs();
+                    showConfigResult(`Configuration "${name}" deleted.`);
+                }
+            });
+
+            renderSavedConfigs();
+
+            // Drive Control Buttons - Fixed methods: :on, :off, :remove, :reset
+            $('.control-btn').click(function() {
+                const cmd = $(this).data('cmd');
+                const password = $('#apiPassword').val();
+                $('#operation-result').hide();
+                
+                $.ajax({
+                    url: `/v1/drives/${currentTarget}:${cmd}`,
+                    method: 'PUT',
+                    headers: { "X-Password": password },
+                    success: function(data) {
+                        showResult(`Drive ${currentTarget.toUpperCase()}: ${cmd.replace('_', ' ')} successful.`);
+                        setTimeout(() => updateStatus(false), 1000);
+                    },
+                    error: function(jqXHR) {
+                        showResult(`Error: ${jqXHR.responseText || jqXHR.statusText}`, true);
+                    }
+                });
+            });
+
+            // Quick Mount Buttons
+            $('.flip-btn').click(function() {
+                const index = $(this).data('index');
+                const path = $('#path-' + index).val();
+                const password = $('#apiPassword').val();
+                
+                $('#operation-result').hide();
+
+                if (!path) {
+                    showResult(`Error: No path configured for image ${index}`, true);
+                    return;
+                }
+
+                $.ajax({
+                    url: `/v1/drives/${currentTarget}:mount?image=${encodeURIComponent(path)}`,
+                    method: 'PUT',
+                    headers: { "X-Password": password },
+                    success: function(data) {
+                        showResult(`Image ${index}: Mounted to Drive ${currentTarget.toUpperCase()}`);
+                        setTimeout(() => updateStatus(false), 1000);
+                    },
+                    error: function(jqXHR) {
+                        showResult(`Error mounting image ${index}: ${jqXHR.responseText || jqXHR.statusText}`, true);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
