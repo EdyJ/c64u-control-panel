@@ -256,7 +256,7 @@ This project is open source and available under the MIT License.
 
 ## Credits
 
-Developed by Angel Garcia "Edy" for the Commodore 64 Ultimate community. Special thanks to Gideon Zweijtzer, Peri Fractic and the [Commodore](http://www.commodore.net) team for creating this amazing piece of technology and providing such a comprehensive REST API.
+Developed by Angel "Edy" Garcia for the Commodore 64 Ultimate community. Special thanks to Gideon Zweijtzer, Peri Fractic and the [Commodore](http://www.commodore.net) team for creating this amazing piece of technology and providing such a comprehensive REST API.
 
 ## Contributing
 
