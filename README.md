@@ -38,7 +38,7 @@ Ensure your C64U is connected to your local network and has an assigned IP addre
 ![WiFi Setup](pics/setup-wifi.png)
 ![Ethernet Setup](pics/setup-ethernet.png)
 
-**Note down the assigned IP address** - you'll need it for the next steps.
+**Note down the Active IP address** - you'll need it for the next steps.
 
 #### 2. Enable Network Services
 
