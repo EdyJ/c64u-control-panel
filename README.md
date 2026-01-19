@@ -16,7 +16,6 @@ A comprehensive web-based control panel and toolset for the Commodore 64 Ultimat
 
 ```
 ├── html/          # Main tool files (copy to /Flash/html on your C64U)
-├── optional/      # Optional index.html to make Control Panel the default page
 └── pics/          # Screenshots and images for documentation
 ```
 
@@ -57,10 +56,10 @@ Clone or download this repository to your local computer, or download as ZIP and
 Open your file explorer and enter the following path in the address bar:
 
 ```
-ftp://<your_c64u_ip>
+ftp://<c64u_ip>
 ```
 
-Replace `<your_c64u_ip>` with the IP address noted in step 1.
+Replace `<c64u_ip>` with the IP address noted in step 1.
 
 ![FTP Connection](pics/setup-ftp-connection.png)
 
@@ -69,6 +68,7 @@ This will show the internal storage devices of your C64U.
 #### 5. Copy Files to C64U
 
 1. Navigate to the **/Flash/html** folder on your C64U
+2. Backup or rename the original **index.html** file
 2. Copy all files from the **html** folder in this repository to **/Flash/html** on your C64U
 
 ![Files Copied](pics/setup-files-copied.png)
@@ -78,19 +78,7 @@ This will show the internal storage devices of your C64U.
 Open your web browser and navigate to:
 
 ```
-http://<your_c64u_ip>/control.html
-```
-
-The Ultimate Control Panel should now load in your browser.
-
-### Optional: Set Control Panel as Default Page
-
-If you want the Control Panel to appear when navigating to your C64U's root URL, copy the `index.html` file from the **optional** folder to **/Flash/html** on your C64U, replacing the existing index.html file. Back up or rename the original file first if you want to keep it.
-
-After this, you can access the Control Panel simply by navigating to:
-
-```
-http://<your_c64u_ip>
+http://<c64u_ip>
 ```
 
 ## Ultimate Control Panel
