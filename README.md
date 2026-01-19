@@ -161,7 +161,7 @@ A selector toggles the target drive between A and B for the available operations
 
 ## Disk Flip Tool
 
-![Disk Flip Tool](pics/c64u-disk-flip-tool.png)
+![Disk Flip Tool](pics/c64u-disk-flip-tool.gif)
 
 A handy tool designed specifically for managing multi-disk games and applications. It provides a streamlined interface for quickly switching between disk images.
 
