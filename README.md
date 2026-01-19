@@ -127,7 +127,7 @@ If your C64U has an API password set, enter it in this field. Otherwise, leave i
 
 ## Configuration Tool
 
-![Configuration Tool](pics/config-tool.png)
+![Configuration Tool](pics/c64u-config-tool.gif)
 
 A comprehensive interface for browsing and modifying all device settings. It organizes all configuration options exposed by the C64 Ultimate, making it easy to find and adjust specific settings.
 
@@ -161,7 +161,7 @@ A selector toggles the target drive between A and B for the available operations
 
 ## Disk Flip Tool
 
-![Disk Flip Tool](pics/disk-flip.png)
+![Disk Flip Tool](pics/c64u-disk-flip-tool.png)
 
 A handy tool designed specifically for managing multi-disk games and applications. It provides a streamlined interface for quickly switching between disk images.
 
