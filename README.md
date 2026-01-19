@@ -2,80 +2,26 @@
 
 A comprehensive web-based control panel and toolset for the Commodore 64 Ultimate (C64U) devices, providing remote access to system management, configuration, drive control, and more through your browser on any device.
 
-![Ultimate Control Panel](pics/control-panel.png)
-
-## Features
-
 - **Unified Control Panel** - Central hub for all system operations and API functions
 - **Configuration Tool** - Browse and modify all device settings
 - **Floppy Drives Tool** - Manage virtual floppy drives, mount disk images, and perform drive operations
 - **Disk Flip Tool** - Quick disk image flipping for multi-disk games
 - **Data Streams Tool** - Configure and control data streaming to external devices
 
-## Repository Structure
-
-```
-├── html/          # Main tool files (copy to /Flash/html on your C64U)
-└── pics/          # Screenshots and images for documentation
-```
-
 ## Setup Instructions
 
-### Prerequisites
+Copy the files in the `html` folder to the `/Flash/html` folder in your Commodore 64 Ultimate device (Ultimate 64, Ultimate II+, etc.)
 
-- Commodore 64 Ultimate device (Ultimate 64, Ultimate II+, etc.)
-- Local network connection (WiFi or Ethernet)
-- FTP client or file explorer with FTP support (Windows File Explorer works fine)
-- Web browser (Chrome, Firefox, Edge, Safari, etc.)
+**Step by step:**
+1. Ensure your C64U is connected to your local network and has an assigned IP address
+2. In the C64U menu, navigate to **Network Services & Timezone** and enable:
+   - FTP File Service
+   - Web Remote Control Service
+3. Open the File Explorer and enter this path in the address bar: `ftp://<c64u_ip>` (replace `<c64u_ip>` with the IP address of your device)
+4. Backup or rename the existing `index.html` file
+5. Copy the files in the `html` folder to the `/Flash/html` folder in the device
 
-### Configuration Steps
-
-#### 1. Configure Network on C64U
-
-Ensure your C64U is connected to your local network and has an assigned IP address.
-
-![WiFi Setup](pics/setup-wifi.png)
-![Ethernet Setup](pics/setup-ethernet.png)
-
-**Note down the Active IP address** - you'll need it for the next steps.
-
-#### 2. Enable Network Services
-
-Navigate to **Network Services & Timezone** in the C64U menu and enable:
-- **FTP File Service**
-- **Web Remote Control Service**
-
-![Network Services Configuration](pics/setup-network-services.png)
-
-#### 3. Download the Repository
-
-Clone or download this repository to your local computer, or download as ZIP and extract to a local folder.
-
-#### 4. Connect via FTP
-
-Open your file explorer and enter the following path in the address bar:
-
-```
-ftp://<c64u_ip>
-```
-
-Replace `<c64u_ip>` with the IP address noted in step 1.
-
-![FTP Connection](pics/setup-ftp-connection.png)
-
-This will show the internal storage devices of your C64U.
-
-#### 5. Copy Files to C64U
-
-1. Navigate to the **/Flash/html** folder on your C64U
-2. Backup or rename the original **index.html** file
-2. Copy all files from the **html** folder in this repository to **/Flash/html** on your C64U
-
-![Files Copied](pics/setup-files-copied.png)
-
-#### 6. Access the Control Panel
-
-Open your web browser and navigate to:
+Now you can open your web browser and navigate to:
 
 ```
 http://<c64u_ip>
@@ -86,6 +32,8 @@ http://<c64u_ip>
 ![Ultimate Control Panel](pics/control-panel-full.png)
 
 The Control Panel serves as the central hub for all system operations and provides direct access to the C64U's REST API. It features a clean, organized interface divided into functional sections and tools.
+
+If your C64U has an API password set, enter it in the `API Password` field. Otherwise, leave it empty.
 
 ### System Information
 
@@ -99,31 +47,15 @@ Quick navigation buttons to access specialized tools:
 - **Disk Flip Tool** - Multi-disk image management
 - **Streams Tool** - Data streaming configuration
 
-### Machine Control
+### Sections
 
-Power management and system control functions including power off, reset (soft and hard), reboot, and C64 mode switching.
-
-### Memory & Debug
-
-Advanced memory operations for developers and power users. Useful for debugging, development, and low-level system interaction.
-
-### Media Players
-
-Built-in media playback capabilities for SID music files and Amiga MOD tracker files. Upload files directly from your computer or specify paths to files stored on the C64U's storage devices.
-
-### Program Runners
-
-Load and execute Commodore 64 programs and cartridges. Supports PRG (program) and CRT (cartridge) formats. Files can be uploaded directly through the browser or loaded from storage paths.
-
-### File Utilities
-
-File system operations and disk image management:
-- **Get File Info** - Retrieve detailed information about any file (size, type, attributes)
-- **Create D64** - Generate new blank D64 disk images with configurable track count (35 or 40) and optional disk name
-
-### API Password
-
-If your C64U has an API password set, enter it in this field. Otherwise, leave it empty.
+- **Machine Control** - Power management and system control functions including power off, reset (soft and hard), reboot, and C64 mode switching.
+- **Memory & Debug** - Advanced memory operations for developers and power users. Useful for debugging, development, and low-level system interaction.
+- **Media Players** - Built-in media playback capabilities for SID music files and Amiga MOD tracker files. Upload files directly from your computer or specify paths to files stored on the C64U's storage devices.
+- **Program Runners** - Load and execute Commodore 64 programs and cartridges. Supports PRG (program) and CRT (cartridge) formats. Files can be uploaded directly through the browser or loaded from storage paths.
+- **File Utilities** - File system operations and disk image management:
+	- **Get File Info** - Retrieve detailed information about any file (size, type, attributes)
+	- **Create D64** - Generate new blank D64 disk images with configurable track count (35 or 40) and optional disk name
 
 ## Configuration Tool
 
@@ -198,33 +130,6 @@ For each stream, configure:
 This section shows the streaming settings currently configured in the C64U. These may be modified in the Configuration Tool under the "Data Streams" category.
 
 Any empty Target IP fields in the Stream sections are automatically populated with these settings when the page loads or the Refresh button is clicked. Both Target IP and Port values are saved to the browser's local storage.
-
-## Troubleshooting
-
-### Cannot Connect to C64U
-
-- Verify the C64U is powered on and connected to the network
-- Check that the IP address is correct
-- Ensure "Web Remote Control Service" is enabled in Network Services
-- Try pinging the C64U IP address to verify network connectivity
-
-### FTP Connection Fails
-
-- Verify "FTP File Service" is enabled in Network Services
-- Check firewall settings on your computer
-- Try using a dedicated FTP client (FileZilla, WinSCP, etc.)
-
-### Tools Not Loading
-
-- Reload the page bypassing the cache (typically Ctrl+F5)
-- Check browser console for JavaScript errors (F12 → Console tab)
-- Verify all files were copied correctly to /Flash/html
-
-### API Operations Fail
-
-- Ensure the API password is correct (if set)
-- Check that the device is not busy with other operations
-- Try refreshing the page and attempting the operation again
 
 ## Development
 
