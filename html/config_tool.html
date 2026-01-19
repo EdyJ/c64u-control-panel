@@ -146,8 +146,7 @@
             border-bottom: 1px solid var(--border);
         }
         .section-header:hover { background: #32383e; }
-        .section-header .arrow { transition: transform 0.2s; }
-        .section-header.open .arrow { transform: rotate(180deg); }
+        .section-header .arrow { transition: opacity 0.2s; }
         .section-header .spinner {
             display: inline-block;
             width: 12px;
@@ -414,10 +413,12 @@
                     // Close section
                     $content.slideUp(300, function() {
                         $header.removeClass('open');
+                        $header.find('.arrow').text('▼');
                     });
                 } else {
                     // Open section
                     $header.addClass('open');
+                    $header.find('.arrow').text('▲');
                     
                     if (configData[category].loaded) {
                         // Already loaded, render and show
@@ -699,6 +700,9 @@
 
         // Search functionality
         function applySearchFilter() {
+            // Remove any existing no results message
+            $('#no-results-message').remove();
+            
             if (searchTerms.length === 0) {
                 // Show all
                 $('.section').removeClass('hidden');
@@ -706,15 +710,20 @@
                 return;
             }
 
-            // Filter items only (not categories)
+            // Filter sections and items
             $('.section').each(function() {
                 const $section = $(this);
                 const category = $section.data('category');
+                const $header = $section.find('.section-header');
                 
                 if (!configData[category].loaded) {
                     // Skip sections that haven't loaded yet
                     return;
                 }
+
+                // Check if section name matches
+                const categoryLower = category.toLowerCase();
+                const sectionMatches = searchTerms.every(term => categoryLower.includes(term));
 
                 let hasVisibleItems = false;
 
@@ -738,18 +747,36 @@
                     }
                 });
 
-                // Show section only if it has visible items
+                // Determine section visibility and state
                 if (hasVisibleItems) {
+                    // Has matching items - show section expanded with items
                     $section.removeClass('hidden');
                     // Auto-expand if not already open
-                    const $header = $section.find('.section-header');
                     if (!$header.hasClass('open')) {
                         $header.click();
                     }
+                } else if (sectionMatches) {
+                    // Section name matches but no items match - show section FOLDED with all items visible
+                    $section.removeClass('hidden');
+                    // Remove hidden class from all items so they're visible when expanded
+                    $section.find('.item').removeClass('hidden');
+                    // Ensure section is closed
+                    if ($header.hasClass('open')) {
+                        $header.click();
+                    }
                 } else {
+                    // No match at all - hide section
                     $section.addClass('hidden');
                 }
             });
+            
+            // Check if any sections are visible
+            const visibleSections = $('.section:not(.hidden)').length;
+            if (visibleSections === 0) {
+                // Show no results message
+                const $noResults = $('<div id="no-results-message" style="text-align: center; padding: 40px; color: var(--text-dim); font-style: italic; font-size: 16px;">No results found for "' + searchTerms.join(' ') + '"</div>');
+                $('#categories-container').append($noResults);
+            }
         }
 
         $('#searchInput').on('input', function() {
