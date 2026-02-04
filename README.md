@@ -17,7 +17,7 @@ Copy the files in the `html` folder to the `/Flash/html` folder in your Commodor
 2. In the C64U menu, navigate to **Network Services & Timezone** and enable:
    - FTP File Service
    - Web Remote Control Service
-3. Open the File Explorer and enter this path in the address bar: `ftp://<c64u_ip>` (replace `<c64u_ip>` with the IP address of your device)
+3. Open the File Explorer and enter this path in the address bar: `ftp://<c64u_ip>` (replace `<c64u_ip>` with the IP of your device) and navigate to the folder `/Flash/html`
 4. Backup or rename the existing `index.html` file
 5. Copy the files in the `html` folder to the `/Flash/html` folder in the device
 
@@ -31,7 +31,7 @@ http://<c64u_ip>
 
 ![Ultimate Control Panel](pics/control-panel-full.png)
 
-The Control Panel serves as the central hub for all system operations and provides direct access to the C64U's REST API. It features a clean, organized interface divided into functional sections and tools.
+A central hub for all system operations featuring a clean, organized interface divided into functional sections and tools.
 
 If your C64U has an API password set, enter it in the `API Password` field. Otherwise, leave it empty.
 
