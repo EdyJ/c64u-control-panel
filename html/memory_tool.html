@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Memory Browser Tool</title>
+    <script src="https://cdn.jsdelivr.net/npm/jquery"></script>
+    <style>
+        :root { 
+            --primary: #3498db; 
+            --success: #2ecc71; 
+            --danger: #e74c3c; 
+            --bg: #1a1c1e; 
+            --card-bg: #25282c; 
+            --text: #e0e0e0;
+            --text-dim: #a0a0a0;
+            --border: #3a3f44;
+            --input-bg: #2d3136;
+        }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg); 
+            margin: 0; 
+            padding: 20px; 
+            color: var(--text); 
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        
+        /* Header */
+        header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 20px; 
+            border-bottom: 2px solid var(--primary); 
+            padding-bottom: 10px; 
+        }
+        h1 { margin: 0; font-size: 24px; color: var(--primary); }
+        .back-link { 
+            font-size: 12px; 
+            color: var(--text-dim); 
+            text-decoration: none; 
+            margin-top: 5px; 
+            display: inline-block; 
+        }
+        .back-link:hover { color: var(--primary); }
+        .header-actions { display: flex; gap: 10px; align-items: center; }
+        .auth-box { 
+            background: var(--card-bg); 
+            padding: 5px 10px; 
+            border-radius: 4px; 
+            border: 1px solid var(--border); 
+        }
+        
+        /* Spinner */
+        #spinner {
+            display: none;
+            font-size: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Error Box */
+        #errorBox {
+            display: none;
+            background: var(--danger);
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        
+        /* Tab Bar */
+        .tab-bar {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+        }
+        .tab-button {
+            padding: 10px 20px;
+            background: var(--input-bg);
+            color: var(--text-dim);
+            border: none;
+            border-radius: 4px 4px 0 0;
+            cursor: pointer;
+            font-weight: bold;
+            border: 1px solid var(--border);
+            border-bottom: none;
+            transition: all 0.2s;
+        }
+        .tab-button:hover {
+            background: var(--card-bg);
+            color: var(--text);
+        }
+        .tab-button.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        /* Viewer Content */
+        .viewer-content {
+            background: var(--card-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            padding: 20px;
+            min-height: 400px;
+        }
+        
+        /* Common Controls */
+        input[type="text"], input[type="password"] { 
+            padding: 8px; 
+            background: var(--input-bg); 
+            border: 1px solid var(--border); 
+            border-radius: 4px; 
+            color: var(--text); 
+            font-family: monospace;
+        }
+        input:focus { outline: none; border-color: var(--primary); }
+        
+        button { 
+            padding: 8px 16px; 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-weight: bold; 
+        }
+        button:hover { opacity: 0.8; }
+        
+        .btn-success { background: var(--success); }
+        .btn-danger { background: var(--danger); }
+        
+        /* Memory Display */
+        .memory-display {
+            background: #121416;
+            color: #7fdbff;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 13px;
+            white-space: pre;
+            overflow-x: auto;
+            margin-top: 15px;
+            border: 1px solid #333;
+        }
+        
+        /* Debug Viewer Styles */
+        .debug-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .debug-controls label {
+            color: var(--text-dim);
+            font-weight: bold;
+        }
+        .debug-controls input {
+            width: 100px;
+        }
+        .debug-info {
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div>
+                <h1>Ultimate Memory Browser Tool</h1>
+                <a href="control.html" class="back-link">← Back to Control Panel</a>
+            </div>
+            <div class="header-actions">
+                <span id="spinner">⟳</span>
+                <button id="refreshBtn" class="btn-success">Refresh</button>
+                <div class="auth-box">
+                    <form autocomplete="on">
+                        <input type="text" name="username" value="ultimate-api" autocomplete="username" style="display: none;">
+                        <input type="password" id="apiPassword" name="password" placeholder="API Password" autocomplete="current-password" style="width: 120px; border: none; background: transparent; padding: 0;">
+                    </form>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Error Box -->
+        <div id="errorBox"></div>
+        
+        <!-- Tab Bar -->
+        <div class="tab-bar">
+            <button class="tab-button active" data-tab="tab1">Debug Viewer 1</button>
+            <button class="tab-button" data-tab="tab2">Debug Viewer 2</button>
+            <button class="tab-button" data-tab="tab3">Debug Viewer 3</button>
+        </div>
+        
+        <!-- Debug Viewer 1: Simple Read Test -->
+        <div id="tab1-content" class="viewer-content">
+            <div class="debug-info">
+                <strong>Debug Viewer 1</strong><br>
+                Tests basic memory reading. Reads 256 bytes from address $0400 (screen memory start).
+            </div>
+            <button id="debug1-read" class="btn-primary">Test Read Memory ($0400, 256 bytes)</button>
+            <div id="debug1-display" class="memory-display" style="display:none;"></div>
+        </div>
+        
+        <!-- Debug Viewer 2: Parameterized Read -->
+        <div id="tab2-content" class="viewer-content" style="display:none;">
+            <div class="debug-info">
+                <strong>Debug Viewer 2</strong><br>
+                Tests parameterized reading. Enter any address and read 16 bytes.
+            </div>
+            <div class="debug-controls">
+                <label>Address:</label>
+                <input type="text" id="debug2-address" value="C000" placeholder="C000">
+                <button id="debug2-read" class="btn-primary">Read 16 Bytes</button>
+            </div>
+            <div id="debug2-display" class="memory-display" style="display:none;"></div>
+        </div>
+        
+        <!-- Debug Viewer 3: Write Test with Confirmation -->
+        <div id="tab3-content" class="viewer-content" style="display:none;">
+            <div class="debug-info">
+                <strong>Debug Viewer 3</strong><br>
+                Tests memory writing and canDeactivate() protocol. Write a byte and try switching tabs - you'll be prompted to confirm.
+            </div>
+            <div class="debug-controls">
+                <label>Address:</label>
+                <input type="text" id="debug3-address" value="0400" placeholder="0400">
+                <label>Value:</label>
+                <input type="text" id="debug3-value" value="41" placeholder="41" style="width: 60px;">
+                <button id="debug3-write" class="btn-danger">Write Byte</button>
+            </div>
+            <div id="debug3-status" style="margin-top: 15px; color: var(--text-dim);"></div>
+        </div>
+    </div>
+    
+    <script>
+        // ============================================================================
+        // COMMON API METHODS
+        // ============================================================================
+        
+        function readMemory(address, length, callback, errorCallback) {
+            const password = $('#apiPassword').val();
+            showSpinner(true);
+            
+            // Convert address to 4-digit uppercase hex without prefix
+            const hexAddr = address.toString(16).padStart(4, '0').toUpperCase();
+            
+            $.ajax({
+                url: `/v1/machine:readmem?address=${hexAddr}&length=${length}`,
+                method: 'GET',
+                headers: { "X-Password": password },
+                xhrFields: { responseType: 'arraybuffer' },
+                success: function(data) {
+                    showSpinner(false);
+                    hideError();
+                    callback(data);
+                },
+                error: function(jqXHR) {
+                    showSpinner(false);
+                    let msg = jqXHR.statusText;
+                    if (jqXHR.responseText) {
+                        msg = jqXHR.responseText;
+                    } else if (jqXHR.responseType === 'arraybuffer' && jqXHR.response) {
+                        msg = new TextDecoder().decode(jqXHR.response);
+                    }
+                    showError(`Read error: ${msg}`);
+                    if (errorCallback) errorCallback(msg);
+                }
+            });
+        }
+        
+        function writeMemory(address, dataArray, callback, errorCallback) {
+            const password = $('#apiPassword').val();
+            showSpinner(true);
+            
+            // Convert address to 4-digit uppercase hex without prefix
+            const hexAddr = address.toString(16).padStart(4, '0').toUpperCase();
+            
+            if (dataArray.length <= 128) {
+                // PUT method with hex string as query parameter
+                const hexString = dataArray.map(b => b.toString(16).padStart(2, '0').toUpperCase()).join('');
+                $.ajax({
+                    url: `/v1/machine:writemem?address=${hexAddr}&data=${hexString}`,
+                    method: 'PUT',
+                    headers: { "X-Password": password },
+                    success: function() {
+                        showSpinner(false);
+                        hideError();
+                        if (callback) callback();
+                    },
+                    error: function(jqXHR) {
+                        showSpinner(false);
+                        let msg = jqXHR.statusText;
+                        if (jqXHR.responseText) {
+                            msg = jqXHR.responseText;
+                        }
+                        showError(`Write error: ${msg}`);
+                        if (errorCallback) errorCallback(msg);
+                    }
+                });
+            } else {
+                // POST method with binary data
+                const blob = new Blob([new Uint8Array(dataArray)]);
+                $.ajax({
+                    url: `/v1/machine:writemem?address=${hexAddr}`,
+                    method: 'POST',
+                    headers: { "X-Password": password },
+                    data: blob,
+                    processData: false,
+                    contentType: 'application/octet-stream',
+                    success: function() {
+                        showSpinner(false);
+                        hideError();
+                        if (callback) callback();
+                    },
+                    error: function(jqXHR) {
+                        showSpinner(false);
+                        let msg = jqXHR.statusText;
+                        if (jqXHR.responseText) {
+                            msg = jqXHR.responseText;
+                        }
+                        showError(`Write error: ${msg}`);
+                        if (errorCallback) errorCallback(msg);
+                    }
+                });
+            }
+        }
+        
+        // ============================================================================
+        // COMMON UI FUNCTIONS
+        // ============================================================================
+        
+        function showSpinner(visible) {
+            $('#spinner').css('display', visible ? 'inline-block' : 'none');
+        }
+        
+        function showError(message) {
+            $('#errorBox').text(message).show();
+        }
+        
+        function hideError() {
+            $('#errorBox').hide();
+        }
+        
+        // ============================================================================
+        // TAB MANAGEMENT
+        // ============================================================================
+        
+        let currentActiveTab = 'tab1';
+        
+        const viewerMap = {
+            'tab1': 'DebugViewer1',
+            'tab2': 'DebugViewer2',
+            'tab3': 'DebugViewer3'
+        };
+        
+        function getActiveViewer() {
+            const viewerName = viewerMap[currentActiveTab];
+            return window[viewerName];
+        }
+        
+        function getViewerByTab(tabId) {
+            const viewerName = viewerMap[tabId];
+            return window[viewerName];
+        }
+        
+        function setupTabs() {
+            $('.tab-button').click(function() {
+                const targetTab = $(this).data('tab');
+                switchToTab(targetTab);
+            });
+        }
+        
+        function switchToTab(tabId) {
+            if (tabId === currentActiveTab) return; // Already on this tab
+            
+            const currentViewer = getActiveViewer();
+            
+            // Check if we can leave current tab
+            if (currentViewer && !currentViewer.canDeactivate()) {
+                console.log('Tab switch cancelled by viewer');
+                return; // Cancel switch
+            }
+            
+            // Deactivate current
+            if (currentViewer) {
+                currentViewer.deactivate();
+            }
+            
+            // Hide all viewer contents
+            $('.viewer-content').hide();
+            
+            // Update tab styling
+            $('.tab-button').removeClass('active');
+            $(`.tab-button[data-tab="${tabId}"]`).addClass('active');
+            
+            // Show new viewer content
+            $(`#${tabId}-content`).show();
+            
+            // Activate new viewer
+            const newViewer = getViewerByTab(tabId);
+            newViewer.activate();
+            
+            // Update current tab tracking
+            currentActiveTab = tabId;
+        }
+        
+        // ============================================================================
+        // DEBUG VIEWER 1: Simple Read Test
+        // ============================================================================
+        
+        var DebugViewer1 = {
+            initialize: function() {
+                console.log('DebugViewer1: initialize()');
+                $('#debug1-read').click(() => this.refresh());
+            },
+            
+            activate: function() {
+                console.log('DebugViewer1: activate()');
+            },
+            
+            canDeactivate: function() {
+                console.log('DebugViewer1: canDeactivate() -> true');
+                return true;
+            },
+            
+            deactivate: function() {
+                console.log('DebugViewer1: deactivate()');
+            },
+            
+            refresh: function() {
+                console.log('DebugViewer1: refresh()');
+                const address = 0x0400; // Screen memory
+                const length = 256;
+                
+                readMemory(address, length, (data) => {
+                    const bytes = new Uint8Array(data);
+                    let output = 'Memory dump from $0400 (256 bytes):\n\n';
+                    
+                    for (let i = 0; i < bytes.length; i += 16) {
+                        const addr = (address + i).toString(16).padStart(4, '0').toUpperCase();
+                        output += `$${addr}: `;
+                        
+                        // Hex bytes
+                        for (let j = 0; j < 16 && i + j < bytes.length; j++) {
+                            output += bytes[i + j].toString(16).padStart(2, '0').toUpperCase() + ' ';
+                        }
+                        
+                        output += '\n';
+                    }
+                    
+                    $('#debug1-display').text(output).show();
+                }, (error) => {
+                    $('#debug1-display').text(`Error: ${error}`).show();
+                });
+            }
+        };
+        
+        // ============================================================================
+        // DEBUG VIEWER 2: Parameterized Read
+        // ============================================================================
+        
+        var DebugViewer2 = {
+            initialize: function() {
+                console.log('DebugViewer2: initialize()');
+                $('#debug2-read').click(() => this.refresh());
+            },
+            
+            activate: function() {
+                console.log('DebugViewer2: activate()');
+            },
+            
+            canDeactivate: function() {
+                console.log('DebugViewer2: canDeactivate() -> true');
+                return true;
+            },
+            
+            deactivate: function() {
+                console.log('DebugViewer2: deactivate()');
+            },
+            
+            refresh: function() {
+                console.log('DebugViewer2: refresh()');
+                const addressStr = $('#debug2-address').val().replace(/[^0-9A-Fa-f]/g, '');
+                const address = parseInt(addressStr, 16);
+                
+                if (isNaN(address) || address < 0 || address > 0xFFFF) {
+                    showError('Invalid address. Enter hex value (0000-FFFF)');
+                    return;
+                }
+                
+                readMemory(address, 16, (data) => {
+                    const bytes = new Uint8Array(data);
+                    const addr = address.toString(16).padStart(4, '0').toUpperCase();
+                    let output = `Memory at $${addr} (16 bytes):\n\n`;
+                    output += `$${addr}: `;
+                    
+                    for (let i = 0; i < bytes.length; i++) {
+                        output += bytes[i].toString(16).padStart(2, '0').toUpperCase() + ' ';
+                    }
+                    
+                    $('#debug2-display').text(output).show();
+                }, (error) => {
+                    $('#debug2-display').text(`Error: ${error}`).show();
+                });
+            }
+        };
+        
+        // ============================================================================
+        // DEBUG VIEWER 3: Write Test with Confirmation
+        // ============================================================================
+        
+        var DebugViewer3 = {
+            hasUnsavedChanges: false,
+            
+            initialize: function() {
+                console.log('DebugViewer3: initialize()');
+                $('#debug3-write').click(() => this.writeValue());
+            },
+            
+            activate: function() {
+                console.log('DebugViewer3: activate()');
+            },
+            
+            canDeactivate: function() {
+                console.log(`DebugViewer3: canDeactivate() -> hasUnsavedChanges=${this.hasUnsavedChanges}`);
+                if (this.hasUnsavedChanges) {
+                    const confirmed = confirm('You have written data. Are you sure you want to leave this tab?');
+                    if (confirmed) {
+                        this.hasUnsavedChanges = false;
+                        return true;
+                    }
+                    return false;
+                }
+                return true;
+            },
+            
+            deactivate: function() {
+                console.log('DebugViewer3: deactivate()');
+            },
+            
+            refresh: function() {
+                console.log('DebugViewer3: refresh() - not implemented for this viewer');
+            },
+            
+            writeValue: function() {
+                const addressStr = $('#debug3-address').val().replace(/[^0-9A-Fa-f]/g, '');
+                const address = parseInt(addressStr, 16);
+                
+                const valueStr = $('#debug3-value').val().replace(/[^0-9A-Fa-f]/g, '');
+                const value = parseInt(valueStr, 16);
+                
+                if (isNaN(address) || address < 0 || address > 0xFFFF) {
+                    showError('Invalid address. Enter hex value (0000-FFFF)');
+                    return;
+                }
+                
+                if (isNaN(value) || value < 0 || value > 0xFF) {
+                    showError('Invalid value. Enter hex byte (00-FF)');
+                    return;
+                }
+                
+                writeMemory(address, [value], () => {
+                    const addr = address.toString(16).padStart(4, '0').toUpperCase();
+                    const val = value.toString(16).padStart(2, '0').toUpperCase();
+                    $('#debug3-status').html(`<span style="color: var(--success);">✓ Successfully wrote $${val} to address $${addr}</span>`);
+                    this.hasUnsavedChanges = true;
+                }, (error) => {
+                    $('#debug3-status').html(`<span style="color: var(--danger);">✗ Write failed: ${error}</span>`);
+                });
+            }
+        };
+        
+        // ============================================================================
+        // INITIALIZATION
+        // ============================================================================
+        
+        $(document).ready(function() {
+            console.log('=== Memory Browser Tool Initializing ===');
+            
+            // Initialize all viewers
+            DebugViewer1.initialize();
+            DebugViewer2.initialize();
+            DebugViewer3.initialize();
+            
+            // Set up tab switching
+            setupTabs();
+            
+            // Set up Refresh button
+            $('#refreshBtn').click(function() {
+                const activeViewer = getActiveViewer();
+                activeViewer.refresh();
+            });
+            
+            // Activate first tab
+            DebugViewer1.activate();
+            
+            console.log('=== Initialization Complete ===');
+        });
+    </script>
+</body>
+</html>
