@@ -55,8 +55,15 @@
         /* Spinner */
         #spinner {
             display: none;
-            font-size: 20px;
-            animation: spin 1s linear infinite;
+        }
+        .spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid var(--text-dim);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
         }
         @keyframes spin {
             from { transform: rotate(0deg); }
@@ -181,10 +188,10 @@
         <header>
             <div>
                 <h1>Ultimate Memory Browser Tool</h1>
-                <a href="control.html" class="back-link">← Back to Control Panel</a>
+                <a href="index.html" class="back-link">← Back to Control Panel</a>
             </div>
             <div class="header-actions">
-                <span id="spinner">⟳</span>
+                <span id="spinner" class="spinner"></span>
                 <button id="refreshBtn" class="btn-success">Refresh</button>
                 <div class="auth-box">
                     <form autocomplete="on">
@@ -243,6 +250,21 @@
                 <button id="debug3-write" class="btn-danger">Write Byte</button>
             </div>
             <div id="debug3-status" style="margin-top: 15px; color: var(--text-dim);"></div>
+            
+            <div class="debug-controls" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
+                <div style="margin-bottom: 10px; color: var(--text-dim); font-size: 13px;">
+                    <strong>POST Write Test (>128 bytes)</strong><br>
+                    Tests POST method by writing multiple bytes.
+                </div>
+                <label>Address:</label>
+                <input type="text" id="debug3-post-address" value="D800" placeholder="D800">
+                <label>Value:</label>
+                <input type="text" id="debug3-post-value" value="00" placeholder="00" style="width: 60px;">
+                <label>Count:</label>
+                <input type="text" id="debug3-post-count" value="200" placeholder="200" style="width: 60px;">
+                <button id="debug3-post-write" class="btn-danger">Write Bytes</button>
+            </div>
+            <div id="debug3-post-status" style="margin-top: 15px; color: var(--text-dim);"></div>
         </div>
     </div>
     
@@ -529,6 +551,7 @@
             initialize: function() {
                 console.log('DebugViewer3: initialize()');
                 $('#debug3-write').click(() => this.writeValue());
+                $('#debug3-post-write').click(() => this.writeMultipleBytes());
             },
             
             activate: function() {
@@ -581,6 +604,45 @@
                 }, (error) => {
                     $('#debug3-status').html(`<span style="color: var(--danger);">✗ Write failed: ${error}</span>`);
                 });
+            },
+            
+            writeMultipleBytes: function() {
+                const addressStr = $('#debug3-post-address').val().replace(/[^0-9A-Fa-f]/g, '');
+                const address = parseInt(addressStr, 16);
+                
+                const valueStr = $('#debug3-post-value').val().replace(/[^0-9A-Fa-f]/g, '');
+                const value = parseInt(valueStr, 16);
+                
+                const countStr = $('#debug3-post-count').val().replace(/[^0-9]/g, '');
+                const count = parseInt(countStr, 10);
+                
+                if (isNaN(address) || address < 0 || address > 0xFFFF) {
+                    showError('Invalid address. Enter hex value (0000-FFFF)');
+                    return;
+                }
+                
+                if (isNaN(value) || value < 0 || value > 0xFF) {
+                    showError('Invalid value. Enter hex byte (00-FF)');
+                    return;
+                }
+                
+                if (isNaN(count) || count < 1 || count > 65536) {
+                    showError('Invalid count. Enter value (1-65536)');
+                    return;
+                }
+                
+                // Create array filled with the value
+                const dataArray = new Array(count).fill(value);
+                
+                writeMemory(address, dataArray, () => {
+                    const addr = address.toString(16).padStart(4, '0').toUpperCase();
+                    const val = value.toString(16).padStart(2, '0').toUpperCase();
+                    const method = count > 128 ? 'POST' : 'PUT';
+                    $('#debug3-post-status').html(`<span style="color: var(--success);">✓ Successfully wrote ${count} bytes of $${val} to $${addr} (${method} method)</span>`);
+                    this.hasUnsavedChanges = true;
+                }, (error) => {
+                    $('#debug3-post-status').html(`<span style="color: var(--danger);">✗ Write failed: ${error}</span>`);
+                });
             }
         };
         
@@ -607,6 +669,16 @@
             
             // Activate first tab
             DebugViewer1.activate();
+            
+            // Handle page unload - check for unsaved changes
+            window.addEventListener('beforeunload', function(e) {
+                const activeViewer = getActiveViewer();
+                if (activeViewer && activeViewer.canDeactivate && !activeViewer.canDeactivate()) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                    return '';
+                }
+            });
             
             console.log('=== Initialization Complete ===');
         });
