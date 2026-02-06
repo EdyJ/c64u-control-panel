@@ -222,7 +222,7 @@ h1 {
 ```
 
 #### 7. Tab Components
-Each tab should implement the following lifecycle methods in its corresponding JavaScript module: `initialize()`, `activate()`, `deactivate()`, and `canDeactivate()`.
+When the tool uses a tabbed interface, each tab should implement the following lifecycle methods in its corresponding JavaScript module: `initialize()`, `activate()`, `deactivate()`, and `canDeactivate()`.
 
 ```css
 .tab-bar {
@@ -505,13 +505,12 @@ Any page or tab that performs write operations must protect users from losing un
 ## Technical Standards
 
 ### 1. API Integration
-- All memory and machine operations must use the **C64U Memory REST API**.
+- Refer to the **C64U REST API Guide.md** document for guidelines on the REST API usage.
+- Refer to the **C64U Memory REST API Reference.md** document for memory read/write operations.
 - Refer to the **api_calls.md** document for detailed endpoint specifications.
-- Always use relative URLs for API calls (e.g., `/v1/machine:readmem`).
-- API client code must correctly handle `ArrayBuffer` responses and decode error messages from them.
 
 ### 2. Dependencies
-- **jQuery:** Use the latest version from a reliable CDN for all DOM manipulation and AJAX operations: `https://cdn.jsdelivr.net/npm/jquery`
+- **jQuery:** Refer to the **DEVELOPMENT.md** document for specific version and CDN URL.
 - **Fonts:** Use a standard system sans-serif font stack for the general UI and a monospace stack for data/code displays.
 
 ---
@@ -624,7 +623,6 @@ Use this checklist to ensure new tools and pages adhere to the standards.
 - [ ] `canDeactivate` protocol is implemented for tabs with write functionality.
 - [ ] `beforeunload` handler is implemented for pages with write functionality.
 - [ ] Hex addresses are correctly formatted and validated for API calls.
-- [ ] API error handling correctly decodes `ArrayBuffer` responses.
 
 ---
 
@@ -698,11 +696,11 @@ A comprehensive stylesheet with:
 
 ### Benefits
 
-✅ **Simple:** HTML structure is visible and understandable  
-✅ **Straightforward:** No complex component generation logic  
-✅ **Maintainable:** Easy to modify HTML directly  
-✅ **Consistent:** CSS classes ensure uniform appearance  
-✅ **Flexible:** Developers can customize while following patterns  
+✅ **Simple:** HTML structure is visible and understandable
+✅ **Straightforward:** No complex component generation logic
+✅ **Maintainable:** Easy to modify HTML directly
+✅ **Consistent:** CSS classes ensure uniform appearance
+✅ **Flexible:** Developers can customize while following patterns
 
 ---
 

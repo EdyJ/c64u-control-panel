@@ -4,7 +4,9 @@
 
 **Last Updated:** February 4, 2026
 
-**Full API Reference:** `api_calls.rst`
+**REST API Calls Guide:** `C64U REST API Guide.md`
+
+**Full REST API Reference:** `api_calls.md`
 
 ---
 
@@ -12,13 +14,10 @@
 
 1. **Address Format:** MUST be 4-digit uppercase hexadecimal WITHOUT prefix
   - ✅ Correct: `0400`, `C000`, `D020`
-  - ❌ Wrong: `400`, `$0400`, `0x0400`, `c000`
-
-1. **Parameter Names:** Use `address` and `length` (NOT `addr` or `count`)
-
-1. **Data Format:** Uppercase hexadecimal string for PUT method
-
-1. **Authentication:** Use `X-Password` header
+  - ❌ Wrong: `400`, `$0400`, `0x0400`, `c000`  
+2. **Parameter Names:** Use `address` and `length` (NOT `addr` or `count`)
+3. **Data Format:** Uppercase hexadecimal string for PUT method
+4. **Authentication:** Use `X-Password` header
 
 ---
 
@@ -33,7 +32,6 @@ GET /v1/machine:readmem
 ### Parameters
 
 - `address` (required): 4-digit hex address (e.g., `0400`)
-
 - `length` (required): Decimal number of bytes to read (e.g., `256`)
 
 ### Headers
@@ -45,7 +43,6 @@ X-Password: <your-password>
 ### Response
 
 - **Success (200):** Binary data (ArrayBuffer)
-
 - **Error (4xx/5xx):** Error message (may be text or ArrayBuffer)
 
 ### Examples
@@ -73,10 +70,10 @@ GET /v1/machine:readmem?address=D020&length=1
 ```javascript
 function readMemory(address, length, callback, errorCallback) {
     const password = $('#apiPassword').val();
-    
+
     // Convert address to 4-digit uppercase hex without prefix
     const hexAddr = address.toString(16).padStart(4, '0').toUpperCase();
-    
+
     $.ajax({
         url: `/v1/machine:readmem?address=${hexAddr}&length=${length}`,
         method: 'GET',
@@ -123,7 +120,6 @@ PUT /v1/machine:writemem
 ### Parameters
 
 - `address` (required): 4-digit hex address (e.g., `D020`)
-
 - `data` (required): Hex string of bytes to write (e.g., `0504`)
 
 ### Headers
@@ -135,7 +131,6 @@ X-Password: <your-password>
 ### Response
 
 - **Success (200):** Empty or success message
-
 - **Error (4xx/5xx):** Error message
 
 ### Examples
@@ -153,7 +148,6 @@ PUT /v1/machine:writemem?address=D020&data=0504
 ```
 
 - Writes `05` to `$D020` (border color)
-
 - Writes `04` to `$D021` (background color)
 
 **Write "HELLO" to screen memory ($0400):**
@@ -169,16 +163,16 @@ PUT /v1/machine:writemem?address=0400&data=0805121215
 ```javascript
 function writeMemory(address, dataArray, callback, errorCallback) {
     const password = $('#apiPassword').val();
-    
+
     // Convert address to 4-digit uppercase hex without prefix
     const hexAddr = address.toString(16).padStart(4, '0').toUpperCase();
-    
+
     if (dataArray.length <= 128) {
         // PUT method with hex string as query parameter
-        const hexString = dataArray.map(b => 
+        const hexString = dataArray.map(b =>
             b.toString(16).padStart(2, '0').toUpperCase()
         ).join('');
-        
+
         $.ajax({
             url: `/v1/machine:writemem?address=${hexAddr}&data=${hexString}`,
             method: 'PUT',
@@ -244,7 +238,6 @@ Binary data (Blob or ArrayBuffer)
 ### Response
 
 - **Success (200):** Empty or success message
-
 - **Error (4xx/5xx):** Error message
 
 ### Examples
@@ -262,12 +255,12 @@ Body: [256 bytes of 0x20]
 ```javascript
 function writeMemoryLarge(address, dataArray, callback, errorCallback) {
     const password = $('#apiPassword').val();
-    
+
     // Convert address to 4-digit uppercase hex without prefix
     const hexAddr = address.toString(16).padStart(4, '0').toUpperCase();
-    
+
     const blob = new Blob([new Uint8Array(dataArray)]);
-    
+
     $.ajax({
         url: `/v1/machine:writemem?address=${hexAddr}`,
         method: 'POST',
@@ -360,11 +353,8 @@ error: function(jqXHR) {
 ### Common Error Codes
 
 - **400 Bad Request:** Invalid parameters (wrong address format, missing data)
-
 - **401 Unauthorized:** Invalid or missing password
-
 - **404 Not Found:** Endpoint doesn't exist
-
 - **500 Internal Server Error:** C64U device error
 
 ---
@@ -375,10 +365,10 @@ error: function(jqXHR) {
 // Complete implementation with both read and write
 function c64MemoryAPI() {
     const password = $('#apiPassword').val();
-    
+
     function readMemory(address, length, callback, errorCallback) {
         const hexAddr = address.toString(16).padStart(4, '0').toUpperCase();
-        
+
         $.ajax({
             url: `/v1/machine:readmem?address=${hexAddr}&length=${length}`,
             method: 'GET',
@@ -396,15 +386,15 @@ function c64MemoryAPI() {
             }
         });
     }
-    
+
     function writeMemory(address, dataArray, callback, errorCallback) {
         const hexAddr = address.toString(16).padStart(4, '0').toUpperCase();
-        
+
         if (dataArray.length <= 128) {
-            const hexString = dataArray.map(b => 
+            const hexString = dataArray.map(b =>
                 b.toString(16).padStart(2, '0').toUpperCase()
             ).join('');
-            
+
             $.ajax({
                 url: `/v1/machine:writemem?address=${hexAddr}&data=${hexString}`,
                 method: 'PUT',
@@ -418,7 +408,7 @@ function c64MemoryAPI() {
             });
         } else {
             const blob = new Blob([new Uint8Array(dataArray)]);
-            
+
             $.ajax({
                 url: `/v1/machine:writemem?address=${hexAddr}`,
                 method: 'POST',
@@ -435,7 +425,7 @@ function c64MemoryAPI() {
             });
         }
     }
-    
+
     return { readMemory, writeMemory };
 }
 
@@ -461,25 +451,15 @@ api.writeMemory(0xD020, [0x02], () => {
 When implementing C64 memory access:
 
 - [ ] Address converted to 4-digit hex with `padStart(4, '0')`
-
 - [ ] Address is uppercase with `.toUpperCase()`
-
 - [ ] Using `address` parameter (not `addr`)
-
 - [ ] Using `length` parameter for reads (not `count`)
-
 - [ ] Using `data` query parameter for PUT writes
-
 - [ ] Data bytes padded to 2 digits with `padStart(2, '0')`
-
 - [ ] Data is uppercase
-
 - [ ] Using POST for writes >128 bytes
-
 - [ ] Handling ArrayBuffer error responses
-
 - [ ] Using `X-Password` header
-
 - [ ] Using relative URLs (no hostname)
 
 ---
@@ -487,12 +467,8 @@ When implementing C64 memory access:
 ## Notes
 
 - The API is hosted on the C64U device itself
-
 - Always use relative URLs (e.g., `/v1/machine:readmem`)
-
 - The HTML file should be deployed on the C64U device to avoid CORS issues
-
 - Memory addresses are 16-bit (0000-FFFF)
-
 - Write operations are immediate and affect the running C64
 
