@@ -44,6 +44,8 @@ All files are deployed to the C64U device's web server root directory at `/flash
 - Use the common CSS styles for the html input controls, so they share the same look & feel.
 - Make new JS methods shared when they're required for 2 or more tools.
 
+Refer to the **SHARED_LIBRARIES.md** document for the complete specification of the three shared JavaScript libraries (api-client.js, ui-components.js, tab-lifecycle.js).
+
 ## Tab lifecycle
 
 This is used by complex, multi-part tools. It's documented in the file **Tab_Lifecycle_Pattern.md**.
@@ -72,7 +74,6 @@ A dedicated tool, "api_debug.html" will be used to test the shared libraries:
 
 - api-client.js for common API patterns.
 - ui-components.js for the reusable UI elements.
-- tab-lifecycle.js for the tabbed interface.
 - common.css file for the reusable css styles.
 
 This tool will have:
@@ -80,3 +81,5 @@ This tool will have:
 - A tabbed interface for testing the tab lifecycle.
 - Each tab will use reusable UI inputs and components.
 - Each tab will test a category of the common api-client.js library by using its methods exclusively (no direct REST API calls).
+
+Refer to the **Shared_Libraries_Roadmap.md** document for the complete development workflow, testing strategy, and expansion guidelines for the shared libraries.

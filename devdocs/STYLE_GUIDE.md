@@ -506,6 +506,7 @@ Any page or tab that performs write operations must protect users from losing un
 - Refer to the **C64U REST API.md** document for the REST API usage guide and endpoint catalog.
 - Refer to the **C64U Memory REST API Reference.md** document for memory read/write client-side implementation details.
 - Refer to the **Tab_Lifecycle_Pattern.md** document for the implementation reference of tabbed tools.
+- Refer to the **SHARED_LIBRARIES.md** document for the specification of the three shared JavaScript libraries.
 
 ### 2. Dependencies
 - **jQuery:** Refer to the **DEVELOPMENT.md** document for specific version and CDN URL.
