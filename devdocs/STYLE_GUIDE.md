@@ -164,10 +164,7 @@ h1 {
 #### 4. Authentication Box
 ```css
 .auth-box {
-    background: var(--card-bg);
-    padding: var(--spacing-xs) var(--spacing-sm);
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border);
+    /* No background or border - just contains the password input */
 }
 
 .auth-password-input {
