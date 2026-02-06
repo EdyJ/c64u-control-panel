@@ -6,6 +6,7 @@
     <title>Ultimate API Debug Tool</title>
     <link rel="stylesheet" href="common.css">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="js/tab-lifecycle.js"></script>
 </head>
 <body>
     <div class="container">
@@ -203,67 +204,14 @@
         }
         
         // ============================================================================
-        // TAB MANAGEMENT
+        // TAB MANAGEMENT (using tab-lifecycle.js)
         // ============================================================================
-        
-        let currentActiveTab = 'tab1';
         
         const viewerMap = {
             'tab1': 'DebugViewer1',
             'tab2': 'DebugViewer2',
             'tab3': 'DebugViewer3'
         };
-        
-        function getActiveViewer() {
-            const viewerName = viewerMap[currentActiveTab];
-            return window[viewerName];
-        }
-        
-        function getViewerByTab(tabId) {
-            const viewerName = viewerMap[tabId];
-            return window[viewerName];
-        }
-        
-        function setupTabs() {
-            $('.tab-button').click(function() {
-                const targetTab = $(this).data('tab');
-                switchToTab(targetTab);
-            });
-        }
-        
-        function switchToTab(tabId) {
-            if (tabId === currentActiveTab) return; // Already on this tab
-            
-            const currentViewer = getActiveViewer();
-            
-            // Check if we can leave current tab
-            if (currentViewer && !currentViewer.canDeactivate()) {
-                console.log('Tab switch cancelled by viewer');
-                return; // Cancel switch
-            }
-            
-            // Deactivate current
-            if (currentViewer) {
-                currentViewer.deactivate();
-            }
-            
-            // Hide all viewer contents
-            $('.viewer-content').hide();
-            
-            // Update tab styling
-            $('.tab-button').removeClass('active');
-            $(`.tab-button[data-tab="${tabId}"]`).addClass('active');
-            
-            // Show new viewer content
-            $(`#${tabId}-content`).show();
-            
-            // Activate new viewer
-            const newViewer = getViewerByTab(tabId);
-            newViewer.activate();
-            
-            // Update current tab tracking
-            currentActiveTab = tabId;
-        }
         
         // ============================================================================
         // DEBUG VIEWER 1: Simple Read Test
@@ -476,24 +424,24 @@
         // ============================================================================
         
         $(document).ready(function() {
-            console.log('=== Memory Browser Tool Initializing ===');
+            console.log('=== API Debug Tool Initializing ===');
             
             // Initialize all viewers
-            DebugViewer1.initialize();
-            DebugViewer2.initialize();
-            DebugViewer3.initialize();
+            initializeViewers(['DebugViewer1', 'DebugViewer2', 'DebugViewer3']);
             
-            // Set up tab switching
-            setupTabs();
+            // Set up tab system
+            setupTabs(viewerMap, 'tab1');
+            
+            // Activate first tab
+            DebugViewer1.activate();
             
             // Set up Refresh button
             $('#refreshBtn').click(function() {
                 const activeViewer = getActiveViewer();
-                activeViewer.refresh();
+                if (activeViewer && activeViewer.refresh) {
+                    activeViewer.refresh();
+                }
             });
-            
-            // Activate first tab
-            DebugViewer1.activate();
             
             // Handle page unload - check for unsaved changes
             window.addEventListener('beforeunload', function(e) {
