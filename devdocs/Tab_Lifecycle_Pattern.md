@@ -24,7 +24,7 @@ Each tab is backed by a **Viewer Object** that implements the lifecycle interfac
 
 ### 2. Lifecycle Methods
 
-Every viewer must implement four lifecycle methods:
+Every viewer must implement five lifecycle methods:
 
 | Method | Purpose | When Called | Return Value |
 |--------|---------|-------------|--------------|
@@ -32,6 +32,7 @@ Every viewer must implement four lifecycle methods:
 | `activate()` | Prepare viewer for display | When tab becomes active | None |
 | `canDeactivate()` | Check if viewer can be left | Before switching away from tab | Boolean |
 | `deactivate()` | Clean up before hiding | After user confirms leaving | None |
+| `refresh()` | Reload viewer data (or empty if not needed) | When Refresh button is clicked | None |
 
 ### 3. State Isolation
 
@@ -126,11 +127,13 @@ var MyViewer = {
         // Clean up timers, hide tooltips, etc.
     },
     
-    // Custom methods
+    // Lifecycle method 5: Refresh
     refresh: function() {
+        console.log('MyViewer: refresh()');
         // Load/refresh viewer data
     },
     
+    // Custom methods
     doSomething: function() {
         // Handle user action
         this.hasUnsavedChanges = true;
@@ -495,24 +498,31 @@ var MyViewer = {
 
 ## Refresh Integration
 
-The Refresh button in the header can trigger the active viewer's `refresh()` method:
+The Refresh button in the header triggers the active viewer's `refresh()` method:
 
 ```javascript
 $('#refreshBtn').click(function() {
     const activeViewer = getActiveViewer();
-    if (activeViewer && activeViewer.refresh) {
-        activeViewer.refresh();
-    }
+    activeViewer.refresh();
 });
 ```
 
-Each viewer should implement `refresh()` to reload its data:
+Viewers that need refresh functionality should implement the `refresh()` method:
 
 ```javascript
 refresh: function() {
     console.log('MyViewer: refresh()');
     // Reload data from API
     // Update UI
+}
+```
+
+Viewers without meaningful refresh functionality should provide an empty implementation:
+
+```javascript
+refresh: function() {
+    console.log('MyViewer: refresh() - not implemented');
+    // No refresh needed for this viewer
 }
 ```
 

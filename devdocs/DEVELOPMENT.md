@@ -4,6 +4,33 @@
 
 Refer to the **STYLE_GUIDE.md** document for the design philosophy and all UI/UX standards for this project.
 
+## File structure
+
+All files are deployed to the C64U device's web server root directory at `/flash/html/`:
+
+```
+/flash/html/
+├── index.html              # Landing page with links to all tools
+├── common.css              # Shared styles and CSS variables
+├── memory_tool.html        # Memory browser and editor tool
+├── api_debug.html          # API testing and debugging tool
+├── drives_tool.html        # Drive management tool
+├── streams_tool.html       # Data streams control tool
+├── config_tool.html        # Configuration viewer and editor
+├── disk_flip.html          # Disk flip utility
+├── (other tool files)
+└── js/
+    ├── api-client.js       # API wrapper functions (memory, config, drives, etc.)
+    ├── ui-components.js    # UI utility functions (spinner, errors, formatting)
+    └── tab-lifecycle.js    # Tab management and lifecycle implementation
+```
+
+**Key Points:**
+- HTML and CSS files are in the root folder
+- JavaScript libraries are in the `/js/` subdirectory
+- This allows simple URLs like `http://device-ip/memory_tool.html`
+- All tools link back to the root folder (`/`) via the header back link
+
 ## How to add new tools
 
 - Create a new HTML for the tool
