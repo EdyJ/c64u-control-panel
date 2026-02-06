@@ -2,11 +2,7 @@
 
 ## Design philosophy
 
-- HTML structure is written directly and visible in source files
-- CSS classes provide consistent styling
-- JavaScript handles behavior and data, NOT DOM generation
-
-Refer to the **STYLE_GUIDE.md** document for reference on UI/UX standards for this project.
+Refer to the **STYLE_GUIDE.md** document for the design philosophy and all UI/UX standards for this project.
 
 ## How to add new tools
 
@@ -27,11 +23,9 @@ This is used by complex, multi-part tools. It's documented in the file **Tab_Lif
 
 ## REST API Calls
 
-Refer to the **C64U REST API Guide.md** document for full details and reference on using the REST API, error handling and authentication.
+Refer to the **C64U REST API.md** document for full details and reference on using the REST API, error handling, authentication, and the endpoint catalog.
 
-The memory operations are referenced in the **C64U Memory REST API Reference.md** document.
-
-The full list of REST API calls and specific json results is documented in the **C64U REST API Reference.md** document.
+The memory operations have additional client-side implementation details in the **C64U Memory REST API Reference.md** document.
 
 ## Security
 

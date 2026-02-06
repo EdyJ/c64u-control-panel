@@ -1,44 +1,91 @@
-# C64U REST API Reference
+# C64U REST API
 
-This document provides a detailed reference for the REST API of the Commodore 64 Ultimate (C64U) device. It outlines the available endpoints, methods, parameters, and expected responses.
+This document is the unified reference for the REST API of the Commodore 64 Ultimate (C64U) device. The first part covers the general usage guide (URL format, authentication, error handling). The second part is the complete endpoint catalog.
 
-## General Information
+The memory read/write operations have additional client-side implementation details documented in the **C64U Memory REST API Reference.md** document.
 
-The API follows standard REST conventions. Requests are made using standard HTTP verbs, and responses are returned in JSON format.
+---
 
-### URL Structure
+## REST API Calls
 
-The base URL for all API calls is `/v1/`.
-
-`/v1/<route>/<path>:<command>?<arguments>`
-
-### HTTP Verbs
-
-The API utilizes standard HTTP verbs to indicate the intent of the request.
-
-| Verb | Meaning |
-|---|---|
-| `GET` | Retrieves information without changing the state of the device. |
-| `PUT` | Sends information or performs an action using parameters in the URL or a file referenced by the URL. |
-| `POST` | Performs an action using data attached to the request body, typically a file upload. |
-
-### Authentication
-
-If a network password is configured on the device, all API requests must include the `X-Password` header. Failure to provide a correct password will result in a `403 Forbidden` error.
+The format of the URL is as follows:
 
 ```
-X-Password: <your-password>
+/v1/<route>/<path>:<command>?<arguments>
 ```
 
-### Responses
+The 'verb' depends on the kind of operation. In general:
 
-Most commands return a JSON message with the `Content-Type: application/json` header. Every response contains an `errors` field, which is an array of strings detailing anything that went wrong during execution. A successful request with no other data to return will produce an empty errors list.
+| Verb | Meaning|
+| ------ | ------ |
+| GET  | Retrieves information without changing state |
+| PUT  | Sends information, or performs an action, using the information in the URL or in a file referenced by the URL. |
+| POST | Perform an action using the information that is attached as binary to the request. |
 
-```json
-{
-  "errors": []
-}
-```
+Always use relative URLs, e.g. `/v1/machine:readmem`.
+
+### Response Formats
+
+The API uses two primary formats for responses: JSON for structured data and binary for raw data.
+
+**1. JSON Responses (application/json)**
+
+Most API calls return a JSON object. **A `200 OK` HTTP status is not a guarantee of success.** The client MUST always inspect the `errors` array within the JSON payload.
+
+-   **Successful Operation:** The `errors` array is present and empty. The response may contain additional data.
+
+    ```json
+    {
+      "address": "0400-0406",
+      "errors": []
+    }
+    ```
+
+-   **Application-Level Error:** The HTTP status may still be `200 OK`, but the `errors` array contains one or more error message strings. This indicates a logical failure (e.g., invalid parameter).
+
+    ```json
+    {
+      "errors": ["Invalid address format"]
+    }
+    ```
+
+**2. Binary Responses (application/octet-stream)**
+
+Some endpoints, like `GET /v1/machine:readmem`, return raw binary data on success. In this case, a `200 OK` status indicates success, and the response body contains the data.
+
+## Authentication
+
+If a "Network Password" is configured on the device, all API requests must include a custom HTTP header:
+
+`X-Password: <your-password>`
+
+If the header is missing or the password is incorrect, the server will respond with an `HTTP 403 Forbidden` status, and the request will be denied.
+
+## Success and Error Handling
+
+Properly handling API responses requires checking both the HTTP status and the content of the response body.
+
+### Client Handling Logic
+
+1.  **Check HTTP Status Code:**
+    -   If the status is **not** `200 OK` (e.g., `403 Forbidden`, `404 Not Found`, `500 Internal Server Error`), treat it as a primary error. The response body for these errors **may still be JSON** containing a specific `errors` array. The client should always attempt to parse the response body as JSON first. If that fails, or if no `errors` are found, it should fall back to displaying an error based on the HTTP status code and text.
+
+2.  **Check Content-Type for 200 OK Responses:**
+    -   If `Content-Type` is `application/json`, parse the JSON body.
+        -   If the `errors` array is **empty**, the operation was successful.
+        -   If the `errors` array is **not empty**, the operation failed. Display the contents of the `errors` array to the user.
+    -   If `Content-Type` is `application/octet-stream` or another binary type, the operation was successful.
+
+### Summary of Response Handling
+
+| HTTP Status | Content-Type          | `errors` Array        | Result                  | Client Action                                    |
+| :---------- | :-------------------- | :-------------------- | :---------------------- | :----------------------------------------------- |
+| 200 OK      | `application/json`    | Empty (`[]`)          | **Success**             | Process the data in the response.                |
+| 200 OK      | `application/json`    | Not Empty             | **Application Error**   | Display the error messages from the array.       |
+| 200 OK      | `application/octet-stream` | N/A              | **Success (Binary)**    | Process the raw binary data.                     |
+| 4xx / 5xx   | Any                   | N/A                   | **HTTP/Transport Error**| Display an error based on the HTTP status and json response if available. |
+
+There is no automatic retry logic. If an operation fails, the client should display an error. The next time an operation succeeds, the error indication should be cleared.
 
 ---
 

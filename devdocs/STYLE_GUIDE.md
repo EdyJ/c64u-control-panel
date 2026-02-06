@@ -503,9 +503,8 @@ Any page or tab that performs write operations must protect users from losing un
 ## Technical Standards
 
 ### 1. API Integration
-- Refer to the **C64U REST API Guide.md** document for guidelines on the REST API usage.
-- Refer to the **C64U Memory REST API Reference.md** document for memory read/write operations.
-- Refer to the **C64U REST API Reference.md** document for detailed endpoint specifications.
+- Refer to the **C64U REST API.md** document for the REST API usage guide and endpoint catalog.
+- Refer to the **C64U Memory REST API Reference.md** document for memory read/write client-side implementation details.
 - Refer to the **Tab_Lifecycle_Pattern.md** document for the implementation reference of tabbed tools.
 
 ### 2. Dependencies
