@@ -343,9 +343,9 @@ button:hover {
 }
 ```
 
-#### 12. Memory/Code Display (for debug viewers)
+#### 12. Console/Code Display
 ```css
-.memory-display {
+.console-display {
     background: #121416;
     color: #7fdbff;
     padding: 15px;
@@ -357,7 +357,13 @@ button:hover {
     margin-top: 15px;
     border: 1px solid #333;
 }
+```
 
+**Usage:**
+- `.console-display` - For console-style data output (memory dumps, logs, debug info)
+- `.code-display` - For code snippets or structured text
+
+```css
 .code-display {
     background: var(--input-bg);
     color: var(--text);

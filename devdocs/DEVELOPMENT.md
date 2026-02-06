@@ -70,16 +70,36 @@ CDN URL: https://code.jquery.com/jquery-3.7.1.min.js
 
 ## Testing procedure
 
-A dedicated tool, "api_debug.html" will be used to test the shared libraries:
+A dedicated tool, **api_debug.html**, is available for testing the shared libraries:
 
-- api-client.js for common API patterns.
-- ui-components.js for the reusable UI elements.
-- common.css file for the reusable css styles.
+- `api-client.js` - Common API patterns (memory operations, error handling)
+- `ui-components.js` - Reusable UI elements (spinner, errors, formatting)
+- `common.css` - Reusable CSS styles
+- `tab-lifecycle.js` - Tab management and lifecycle
 
-This tool will have:
+### How to Test
 
-- A tabbed interface for testing the tab lifecycle.
-- Each tab will use reusable UI inputs and components.
-- Each tab will test a category of the common api-client.js library by using its methods exclusively (no direct REST API calls).
+1. **Access the tool**: Navigate to `http://device-ip/api_debug.html`
+2. **Enter API password** in the header
+3. **Test each viewer tab**:
+   - **Debug Viewer 1**: Tests basic memory reading (256 bytes from $0400)
+   - **Debug Viewer 2**: Tests parameterized reading (any address, 16 bytes)
+   - **Debug Viewer 3**: Tests memory writing (single byte and bulk writes)
+
+### What to Verify
+
+**Shared Libraries:**
+- ✅ Spinner appears during API calls
+- ✅ Error messages display properly (with robust JSON error parsing)
+- ✅ Tab switching works with lifecycle management
+- ✅ Unsaved changes protection (try switching tabs after writing in Viewer 3)
+- ✅ Console-style display for data output
+- ✅ Responsive design on mobile devices
+
+**API Operations:**
+- ✅ Memory reads return correct data
+- ✅ Memory writes use PUT for ≤128 bytes, POST for >128 bytes
+- ✅ Error handling for invalid addresses, wrong password, etc.
+- ✅ Address formatting (accepts various formats, outputs 4-digit hex)
 
 Refer to the **Shared_Libraries_Roadmap.md** document for the complete development workflow, testing strategy, and expansion guidelines for the shared libraries.

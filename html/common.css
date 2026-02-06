@@ -239,8 +239,8 @@ button:hover {
     color: var(--text-dim);
 }
 
-/* Memory/Code Display */
-.memory-display {
+/* Console/Code Display */
+.console-display {
     background: #121416;
     color: #7fdbff;
     padding: 15px;
