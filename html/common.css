@@ -1,0 +1,295 @@
+/* common.css - Shared styles for C64U Web Control Panel */
+
+:root {
+    /* Colors */
+    --primary: #3498db;
+    --success: #2ecc71;
+    --danger: #e74c3c;
+    --warning: #ff9800;
+    --bg: #1a1c1e;
+    --card-bg: #25282c;
+    --text: #e0e0e0;
+    --text-dim: #a0a0a0;
+    --border: #3a3f44;
+    --input-bg: #2d3136;
+
+    /* Spacing */
+    --spacing-xs: 5px;
+    --spacing-sm: 10px;
+    --spacing-md: 20px;
+    --spacing-lg: 30px;
+
+    /* Border Radius */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+
+    /* Transitions */
+    --transition: all 0.2s ease;
+}
+
+/* Base Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg);
+    margin: 0;
+    padding: var(--spacing-md);
+    color: var(--text);
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+/* Header Components */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: var(--spacing-sm);
+}
+
+h1 {
+    margin: 0;
+    font-size: 24px;
+    color: var(--primary);
+}
+
+.back-link {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-decoration: none;
+    margin-top: var(--spacing-xs);
+    display: inline-block;
+}
+
+.back-link:hover {
+    color: var(--primary);
+}
+
+.header-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+}
+
+/* Authentication Box */
+.auth-box {
+    background: var(--card-bg);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+}
+
+.auth-password-input {
+    width: 120px;
+    border: none;
+    background: transparent;
+    padding: 0;
+    color: var(--text);
+    font-family: monospace;
+}
+
+/* Loading Spinner */
+.spinner {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--text-dim);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Error/Success Messages */
+.error-box {
+    display: none;
+    background: var(--danger);
+    color: white;
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.success-message {
+    color: var(--success);
+}
+
+.error-message {
+    color: var(--danger);
+}
+
+/* Tab Components */
+.tab-bar {
+    display: flex;
+    gap: var(--spacing-xs);
+    margin-bottom: var(--spacing-md);
+    border-bottom: 2px solid var(--border);
+}
+
+.tab-button {
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--input-bg);
+    color: var(--text-dim);
+    border: none;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    cursor: pointer;
+    font-weight: bold;
+    border: 1px solid var(--border);
+    border-bottom: none;
+    transition: var(--transition);
+}
+
+.tab-button:hover {
+    background: var(--card-bg);
+    color: var(--text);
+}
+
+.tab-button.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.viewer-content {
+    background: var(--card-bg);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    padding: var(--spacing-md);
+    min-height: 400px;
+}
+
+/* Form Controls */
+input[type="text"],
+input[type="password"],
+select {
+    padding: 8px;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: monospace;
+}
+
+select {
+    cursor: pointer;
+}
+
+input:focus,
+select:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+label {
+    color: var(--text-dim);
+    font-weight: bold;
+}
+
+/* Buttons */
+button {
+    padding: 8px 16px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: bold;
+    transition: var(--transition);
+}
+
+button:hover {
+    opacity: 0.8;
+}
+
+.btn-primary { background: var(--primary); }
+.btn-success { background: var(--success); }
+.btn-danger { background: var(--danger); }
+.btn-warning { background: var(--warning); }
+
+/* Control Groups */
+.control-group {
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.control-group label {
+    color: var(--text-dim);
+    font-weight: bold;
+}
+
+.control-group input {
+    width: 100px;
+}
+
+/* Info/Status Boxes */
+.info-box {
+    background: rgba(255, 255, 255, 0.05);
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    margin-bottom: 15px;
+    font-size: 12px;
+    color: var(--text-dim);
+}
+
+/* Memory/Code Display */
+.memory-display {
+    background: #121416;
+    color: #7fdbff;
+    padding: 15px;
+    border-radius: var(--radius-sm);
+    font-family: monospace;
+    font-size: 13px;
+    white-space: pre;
+    overflow-x: auto;
+    margin-top: 15px;
+    border: 1px solid #333;
+}
+
+.code-display {
+    background: var(--input-bg);
+    color: var(--text);
+    padding: 15px;
+    border-radius: var(--radius-sm);
+    font-family: monospace;
+    font-size: 13px;
+    white-space: pre;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    body {
+        padding: var(--spacing-sm);
+    }
+
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-sm);
+    }
+
+    .header-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .tab-bar {
+        flex-wrap: wrap;
+    }
+
+    .control-group {
+        flex-wrap: wrap;
+    }
+}
