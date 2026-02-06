@@ -1,9 +1,7 @@
-# C64U Web Control Panel: Unified Style Guide
+# Style Guide for the C64U Web Control Panel
 
 **Version:** 2.0
-
 **Date:** February 6, 2026
-
 **Purpose:** This document defines the comprehensive UI/UX standards for the Commodore 64 Web-based Control Panel project. It is the single, authoritative source for all design and development, merging previous specification documents.
 
 ---
@@ -508,6 +506,7 @@ Any page or tab that performs write operations must protect users from losing un
 - Refer to the **C64U REST API Guide.md** document for guidelines on the REST API usage.
 - Refer to the **C64U Memory REST API Reference.md** document for memory read/write operations.
 - Refer to the **api_calls.md** document for detailed endpoint specifications.
+- Refer to the **Tab_Lifecycle_Pattern.md** document for the implementation reference of tabbed tools.
 
 ### 2. Dependencies
 - **jQuery:** Refer to the **DEVELOPMENT.md** document for specific version and CDN URL.

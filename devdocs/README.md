@@ -4,22 +4,20 @@
 
 A comprehensive web-based control panel and toolset for the Commodore 64 Ultimate (C64U) devices, providing remote access to system management, configuration, drive control, and more through a web browser on any device.
 
-The control panel consists on a lander page (index.html) with information, essential features, and links to specialized tools on their own pages. Each tool includes a backlink in the header to the lander page.
+The control panel consists on a lander page (index.html) with information, essential features, and links to specialized tools on their own pages. Each tool includes a backlink in the header to the lander page. The web control panel is intended to be accessed via local network to the IP of the device.
 
-The web control panel is intended to be accessed via local network to the IP of the device.
-
-The scope of the project is controlling some of the C64 features using the available REST API calls, and excludes the following topics:
+The scope of the project is controlling some of the C64 features using the REST API calls exposed by the device, and excludes the following topics:
 
 - SoftIEC Drives, partitions, DOS emulation.
 - Data Streams Protocol. We just invoke the API calls that enable or disable them.
 - The meaning and purpose of the configuration items. We just make them available to the user as the API exposes them. It's up to the user to modify the options they specifically know about.
-- Troubleshooting.
 - File manipulation.
 - User documentation. This project is intended to cover basic features for expert users.
 - A full coverage of the available API.
+- Troubleshooting.
 - Memory Map Details. We just provide the users a way to read and write to the memory, regardless of the address or configuration of that memory. We don't check if its configured as ROM, I/O registers or cartridges. We just issue the API call.
 
-[Official C64U documentation](https://1541u-documentation.readthedocs.io/en/latest/api/api_calls.html)
+Refer to the **DEVELOPMENT.md** document for development reference.
 
 ## Quick Start
 
@@ -57,4 +55,4 @@ Path convention uses forward slash `/`. Paths are not case sensitive.
 
 ## Version Compatibility
 
-Assume the API works with all firmware versions. No need of further considerations.
+The web-based control panel works with any Commodore 64 Ultimate edition.

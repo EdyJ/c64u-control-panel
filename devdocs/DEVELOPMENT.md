@@ -6,6 +6,8 @@
 - CSS classes provide consistent styling
 - JavaScript handles behavior and data, NOT DOM generation
 
+Refer to the **STYLE_GUIDE.md** document for reference on UI/UX standards for this project.
+
 ## How to add new tools
 
 - Create a new HTML for the tool
@@ -17,7 +19,7 @@
 
 - Use the shared JS libraries instead of calling REST API directly.
 - Use the common CSS styles for the html input controls, so they share the same look & feel.
-- Make JS methods shared when they're used for 2 or more tools.
+- Make new JS methods shared when they're required for 2 or more tools.
 
 ## Tab lifecycle
 
