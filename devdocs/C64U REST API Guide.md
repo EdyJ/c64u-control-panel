@@ -18,45 +18,70 @@ The ‘verb’ depends on the kind of operation. In general:
 
 Always use relative URLs, e.g. `/v1/machine:readmem`.
 
-What is returned with the request depends on the command. In most cases the command returns a valid JSON message, using the _Content-Type: application/json_ string in the header. The JSON contains at least one entry, called errors. This is a list (array) of strings with things that went wrong during the execution of the command. A complete response could, for instance, look like this:
+### Response Formats
 
-```
-HTTP/1.1 200 OK
-Connection: close
-Content-Type: application/json
-Content-Length: 22
+The API uses two primary formats for responses: JSON for structured data and binary for raw data.
 
-{
-  "errors": []
-}
-```
+**1. JSON Responses (application/json)**
+
+Most API calls return a JSON object. **A `200 OK` HTTP status is not a guarantee of success.** The client MUST always inspect the `errors` array within the JSON payload.
+
+-   **Successful Operation:** The `errors` array is present and empty. The response may contain additional data.
+
+    ```json
+    {
+      "address": "0400-0406",
+      "errors": []
+    }
+    ```
+
+-   **Application-Level Error:** The HTTP status may still be `200 OK`, but the `errors` array contains one or more error message strings. This indicates a logical failure (e.g., invalid parameter).
+
+    ```json
+    {
+      "errors": ["Invalid address format"]
+    }
+    ```
+
+**2. Binary Responses (application/octet-stream)**
+
+Some endpoints, like `GET /v1/machine:readmem`, return raw binary data on success. In this case, a `200 OK` status indicates success, and the response body contains the data.
 
 ## Authentication
 
-It is possible to configure a *"Network Password"* in the device. If a non-empty password is set then most network services of the Ultimate require the correct password to be supplied in order to be allowed access.
+If a "Network Password" is configured on the device, all API requests must include a custom HTTP header:
 
-For the REST API the password must be sent using an additional custom HTTP header: `X-Password: <your-password>`. The header must be included in all requests to all API routes. If the header is missing or has an incorrect password then a HTTP status code of `403 Forbidden` will be returned and no further action taken. Supplying the header when no *"Network Password"* has been set is allowed (the header will be ignored).
+`X-Password: <your-password>`
 
-## Error handling
+If the header is missing or the password is incorrect, the server will respond with an `HTTP 403 Forbidden` status, and the request will be denied.
 
-Error handling typically involves showing a green checkmark on success, and displaying an error banner with the error message on a failed response. Errors and success messages may be displayed in each tool in different ways, depending on the tool's scope and functionality. For example, some operations in some tools may worth showing a confirmation when the operation is successful.
+## Success and Error Handling
 
-A successful operation may return additional information. It's up to the specific tool and feature what to do with that information.
+Properly handling API responses requires checking both the HTTP status and the content of the response body.
 
-```
-{
-  "address": "0400-0406",
-  "errors": []
-}
-```
+### Client Handling Logic
 
-An error occurs when the "errors" array is not empty. In such case the contents of the "errors" array should be displayed as error message.
+1.  **Check HTTP Status Code:**
+    -   If the status is **not** `200 OK` (e.g., `403 Forbidden`, `404 Not Found`, `500 Internal Server Error`), treat it as a primary error. The response body for these errors **may still be JSON** containing a specific `errors` array. The client should always attempt to parse the response body as JSON first. If that fails, or if no `errors` are found, it should fall back to displaying an error based on the HTTP status code and text.
 
-HTML error responses (e.g. 404) won't return any json. In such case, it should display the error code and message.
+2.  **Check Content-Type for 200 OK Responses:**
+    -   If `Content-Type` is `application/json`, parse the JSON body.
+        -   If the `errors` array is **empty**, the operation was successful.
+        -   If the `errors` array is **not empty**, the operation failed. Display the contents of the `errors` array to the user.
+    -   If `Content-Type` is `application/octet-stream` or another binary type, the operation was successful.
 
-There's no retry logic: if an operation fails, it shows an error message or banner. The next time an operation succeeds, the error is cleared.
+### Summary of Response Handling
 
-## API Calls reference documents
+| HTTP Status | Content-Type          | `errors` Array        | Result                  | Client Action                                    |
+| :---------- | :-------------------- | :-------------------- | :---------------------- | :----------------------------------------------- |
+| 200 OK      | `application/json`    | Empty (`[]`)          | **Success**             | Process the data in the response.                |
+| 200 OK      | `application/json`    | Not Empty             | **Application Error**   | Display the error messages from the array.       |
+| 200 OK      | `application/octet-stream` | N/A              | **Success (Binary)**    | Process the raw binary data.                     |
+| 4xx / 5xx   | Any                   | N/A                   | **HTTP/Transport Error**| Display an error based on the HTTP status and json response if available. |
+
+There is no automatic retry logic. If an operation fails, the client should display an error. The next time an operation succeeds, the error indication should be cleared.
+
+## API Calls Reference Documents
 
 The memory operations are referenced in the **C64U Memory REST API Reference.md** document.
 
