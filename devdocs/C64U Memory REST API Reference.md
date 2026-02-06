@@ -3,7 +3,7 @@
 **Purpose:** This document serves as the definitive reference for reading and writing C64 memory via the C64U REST API. Use this whenever developing tools that need to access C64 memory.
 **Last Updated:** February 4, 2026
 **REST API Calls Guide:** `C64U REST API Guide.md`
-**Full REST API Reference:** `api_calls.md`
+**Full REST API Reference:** `C64U REST API Reference.md`
 
 ---
 

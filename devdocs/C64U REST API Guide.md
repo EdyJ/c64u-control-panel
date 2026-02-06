@@ -60,4 +60,4 @@ There's no retry logic: if an operation fails, it shows an error message or bann
 
 The memory operations are referenced in the **C64U Memory REST API Reference.md** document.
 
-The full list of REST API calls and specific json results is documented in the **api_calls.md** document.
+The full list of REST API calls and specific json results is documented in the **C64U REST API Reference.md** document.

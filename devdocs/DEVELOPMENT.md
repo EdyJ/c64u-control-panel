@@ -31,7 +31,7 @@ Refer to the **C64U REST API Guide.md** document for full details and reference 
 
 The memory operations are referenced in the **C64U Memory REST API Reference.md** document.
 
-The full list of REST API calls and specific json results is documented in the **api_calls.md** document.
+The full list of REST API calls and specific json results is documented in the **C64U REST API Reference.md** document.
 
 ## Security
 
