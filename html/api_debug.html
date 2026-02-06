@@ -6,6 +6,8 @@
     <title>Ultimate API Debug Tool</title>
     <link rel="stylesheet" href="common.css">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="js/ui-components.js"></script>
+    <script src="js/api-client.js"></script>
     <script src="js/tab-lifecycle.js"></script>
 </head>
 <body>
@@ -96,112 +98,9 @@
     
     <script>
         // ============================================================================
-        // COMMON API METHODS
+        // SHARED LIBRARIES (ui-components.js, api-client.js, tab-lifecycle.js)
         // ============================================================================
-        
-        function readMemory(address, length, callback, errorCallback) {
-            const password = $('#apiPassword').val();
-            showSpinner(true);
-            
-            // Convert address to 4-digit uppercase hex without prefix
-            const hexAddr = address.toString(16).padStart(4, '0').toUpperCase();
-            
-            $.ajax({
-                url: `/v1/machine:readmem?address=${hexAddr}&length=${length}`,
-                method: 'GET',
-                headers: { "X-Password": password },
-                xhrFields: { responseType: 'arraybuffer' },
-                success: function(data) {
-                    showSpinner(false);
-                    hideError();
-                    callback(data);
-                },
-                error: function(jqXHR) {
-                    showSpinner(false);
-                    let msg = jqXHR.statusText;
-                    if (jqXHR.responseText) {
-                        msg = jqXHR.responseText;
-                    } else if (jqXHR.responseType === 'arraybuffer' && jqXHR.response) {
-                        msg = new TextDecoder().decode(jqXHR.response);
-                    }
-                    showError(`Read error: ${msg}`);
-                    if (errorCallback) errorCallback(msg);
-                }
-            });
-        }
-        
-        function writeMemory(address, dataArray, callback, errorCallback) {
-            const password = $('#apiPassword').val();
-            showSpinner(true);
-            
-            // Convert address to 4-digit uppercase hex without prefix
-            const hexAddr = address.toString(16).padStart(4, '0').toUpperCase();
-            
-            if (dataArray.length <= 128) {
-                // PUT method with hex string as query parameter
-                const hexString = dataArray.map(b => b.toString(16).padStart(2, '0').toUpperCase()).join('');
-                $.ajax({
-                    url: `/v1/machine:writemem?address=${hexAddr}&data=${hexString}`,
-                    method: 'PUT',
-                    headers: { "X-Password": password },
-                    success: function() {
-                        showSpinner(false);
-                        hideError();
-                        if (callback) callback();
-                    },
-                    error: function(jqXHR) {
-                        showSpinner(false);
-                        let msg = jqXHR.statusText;
-                        if (jqXHR.responseText) {
-                            msg = jqXHR.responseText;
-                        }
-                        showError(`Write error: ${msg}`);
-                        if (errorCallback) errorCallback(msg);
-                    }
-                });
-            } else {
-                // POST method with binary data
-                const blob = new Blob([new Uint8Array(dataArray)]);
-                $.ajax({
-                    url: `/v1/machine:writemem?address=${hexAddr}`,
-                    method: 'POST',
-                    headers: { "X-Password": password },
-                    data: blob,
-                    processData: false,
-                    contentType: 'application/octet-stream',
-                    success: function() {
-                        showSpinner(false);
-                        hideError();
-                        if (callback) callback();
-                    },
-                    error: function(jqXHR) {
-                        showSpinner(false);
-                        let msg = jqXHR.statusText;
-                        if (jqXHR.responseText) {
-                            msg = jqXHR.responseText;
-                        }
-                        showError(`Write error: ${msg}`);
-                        if (errorCallback) errorCallback(msg);
-                    }
-                });
-            }
-        }
-        
-        // ============================================================================
-        // COMMON UI FUNCTIONS
-        // ============================================================================
-        
-        function showSpinner(visible) {
-            $('#spinner').css('display', visible ? 'inline-block' : 'none');
-        }
-        
-        function showError(message) {
-            $('#errorBox').text(message).show();
-        }
-        
-        function hideError() {
-            $('#errorBox').hide();
-        }
+        // All common API methods and UI functions are now in shared libraries
         
         // ============================================================================
         // TAB MANAGEMENT (using tab-lifecycle.js)
