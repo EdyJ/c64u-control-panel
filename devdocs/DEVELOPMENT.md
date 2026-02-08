@@ -38,11 +38,86 @@ All files are deployed to the C64U device's web server root directory at `/flash
 - Add the tool button to the main control page.
 - Implement the functionality of the tool: either a single page for a simple tool, or a tabbed interface for multi-part tools.
 
+## JavaScript coding pattern
+
+All JavaScript code in this project follows a **simple function-based pattern** for consistency, reliability, and maintainability.
+
+### Core Principles
+
+1. **No classes or constructors** - Use simple functions and object literals
+2. **No `this` keyword** - Avoid instance-based patterns
+3. **Global state when needed** - Use module-level variables for shared state
+4. **Pure functions** - Functions operate on parameters and global state
+5. **Viewer objects** - Use object literals with lifecycle methods for tab integration
+
+### Pattern Examples
+
+**Simple utility functions:**
+```javascript
+function showSpinner(show) {
+    if (show) {
+        $('#spinner').show();
+    } else {
+        $('#spinner').hide();
+    }
+}
+```
+
+**Functions with global state:**
+```javascript
+let currentActiveTab = null;
+let _tabViewerMap = {};
+
+function setupTabs(tabToViewerMap, initialTab) {
+    _tabViewerMap = tabToViewerMap;
+    currentActiveTab = initialTab;
+    // ...
+}
+```
+
+**Viewer objects for tab integration:**
+```javascript
+const MyViewer = {
+    initialize: function() {
+        // Called once on page load
+    },
+    activate: function() {
+        // Called when tab is shown
+    },
+    deactivate: function() {
+        // Called when leaving tab
+    },
+    canDeactivate: function() {
+        // Return false to prevent tab switch
+        return true;
+    },
+    refresh: function() {
+        // Called when refresh button is clicked (optional functionality)
+    }
+};
+```
+
+### Why This Pattern?
+
+✅ **No race conditions** - Simple objects load instantly  
+✅ **Fast parsing** - No complex constructor functions  
+✅ **Maintainable** - Functions can be defined in any order  
+✅ **Testable** - Pure functions are easy to test  
+✅ **Consistent** - All libraries use the same pattern  
+
+### Anti-Patterns to Avoid
+
+❌ **Constructor functions** - `function MyClass() { this.method = function() {} }`  
+❌ **ES6 classes** - `class MyClass { constructor() {} }`  
+❌ **Prototype chains** - `MyClass.prototype.method = function() {}`  
+❌ **Complex closures** - Nested functions with captured state  
+
 ## Common code patterns
 
 - Use the shared JS libraries instead of calling REST API directly.
 - Use the common CSS styles for the html input controls, so they share the same look & feel.
 - Make new JS methods shared when they're required for 2 or more tools.
+- Follow the **JavaScript coding pattern** documented above for all new code.
 
 Refer to the **SHARED_LIBRARIES.md** document for the complete specification of the three shared JavaScript libraries (api-client.js, ui-components.js, tab-lifecycle.js).
 
