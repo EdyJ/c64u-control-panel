@@ -6,66 +6,57 @@
     <title>Ultimate API Debug Tool</title>
     <link rel="stylesheet" href="css/common.css">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="js/ui-components.js"></script>
-    <script src="js/api-client.js"></script>
-    <script src="js/tab-lifecycle.js"></script>
     
-    <!-- SCRIPT LOADER SYSTEM - Checks function existence and reloads if incomplete -->
+    <!-- Sequential Script Loader - Loads external JS files one at a time -->
     <script>
     (function() {
-        var reloadAttempt = parseInt(sessionStorage.getItem('scriptLoadAttempt') || '0');
-        var MAX_RELOAD_ATTEMPTS = 8;
+        'use strict';
         
-        console.log('=== Script Loader Starting ===');
-        if (reloadAttempt > 0) {
-            console.log('Reload attempt: ' + reloadAttempt);
-        }
-        
-        // Key functions that must exist (one per script file)
-        var requiredFunctions = [
-            'readMemory',       // api-client.js
-            'showSpinner',      // ui-components.js
-            'setupTabs',        // tab-lifecycle.js
-            'initializeApp'     // api_debug.html (detects HTML truncation)
+        var requiredScripts = [
+            'js/ui-components.js',
+            'js/api-client.js',
+            'js/tab-lifecycle.js'
         ];
         
-        function checkScriptsLoaded() {
-            var missing = [];
-            
-            requiredFunctions.forEach(function(funcName) {
-                if (typeof window[funcName] !== 'function') {
-                    missing.push(funcName);
-                }
+        var contentItems = [
+            '.viewer-content',
+            '.tab-bar'
+        ];
+        
+        var currentIndex = 0;
+        var syntaxErrorDetected = false;
+        
+        function showSpinner() {
+            var spinner = document.getElementById('spinner');
+            if (spinner) spinner.style.display = 'inline-block';
+        }
+        
+        function hideSpinner() {
+            var spinner = document.getElementById('spinner');
+            if (spinner) spinner.style.display = 'none';
+        }
+        
+        function disableContent() {
+            contentItems.forEach(function(selector) {
+                var element = document.querySelector(selector);
+                if (element) element.classList.add('content-disabled');
             });
-            
-            return missing;
         }
         
-        function handleError(missing) {
-            console.error('Missing functions:', missing);
-            
-            if (reloadAttempt < MAX_RELOAD_ATTEMPTS) {
-                reloadAttempt++;
-                sessionStorage.setItem('scriptLoadAttempt', reloadAttempt.toString());
-                console.log('Reloading page (attempt ' + reloadAttempt + ')...');
-                
-                showMessage('⚠ Device load failed. Reloading...', '#ffc107');
-                
-                setTimeout(function() {
-                    location.reload(true);
-                }, 1000);
-            } else {
-                console.error('Max reload attempts reached');
-                sessionStorage.removeItem('scriptLoadAttempt');  // Reset counter for manual reload
-                showMessage('❌ Failed to fetch the page from the device. Please reload.', '#e74c3c');
-            }
+        function enableContent() {
+            contentItems.forEach(function(selector) {
+                var element = document.querySelector(selector);
+                if (element) element.classList.remove('content-disabled');
+            });
         }
         
-        function showMessage(text, color) {
+        function showError() {
+            hideSpinner();
+            // Keep content disabled
+            
             var span = document.createElement('span');
-            span.id = 'loadStatus';
-            span.textContent = text;
-            span.style.cssText = 'color: ' + color + '; font-weight: bold; font-size: 14px; margin-right: 25px;';
+            span.textContent = '❌ Failed to fetch the page from the device. Please reload.';
+            span.style.cssText = 'color: #e74c3c; font-weight: bold; font-size: 14px; margin-right: 25px;';
             
             var headerActions = document.querySelector('.header-actions');
             if (headerActions) {
@@ -73,28 +64,69 @@
             }
         }
         
-        // Wait for DOM ready
-        $(document).ready(function() {
-            console.log('DOM ready, checking if scripts loaded...');
-            
-            // Wait a bit for scripts to execute
-            setTimeout(function() {
-                var missing = checkScriptsLoaded();
+        function loadNextScript() {
+            // All scripts loaded
+            if (currentIndex >= requiredScripts.length) {
+                hideSpinner();
+                enableContent();
                 
-                if (missing.length > 0) {
-                    console.error('✗ Scripts incomplete, missing functions:', missing);
-                    handleError(missing);
-                } else {
-                    console.log('✓ All scripts loaded successfully');
-                    sessionStorage.removeItem('scriptLoadAttempt');
-                    
-                    if (reloadAttempt > 0) {
-                        console.log('Success after ' + reloadAttempt + ' reload(s)');
-                    }
-                    
+                if (typeof window.initializeApp === 'function') {
                     window.initializeApp();
                 }
-            }, 200);
+                return;
+            }
+            
+            var url = requiredScripts[currentIndex];
+            
+            var script = document.createElement('script');
+            script.src = url;
+            
+            syntaxErrorDetected = false;
+            
+            // Syntax error handler
+            var errorHandler = function(event) {
+                if (event.filename && event.filename.includes(url)) {
+                    console.error('✗ Syntax error in ' + url);
+                    syntaxErrorDetected = true;
+                }
+            };
+            window.addEventListener('error', errorHandler);
+            
+            script.onload = function() {
+                setTimeout(function() {
+                    window.removeEventListener('error', errorHandler);
+                    
+                    if (syntaxErrorDetected) {
+                        console.error('✗ Failed to load ' + url);
+                        showError();
+                    } else {
+                        currentIndex++;
+                        loadNextScript();
+                    }
+                }, 100);
+            };
+            
+            script.onerror = function() {
+                console.error('✗ Network error loading ' + url);
+                window.removeEventListener('error', errorHandler);
+                showError();
+            };
+            
+            document.head.appendChild(script);
+        }
+        
+        $(document).ready(function() {
+            setTimeout(function() {
+                // Check HTML complete
+                if (typeof window.initializeApp !== 'function') {
+                    location.reload(true);
+                    return;
+                }
+                
+                showSpinner();
+                disableContent();
+                loadNextScript();
+            }, 50);
         });
         
     })();

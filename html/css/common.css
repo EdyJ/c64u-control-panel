@@ -290,3 +290,10 @@ button:hover {
         flex-wrap: wrap;
     }
 }
+
+/* Content Disabled State - Used during script loading */
+.content-disabled {
+    filter: grayscale(100%) brightness(0.8);
+    opacity: 0.6;
+    pointer-events: none;
+}

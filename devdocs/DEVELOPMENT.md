@@ -125,6 +125,28 @@ const MyViewer = {
 - Make new JS methods shared when they're required for 2 or more tools.
 - Follow the **JavaScript coding pattern** documented above for all new code.
 
+### The `initializeApp` Function
+
+Every page **must** define a global `initializeApp` function. This function serves as the main entry point for the page's application logic and is a critical component of the page load verification protocol.
+
+```javascript
+// In each HTML file (e.g., api_debug.html)
+
+window.initializeApp = function() {
+    // All page-specific initialization code goes here
+    console.log("=== API Debug Tool Initializing ===");
+    setupViewers();
+    setupTabs(tabToViewerMap, initialTab);
+};
+```
+
+**Key Requirements:**
+
+1.  **Global Scope:** It must be attached to the `window` object to be globally accessible.
+2.  **Mandatory:** Every page must have this function, even if it is empty, to signal to the loader that the HTML has loaded completely.
+3.  **Entry Point:** It should contain all the code that was previously in the `$(document).ready()` block.
+4.  **Called by Loader:** The sequential script loader will automatically call this function after all external scripts have been successfully loaded.
+
 Refer to the **SHARED_LIBRARIES.md** document for the complete specification of the three shared JavaScript libraries (api-client.js, ui-components.js, tab-lifecycle.js).
 
 ## Tab lifecycle
@@ -157,11 +179,11 @@ Refer to the **Shared_Libraries_Roadmap.md** document for the complete developme
 
 ## Page Load Verification
 
-Due to intermittent file truncation issues with the device's embedded web server, a page load verification system is in place. This system ensures that all critical JavaScript files and the HTML page itself have loaded completely before the application initializes.
+Due to intermittent file truncation issues with the device's embedded web server when handling concurrent requests, a **sequential script loader** is used to ensure all critical JavaScript files are loaded reliably.
 
-The rationale is that the web server can silently drop data packets, leading to incomplete files and causing syntax or reference errors that are not reliably catchable by standard error handlers. The implemented solution verifies the existence of key functions from each script after the page loads to confirm their integrity.
+The rationale is that the web server can silently drop data packets when multiple files are requested at once. By loading scripts one at a time, we avoid this issue entirely. The loader also verifies that the main HTML file has loaded completely before proceeding.
 
-For full details on how to implement and maintain this system, refer to the **PAGE_LOAD_CHECKS.md** document.
+For full details on how to implement and maintain this system, refer to the **PAGE_LOAD_VERIFICATION.md** document.
 
 ## Web Server Limitations
 
