@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ultimate Memory Browser Tool</title>
-    <link rel="stylesheet" href="common.css">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/hex-display.css">
     <style>
-        /* Hex Viewer Styles (temporary - to be moved to common.css) */
+        /* Hex Viewer UI Styles (header, sub-header, buttons, navigation) */
         
         .hex-header {
             display: flex;
@@ -103,67 +104,7 @@
             gap: 8px;
         }
         
-        .hex-display {
-            background: var(--card-bg);
-            border-radius: var(--radius-sm);
-            overflow-x: auto;
-            font-family: 'Courier New', monospace;
-            font-size: 16px;
-            line-height: 1.0;
-        }
-        
-        /* Hex Editor: Cursor and Selection */
-        .hex-nibble-cursor {
-            color: var(--bg-primary);
-            background: var(--success);
-        }
-        
-        .hex-nibble-selected {
-            color: var(--text-primary);
-            background: rgba(100, 150, 255, 0.4);
-        }
-        
-        .hex-nibble-selected.hex-nibble-cursor {
-            color: var(--bg-primary);
-            background: var(--primary);
-        }
-        
-        .hex-char-selected {
-            color: var(--text-primary);
-            background: rgba(100, 150, 255, 0.4);
-        }
-        
-        .hex-row {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 2px;
-        }
-        
-        .hex-address {
-            color: var(--primary);
-            min-width: 50px;
-        }
-        
-        .hex-bytes {
-            color: var(--success);
-            letter-spacing: 1px;
-        }
-        
-        .hex-chars {
-            color: var(--text-dim);
-            min-width: 160px;
-        }
-        
-        /* Editable hex bytes mode */
-        .hex-bytes.hex-editable {
-            background: rgba(100, 200, 100, 0.08);
-            cursor: text;
-            outline: 1px solid var(--success);
-            outline-offset: -1px;
-            border-radius: 2px;
-            padding: 2px 4px;
-            margin: -2px -4px;
-        }
+        /* Hex display and editor styles moved to css/hex-display.css */
         
         /* Responsive adjustments */
         @media (max-width: 768px) {
@@ -175,11 +116,6 @@
             .hex-header-left,
             .hex-header-right {
                 justify-content: center;
-            }
-            
-            .hex-display {
-                font-size: 13px;
-                padding: 15px;
             }
         }
     </style>

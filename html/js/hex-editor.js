@@ -336,10 +336,10 @@ function hexEditorHandleKeyDown(e) {
         hexEditorMoveEnd(shift);
     } else if (key === 'PageUp') {
         e.preventDefault();
-        hexEditorMoveCursor(0, -8, shift);
+        hexEditorMovePage(-8, shift);
     } else if (key === 'PageDown') {
         e.preventDefault();
-        hexEditorMoveCursor(0, 8, shift);
+        hexEditorMovePage(8, shift);
     } else if (key === 'Tab') {
         e.preventDefault();
         hexEditorMoveTab(shift);
@@ -385,9 +385,20 @@ function hexEditorMoveCursor(deltaCol, deltaRow, extend) {
     
     if (deltaRow !== 0) {
         // Move by rows
-        byteIndex += deltaRow * hexEditorState.bytesPerRow;
+        const newByteIndex = byteIndex + (deltaRow * hexEditorState.bytesPerRow);
         const maxByteIndex = hexEditorState.currentData.length - 1;
-        byteIndex = Math.max(0, Math.min(byteIndex, maxByteIndex));
+        
+        // Stay in place if moving up from first row or down from last row
+        const currentRow = Math.floor(byteIndex / hexEditorState.bytesPerRow);
+        const newRow = Math.floor(newByteIndex / hexEditorState.bytesPerRow);
+        const totalRows = Math.ceil(hexEditorState.currentData.length / hexEditorState.bytesPerRow);
+        
+        if ((deltaRow < 0 && currentRow === 0) || (deltaRow > 0 && currentRow === totalRows - 1)) {
+            // Stay in place
+            return;
+        }
+        
+        byteIndex = Math.max(0, Math.min(newByteIndex, maxByteIndex));
     }
     
     hexEditorSetCursor(byteIndex, nibble);
@@ -486,13 +497,63 @@ function hexEditorMoveEnter() {
 }
 
 /**
+ * Move by page (PageUp/PageDown)
+ * @param {number} deltaRows - Number of rows to move (+8 or -8)
+ * @param {boolean} extend - Extend selection
+ */
+function hexEditorMovePage(deltaRows, extend) {
+    if (extend && !hexEditorState.selection.active) {
+        hexEditorState.selection.active = true;
+        hexEditorState.selection.anchorNibble = hexEditorGetCursorNibble();
+    }
+    
+    const currentRow = hexEditorState.cursor.row;
+    const currentCol = hexEditorState.cursor.col;
+    const nibble = hexEditorState.cursor.nibble;
+    const totalRows = Math.ceil(hexEditorState.currentData.length / hexEditorState.bytesPerRow);
+    
+    // Calculate target row
+    let targetRow = currentRow + deltaRows;
+    
+    // Clamp to first or last row
+    if (targetRow < 0) {
+        targetRow = 0;
+    } else if (targetRow >= totalRows) {
+        targetRow = totalRows - 1;
+    }
+    
+    // Calculate target byte index (same column and nibble)
+    let targetByteIndex = targetRow * hexEditorState.bytesPerRow + currentCol;
+    
+    // Clamp to valid range
+    const maxByteIndex = hexEditorState.currentData.length - 1;
+    targetByteIndex = Math.min(targetByteIndex, maxByteIndex);
+    
+    hexEditorSetCursor(targetByteIndex, nibble);
+    
+    if (extend) {
+        hexEditorState.selection.endNibble = hexEditorGetCursorNibble();
+        hexEditorRenderSelection();
+    } else {
+        hexEditorClearSelection();
+    }
+}
+
+/**
  * Handle Escape key (clear selection or exit edit mode)
  */
 function hexEditorHandleEscape() {
     if (hexEditorState.selection.active) {
+        // First Escape: clear selection
         hexEditorClearSelection();
+    } else {
+        // Second Escape (or first if no selection): exit edit mode (Cancel)
+        hexEditorExitEditMode(false);  // false = cancel (don't save)
+        
+        // Trigger UI update (hide Save/Cancel, show Edit button)
+        $('#hex-save-btn, #hex-cancel-btn').hide();
+        $('#hex-edit-btn').show();
     }
-    // Note: Exiting edit mode is handled by the UI (Cancel button)
 }
 
 /**
@@ -796,6 +857,51 @@ function hexEditorSetupMouse() {
             // Move cursor
             hexEditorSetCursor(byteIndex, 0);
             hexEditorClearSelection();
+        }
+    });
+    
+    // Click on space between bytes (move to next nibble to the right)
+    hexEditorState.container.on('click', '.hex-bytes', function(e) {
+        if (!hexEditorState.editMode) return;
+        
+        // Only handle clicks on the element itself (spaces), not on child spans (nibbles)
+        if (e.target !== this) return;
+        
+        // Get click position and find nearest nibble
+        const $bytes = $(this);
+        const $nibbles = $bytes.find('.hex-nibble');
+        
+        if ($nibbles.length === 0) return;
+        
+        const clickX = e.pageX;
+        let closestNibble = null;
+        let minDistance = Infinity;
+        
+        $nibbles.each(function() {
+            const $nibble = $(this);
+            const offset = $nibble.offset();
+            const width = $nibble.outerWidth();
+            const centerX = offset.left + width / 2;
+            const distance = Math.abs(clickX - centerX);
+            
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestNibble = $nibble;
+            }
+        });
+        
+        if (closestNibble) {
+            const nibbleIndex = parseInt(closestNibble.data('nibble'));
+            // Move to the nibble to the right (high nibble of next byte)
+            const nextNibbleIndex = nibbleIndex + 1;
+            const maxNibbleIndex = hexEditorState.currentData.length * 2 - 1;
+            
+            if (nextNibbleIndex <= maxNibbleIndex) {
+                const byteIndex = Math.floor(nextNibbleIndex / 2);
+                const nibble = nextNibbleIndex % 2;
+                hexEditorSetCursor(byteIndex, nibble);
+                hexEditorClearSelection();
+            }
         }
     });
 }

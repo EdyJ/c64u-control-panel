@@ -1,0 +1,82 @@
+/**
+ * Hex Display & Editor Styles
+ * Styles specific to displaying and editing hexadecimal memory data
+ */
+
+/* Hex Editor Display Container */
+.hex-display {
+    background: var(--card-bg);
+    border-radius: var(--radius-sm);
+    overflow-x: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    line-height: 1.0;
+}
+
+/* Hex Editor Row Layout */
+.hex-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 2px;
+}
+
+/* Hex Address Column */
+.hex-address {
+    color: var(--primary);
+    min-width: 50px;
+}
+
+/* Hex Bytes Column */
+.hex-bytes {
+    color: var(--success);
+    letter-spacing: 1px;
+}
+
+/* Hex Characters Column */
+.hex-chars {
+    color: var(--text-dim);
+    min-width: 160px;
+}
+
+/* Editable Hex Bytes Mode */
+.hex-bytes.hex-editable {
+    background: rgba(100, 200, 100, 0.08);
+    cursor: text;
+    outline: 1px solid var(--success);
+    outline-offset: -1px;
+    border-radius: 2px;
+    padding: 2px 4px;
+    margin: -2px -4px;
+}
+
+/* Cursor Styling (C64-style reverse video) */
+.hex-nibble-cursor {
+    color: #0a0c0e;  /* Dark text for cursor */
+    background: #39ff14;  /* Bright green background */
+}
+
+/* Selection Styling */
+.hex-nibble-selected {
+    color: var(--text-primary);
+    background: rgba(100, 150, 255, 0.4);
+}
+
+/* Cursor within Selection */
+.hex-nibble-selected.hex-nibble-cursor {
+    color: #0a0c0e;  /* Dark text */
+    background: #7fdbff;  /* Bright cyan for cursor in selection */
+}
+
+/* Character Selection */
+.hex-char-selected {
+    color: var(--text-primary);
+    background: rgba(100, 150, 255, 0.4);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .hex-display {
+        font-size: 13px;
+        padding: 15px;
+    }
+}

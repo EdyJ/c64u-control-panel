@@ -11,7 +11,6 @@ All files are deployed to the C64U device's web server root directory at `/flash
 ```
 /flash/html/
 ├── index.html              # Landing page with links to all tools
-├── common.css              # Shared styles and CSS variables
 ├── memory_tool.html        # Memory browser and editor tool
 ├── api_debug.html          # API testing and debugging tool
 ├── drives_tool.html        # Drive management tool
@@ -19,14 +18,21 @@ All files are deployed to the C64U device's web server root directory at `/flash
 ├── config_tool.html        # Configuration viewer and editor
 ├── disk_flip.html          # Disk flip utility
 ├── (other tool files)
+├── css/
+│   ├── common.css          # Shared styles and CSS variables
+│   ├── hex-display.css     # Hex editor display and editing styles
+│   └── (other CSS files)
 └── js/
     ├── api-client.js       # API wrapper functions (memory, config, drives, etc.)
     ├── ui-components.js    # UI utility functions (spinner, errors, formatting)
-    └── tab-lifecycle.js    # Tab management and lifecycle implementation
+    ├── tab-lifecycle.js    # Tab management and lifecycle implementation
+    ├── hex-editor.js       # Hex editor/viewer library
+    └── (other JS libraries)
 ```
 
 **Key Points:**
-- HTML and CSS files are in the root folder
+- HTML files are in the root folder
+- CSS files are in the `/css/` subdirectory
 - JavaScript libraries are in the `/js/` subdirectory
 - This allows simple URLs like `http://device-ip/memory_tool.html`
 - All tools link back to the root folder (`/`) via the header back link
@@ -145,36 +151,6 @@ CDN URL: https://code.jquery.com/jquery-3.7.1.min.js
 
 ## Testing procedure
 
-A dedicated tool, **api_debug.html**, is available for testing the shared libraries:
-
-- `api-client.js` - Common API patterns (memory operations, error handling)
-- `ui-components.js` - Reusable UI elements (spinner, errors, formatting)
-- `common.css` - Reusable CSS styles
-- `tab-lifecycle.js` - Tab management and lifecycle
-
-### How to Test
-
-1. **Access the tool**: Navigate to `http://device-ip/api_debug.html`
-2. **Enter API password** in the header
-3. **Test each viewer tab**:
-   - **Debug Viewer 1**: Tests basic memory reading (256 bytes from $0400)
-   - **Debug Viewer 2**: Tests parameterized reading (any address, 16 bytes)
-   - **Debug Viewer 3**: Tests memory writing (single byte and bulk writes)
-
-### What to Verify
-
-**Shared Libraries:**
-- ✅ Spinner appears during API calls
-- ✅ Error messages display properly (with robust JSON error parsing)
-- ✅ Tab switching works with lifecycle management
-- ✅ Unsaved changes protection (try switching tabs after writing in Viewer 3)
-- ✅ Console-style display for data output
-- ✅ Responsive design on mobile devices
-
-**API Operations:**
-- ✅ Memory reads return correct data
-- ✅ Memory writes use PUT for ≤128 bytes, POST for >128 bytes
-- ✅ Error handling for invalid addresses, wrong password, etc.
-- ✅ Address formatting (accepts various formats, outputs 4-digit hex)
+Testing should be performed on the actual C64 Ultimate device to ensure proper integration with the REST API and verify behavior in the target environment. Upload the modified or new files to the device via FTP, maintaining the proper file structure with HTML files in the root directory, CSS files in the `/css/` subdirectory, and JavaScript libraries in the `/js/` subdirectory. Access the tools through the device's web interface and verify that all functionality works as expected, including shared library integration, API operations, UI responsiveness, and error handling.
 
 Refer to the **Shared_Libraries_Roadmap.md** document for the complete development workflow, testing strategy, and expansion guidelines for the shared libraries.
