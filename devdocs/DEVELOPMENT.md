@@ -154,3 +154,19 @@ CDN URL: https://code.jquery.com/jquery-3.7.1.min.js
 Testing should be performed on the actual C64 Ultimate device to ensure proper integration with the REST API and verify behavior in the target environment. Upload the modified or new files to the device via FTP, maintaining the proper file structure with HTML files in the root directory, CSS files in the `/css/` subdirectory, and JavaScript libraries in the `/js/` subdirectory. Access the tools through the device's web interface and verify that all functionality works as expected, including shared library integration, API operations, UI responsiveness, and error handling.
 
 Refer to the **Shared_Libraries_Roadmap.md** document for the complete development workflow, testing strategy, and expansion guidelines for the shared libraries.
+
+## Page Load Verification
+
+Due to intermittent file truncation issues with the device's embedded web server, a page load verification system is in place. This system ensures that all critical JavaScript files and the HTML page itself have loaded completely before the application initializes.
+
+The rationale is that the web server can silently drop data packets, leading to incomplete files and causing syntax or reference errors that are not reliably catchable by standard error handlers. The implemented solution verifies the existence of key functions from each script after the page loads to confirm their integrity.
+
+For full details on how to implement and maintain this system, refer to the **PAGE_LOAD_CHECKS.md** document.
+
+## Web Server Limitations
+
+### Query Strings Not Supported
+
+The C64 Ultimate's embedded web server does **not** support query strings in URLs. Appending a `?` followed by any parameters to a file request (e.g., `http://device-ip/file.html?param=value`) will result in a **404 Not Found** error.
+
+This is a critical limitation to be aware of when developing features. Do not use query strings for cache busting, passing parameters, or any other purpose. All state must be managed client-side or through the REST API.

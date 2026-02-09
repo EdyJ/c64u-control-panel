@@ -4,11 +4,101 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ultimate API Debug Tool</title>
-    <link rel="stylesheet" href="common.css">
+    <link rel="stylesheet" href="css/common.css">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="js/ui-components.js"></script>
     <script src="js/api-client.js"></script>
     <script src="js/tab-lifecycle.js"></script>
+    
+    <!-- SCRIPT LOADER SYSTEM - Checks function existence and reloads if incomplete -->
+    <script>
+    (function() {
+        var reloadAttempt = parseInt(sessionStorage.getItem('scriptLoadAttempt') || '0');
+        var MAX_RELOAD_ATTEMPTS = 8;
+        
+        console.log('=== Script Loader Starting ===');
+        if (reloadAttempt > 0) {
+            console.log('Reload attempt: ' + reloadAttempt);
+        }
+        
+        // Key functions that must exist (one per script file)
+        var requiredFunctions = [
+            'readMemory',       // api-client.js
+            'showSpinner',      // ui-components.js
+            'setupTabs',        // tab-lifecycle.js
+            'initializeApp'     // api_debug.html (detects HTML truncation)
+        ];
+        
+        function checkScriptsLoaded() {
+            var missing = [];
+            
+            requiredFunctions.forEach(function(funcName) {
+                if (typeof window[funcName] !== 'function') {
+                    missing.push(funcName);
+                }
+            });
+            
+            return missing;
+        }
+        
+        function handleError(missing) {
+            console.error('Missing functions:', missing);
+            
+            if (reloadAttempt < MAX_RELOAD_ATTEMPTS) {
+                reloadAttempt++;
+                sessionStorage.setItem('scriptLoadAttempt', reloadAttempt.toString());
+                console.log('Reloading page (attempt ' + reloadAttempt + ')...');
+                
+                showMessage('⚠ Device load failed. Reloading...', '#ffc107');
+                
+                setTimeout(function() {
+                    location.reload(true);
+                }, 1000);
+            } else {
+                console.error('Max reload attempts reached');
+                sessionStorage.removeItem('scriptLoadAttempt');  // Reset counter for manual reload
+                showMessage('❌ Failed to fetch the page from the device. Please reload.', '#e74c3c');
+            }
+        }
+        
+        function showMessage(text, color) {
+            var span = document.createElement('span');
+            span.id = 'loadStatus';
+            span.textContent = text;
+            span.style.cssText = 'color: ' + color + '; font-weight: bold; font-size: 14px; margin-right: 25px;';
+            
+            var headerActions = document.querySelector('.header-actions');
+            if (headerActions) {
+                headerActions.insertBefore(span, headerActions.firstChild);
+            }
+        }
+        
+        // Wait for DOM ready
+        $(document).ready(function() {
+            console.log('DOM ready, checking if scripts loaded...');
+            
+            // Wait a bit for scripts to execute
+            setTimeout(function() {
+                var missing = checkScriptsLoaded();
+                
+                if (missing.length > 0) {
+                    console.error('✗ Scripts incomplete, missing functions:', missing);
+                    handleError(missing);
+                } else {
+                    console.log('✓ All scripts loaded successfully');
+                    sessionStorage.removeItem('scriptLoadAttempt');
+                    
+                    if (reloadAttempt > 0) {
+                        console.log('Success after ' + reloadAttempt + ' reload(s)');
+                    }
+                    
+                    window.initializeApp();
+                }
+            }, 200);
+        });
+        
+    })();
+    </script>
 </head>
 <body>
     <div class="container">
@@ -322,7 +412,8 @@
         // INITIALIZATION
         // ============================================================================
         
-        $(document).ready(function() {
+        // Wrap initialization in a function called by the script loader
+        window.initializeApp = function() {
             console.log('=== API Debug Tool Initializing ===');
             
             // Initialize all viewers
@@ -353,7 +444,7 @@
             });
             
             console.log('=== Initialization Complete ===');
-        });
+        };
     </script>
 </body>
 </html>
