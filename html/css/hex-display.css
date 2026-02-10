@@ -13,6 +13,14 @@
     line-height: 1.0;
 }
 
+/* Disable Text Selection in Edit Mode */
+.hex-display.no-select {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
 /* Hex Editor Row Layout */
 .hex-row {
     display: flex;
@@ -30,6 +38,14 @@
 .hex-bytes {
     color: var(--success);
     letter-spacing: 1px;
+}
+
+/* Hex Bytes in Edit Mode (darker background) */
+.hex-bytes.edit-mode {
+    background: #1a1a1a;
+    border-radius: 2px;
+    padding: 2px 4px;
+    margin: -2px -4px;
 }
 
 /* Hex Characters Column */
@@ -51,8 +67,14 @@
 
 /* Cursor Styling (C64-style reverse video) */
 .hex-nibble-cursor {
-    color: #0a0c0e;  /* Dark text for cursor */
-    background: #39ff14;  /* Bright green background */
+    color: var(--success);  /* Green text (cursor off) */
+    background: transparent;  /* No background (cursor off) */
+}
+
+/* Cursor Visible State (for blinking) */
+.hex-nibble-cursor.hex-cursor-visible {
+    color: #0a0c0e;  /* Dark text (cursor on) */
+    background: #39ff14;  /* Bright green background (cursor on) */
 }
 
 /* Selection Styling */

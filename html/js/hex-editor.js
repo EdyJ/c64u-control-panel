@@ -42,7 +42,10 @@ let hexEditorState = {
         active: false,
         anchorNibble: 0,     // Start of selection (absolute nibble index)
         endNibble: 0         // End of selection (absolute nibble index)
-    }
+    },
+    
+    // Cursor blink (C64-style)
+    cursorBlinkInterval: null
 };
 
 // ============================================================================
@@ -101,8 +104,9 @@ function hexEditorRender() {
     
     hexEditorState.container.html(html.join(''));
     
-    // Apply cursor if in edit mode
+    // Apply edit mode styling if active
     if (hexEditorState.editMode) {
+        $('.hex-bytes').addClass('edit-mode');
         hexEditorApplyCursor();
     }
     
@@ -182,17 +186,49 @@ function hexEditorRenderChar(byteIndex) {
 // ============================================================================
 
 /**
+ * Start cursor blinking (C64-style: 400ms on, 400ms off)
+ */
+function hexEditorStartCursorBlink() {
+    hexEditorStopCursorBlink();
+    
+    // Make cursor visible initially
+    $('.hex-nibble-cursor').addClass('hex-cursor-visible');
+    
+    // Blink every 400ms
+    hexEditorState.cursorBlinkInterval = setInterval(function() {
+        $('.hex-nibble-cursor').toggleClass('hex-cursor-visible');
+    }, 400);
+}
+
+/**
+ * Stop cursor blinking
+ */
+function hexEditorStopCursorBlink() {
+    if (hexEditorState.cursorBlinkInterval) {
+        clearInterval(hexEditorState.cursorBlinkInterval);
+        hexEditorState.cursorBlinkInterval = null;
+    }
+    // Remove visible class
+    $('.hex-nibble-cursor').removeClass('hex-cursor-visible');
+}
+
+/**
  * Apply cursor visual (reverse video on current nibble)
  */
 function hexEditorApplyCursor() {
     // Clear all cursors
-    $('.hex-nibble').removeClass('hex-nibble-cursor');
+    $('.hex-nibble').removeClass('hex-nibble-cursor hex-cursor-visible');
     
     // Calculate absolute nibble index
     const nibbleIndex = hexEditorState.cursor.byteIndex * 2 + hexEditorState.cursor.nibble;
     
     // Apply cursor class
     $(`.hex-nibble[data-nibble="${nibbleIndex}"]`).addClass('hex-nibble-cursor');
+    
+    // Restart blink if in edit mode
+    if (hexEditorState.editMode) {
+        hexEditorStartCursorBlink();
+    }
 }
 
 /**
@@ -242,7 +278,26 @@ function hexEditorGetCursorNibble() {
  */
 function hexEditorEnterEditMode() {
     hexEditorState.editMode = true;
+    
+    // Reset cursor to first byte
+    hexEditorSetCursor(0, 0);
+    
+    // Visual feedback
+    $('.hex-bytes').addClass('edit-mode');
+    $('.hex-display').addClass('no-select');
+    
+    // Disable header and refresh button
+    $('.hex-header').addClass('input-disabled');
+    $('#refreshBtn').addClass('input-disabled');
+    
+    // Clear any text selection
+    if (window.getSelection) {
+        window.getSelection().removeAllRanges();
+    }
+    
+    // Start cursor blinking
     hexEditorApplyCursor();
+    hexEditorStartCursorBlink();
     
     // Bind keyboard handler
     $(document).on('keydown.hexeditor', hexEditorHandleKeyDown);
@@ -265,6 +320,17 @@ function hexEditorExitEditMode(save) {
     
     hexEditorState.editMode = false;
     hexEditorState.selection.active = false;
+    
+    // Stop cursor blinking
+    hexEditorStopCursorBlink();
+    
+    // Remove visual feedback
+    $('.hex-bytes').removeClass('edit-mode');
+    $('.hex-display').removeClass('no-select');
+    
+    // Re-enable header and refresh button
+    $('.hex-header').removeClass('input-disabled');
+    $('#refreshBtn').removeClass('input-disabled');
     
     // Unbind keyboard handler
     $(document).off('keydown.hexeditor');
