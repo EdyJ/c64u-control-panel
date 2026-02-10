@@ -28,6 +28,7 @@ let hexEditorState = {
     
     // Edit mode
     editMode: false,
+    modalOpen: false,        // Modal dialog open (disables input handlers)
     
     // Cursor (nibble-level)
     cursor: {
@@ -364,6 +365,7 @@ function hexEditorIsModified() {
  */
 function hexEditorHandleKeyDown(e) {
     if (!hexEditorState.editMode) return;
+    if (hexEditorState.modalOpen) return;  // Disable input when modal is open
     
     const key = e.key;
     const shift = e.shiftKey;
@@ -844,22 +846,62 @@ function hexEditorPaste() {
             return;
         }
         
-        // Paste at cursor position
-        let byteIndex = hexEditorState.cursor.byteIndex;
-        for (let i = 0; i < bytes.length && byteIndex < hexEditorState.currentData.length; i++, byteIndex++) {
+        let byteIndex, maxBytes;
+        let keepSelection = false;
+        let keepCursor = false;
+        let savedCursorByte = hexEditorState.cursor.byteIndex;
+        let savedCursorNibble = hexEditorState.cursor.nibble;
+        
+        // If there's a selection, paste within the selection
+        if (hexEditorState.selection.active) {
+            // Convert nibble indices to byte indices
+            const startByteIndex = Math.floor(hexEditorState.selection.anchorNibble / 2);
+            const endByteIndex = Math.floor(hexEditorState.selection.endNibble / 2);
+            const selectionSize = Math.abs(endByteIndex - startByteIndex) + 1;
+            
+            // Start at beginning of selection
+            byteIndex = Math.min(startByteIndex, endByteIndex);
+            
+            // Limit paste to selection size
+            maxBytes = Math.min(bytes.length, selectionSize);
+            
+            // Keep selection active and cursor at original position after paste
+            keepSelection = true;
+            keepCursor = true;
+            
+            console.log('HexEditor: Pasting within selection (', maxBytes, 'bytes)');
+        } else {
+            // No selection, paste at cursor position
+            byteIndex = hexEditorState.cursor.byteIndex;
+            maxBytes = bytes.length;
+        }
+        
+        // Paste bytes
+        for (let i = 0; i < maxBytes && byteIndex < hexEditorState.currentData.length; i++, byteIndex++) {
             hexEditorState.currentData[byteIndex] = bytes[i];
         }
         
-        // Move cursor to end of pasted data
-        hexEditorSetCursor(Math.min(byteIndex, hexEditorState.currentData.length - 1), 0);
+        // Move cursor (or restore original position)
+        if (keepCursor) {
+            // Restore original cursor position
+            hexEditorSetCursor(savedCursorByte, savedCursorNibble);
+        } else {
+            // Move cursor to end of pasted data
+            hexEditorSetCursor(Math.min(byteIndex, hexEditorState.currentData.length - 1), 0);
+        }
         
-        // Clear selection
-        hexEditorClearSelection();
+        // Clear selection only if not pasting within selection
+        if (!keepSelection) {
+            hexEditorClearSelection();
+        } else {
+            // Re-render selection
+            hexEditorRenderSelection();
+        }
         
         // Re-render
         hexEditorRender();
         
-        console.log('HexEditor: Pasted', bytes.length, 'bytes');
+        console.log('HexEditor: Pasted', maxBytes, 'bytes');
     }
     
     // Try modern clipboard API first
@@ -870,11 +912,112 @@ function hexEditorPaste() {
             console.error('HexEditor: Failed to paste:', err);
         });
     } else {
-        // Fallback: use execCommand (requires user to paste manually)
-        console.warn('HexEditor: Clipboard API not available. Paste manually using browser paste.');
-        // Note: execCommand('paste') is not reliable, so we can't auto-paste
-        // User will need to use browser's native paste (Ctrl+V triggers this function anyway)
+        // Fallback: Show manual paste dialog
+        hexEditorShowPasteDialog(processPaste);
     }
+}
+
+/**
+ * Show manual paste dialog (fallback for non-secure contexts)
+ * @param {Function} callback - Function to call with pasted text
+ */
+function hexEditorShowPasteDialog(callback) {
+    // Set modal flag to disable hex editor input
+    hexEditorState.modalOpen = true;
+    
+    // Create overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    
+    // Create dialog
+    const dialog = document.createElement('div');
+    dialog.className = 'modal-dialog';
+    
+    // Instructions (no title, simplified)
+    const instructions = document.createElement('div');
+    instructions.className = 'modal-instructions';
+    instructions.textContent = 'Paste your hex data below';
+    
+    // Input textarea
+    const textarea = document.createElement('textarea');
+    textarea.className = 'modal-textarea';
+    textarea.placeholder = '41 42 43 or 414243';
+    
+    // Buttons container
+    const buttons = document.createElement('div');
+    buttons.className = 'modal-buttons';
+    
+    // Cancel button
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Cancel';
+    
+    // Paste button
+    const pasteBtn = document.createElement('button');
+    pasteBtn.textContent = 'Paste';
+    
+    // Assemble dialog
+    buttons.appendChild(cancelBtn);
+    buttons.appendChild(pasteBtn);
+    dialog.appendChild(instructions);
+    dialog.appendChild(textarea);
+    dialog.appendChild(buttons);
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+    
+    // Focus textarea
+    setTimeout(() => textarea.focus(), 100);
+    
+    // Helper to close dialog
+    function closeDialog() {
+        document.body.removeChild(overlay);
+        hexEditorState.modalOpen = false;  // Re-enable hex editor input
+    }
+    
+    // Event handlers
+    pasteBtn.onclick = function() {
+        const text = textarea.value.trim();
+        if (text) {
+            callback(text);
+        }
+        closeDialog();
+    };
+    
+    cancelBtn.onclick = function() {
+        closeDialog();
+    };
+    
+    // Overlay keydown - only handle ESC and Ctrl+V prevention
+    overlay.onkeydown = function(e) {
+        // ESC to cancel
+        if (e.key === 'Escape') {
+            closeDialog();
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+        }
+        
+        // Prevent Ctrl+V from opening another dialog
+        if (e.key === 'v' && e.ctrlKey) {
+            e.stopPropagation();
+            return;
+        }
+    };
+    
+    // Textarea keydown - Enter to paste
+    textarea.onkeydown = function(e) {
+        // Enter (without Ctrl) to paste
+        if (e.key === 'Enter' && !e.ctrlKey && !e.shiftKey) {
+            pasteBtn.click();
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+        }
+        
+        // Prevent Ctrl+V from opening another dialog
+        if (e.key === 'v' && e.ctrlKey) {
+            e.stopPropagation();
+        }
+    };
 }
 
 /**
@@ -925,6 +1068,7 @@ function hexEditorSetupMouse() {
     // Mouse down on nibble (start potential drag)
     hexEditorState.container.on('mousedown', '.hex-nibble', function(e) {
         if (!hexEditorState.editMode) return;
+        if (hexEditorState.modalOpen) return;  // Disable input when modal is open
         
         const nibbleIndex = parseInt($(this).data('nibble'));
         const byteIndex = Math.floor(nibbleIndex / 2);
@@ -957,6 +1101,7 @@ function hexEditorSetupMouse() {
     // Mouse move during drag
     hexEditorState.container.on('mousemove', '.hex-nibble', function(e) {
         if (!hexEditorState.editMode || !isDragging) return;
+        if (hexEditorState.modalOpen) return;  // Disable input when modal is open
         
         const nibbleIndex = parseInt($(this).data('nibble'));
         const byteIndex = Math.floor(nibbleIndex / 2);
@@ -985,6 +1130,7 @@ function hexEditorSetupMouse() {
     // Click on character (position at corresponding byte)
     hexEditorState.container.on('click', '.hex-char', function(e) {
         if (!hexEditorState.editMode) return;
+        if (hexEditorState.modalOpen) return;  // Disable input when modal is open
         
         const byteIndex = parseInt($(this).data('byte'));
         
@@ -1026,6 +1172,7 @@ function hexEditorSetupMouse() {
     // Mouse down on space (start drag from nearest nibble)
     hexEditorState.container.on('mousedown', '.hex-bytes', function(e) {
         if (!hexEditorState.editMode) return;
+        if (hexEditorState.modalOpen) return;  // Disable input when modal is open
         if (e.target !== this) return; // Only handle clicks on spaces
         
         const leftNibble = findNibbleToLeft(e.pageX, $(this));
@@ -1063,6 +1210,7 @@ function hexEditorSetupMouse() {
     // Mouse move on space during drag
     hexEditorState.container.on('mousemove', '.hex-bytes', function(e) {
         if (!hexEditorState.editMode || !isDragging) return;
+        if (hexEditorState.modalOpen) return;  // Disable input when modal is open
         if (e.target !== this) return; // Only handle movement over spaces
         
         const leftNibble = findNibbleToLeft(e.pageX, $(this));
