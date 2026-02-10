@@ -807,19 +807,37 @@ function hexEditorCopy() {
     // Format as space-separated uppercase hex
     const hexString = bytes.map(b => b.toString(16).toUpperCase().padStart(2, '0')).join(' ');
     
-    // Copy to clipboard
-    navigator.clipboard.writeText(hexString).then(() => {
-        console.log('HexEditor: Copied to clipboard:', hexString);
-    }).catch(err => {
-        console.error('HexEditor: Failed to copy:', err);
-    });
+    // Copy to clipboard (with fallback for non-secure contexts)
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(hexString).then(() => {
+            console.log('HexEditor: Copied to clipboard:', hexString);
+        }).catch(err => {
+            console.error('HexEditor: Failed to copy:', err);
+        });
+    } else {
+        // Fallback for non-HTTPS contexts
+        const textarea = document.createElement('textarea');
+        textarea.value = hexString;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+            document.execCommand('copy');
+            console.log('HexEditor: Copied to clipboard (fallback):', hexString);
+        } catch (err) {
+            console.error('HexEditor: Failed to copy (fallback):', err);
+        }
+        document.body.removeChild(textarea);
+    }
 }
 
 /**
  * Paste hex data from clipboard
  */
 function hexEditorPaste() {
-    navigator.clipboard.readText().then(text => {
+    // Helper function to process pasted text
+    function processPaste(text) {
         const bytes = hexEditorParseHexString(text);
         if (bytes.length === 0) {
             console.warn('HexEditor: No valid hex data in clipboard');
@@ -842,9 +860,21 @@ function hexEditorPaste() {
         hexEditorRender();
         
         console.log('HexEditor: Pasted', bytes.length, 'bytes');
-    }).catch(err => {
-        console.error('HexEditor: Failed to paste:', err);
-    });
+    }
+    
+    // Try modern clipboard API first
+    if (navigator.clipboard && navigator.clipboard.readText) {
+        navigator.clipboard.readText().then(text => {
+            processPaste(text);
+        }).catch(err => {
+            console.error('HexEditor: Failed to paste:', err);
+        });
+    } else {
+        // Fallback: use execCommand (requires user to paste manually)
+        console.warn('HexEditor: Clipboard API not available. Paste manually using browser paste.');
+        // Note: execCommand('paste') is not reliable, so we can't auto-paste
+        // User will need to use browser's native paste (Ctrl+V triggers this function anyway)
+    }
 }
 
 /**
@@ -888,23 +918,67 @@ function hexEditorParseHexString(text) {
  * Set up mouse click handlers
  */
 function hexEditorSetupMouse() {
-    // Click on nibble
-    hexEditorState.container.on('click', '.hex-nibble', function(e) {
+    // Track mouse drag state
+    let isDragging = false;
+    let dragStartNibble = null;
+    
+    // Mouse down on nibble (start potential drag)
+    hexEditorState.container.on('mousedown', '.hex-nibble', function(e) {
         if (!hexEditorState.editMode) return;
         
         const nibbleIndex = parseInt($(this).data('nibble'));
         const byteIndex = Math.floor(nibbleIndex / 2);
         const nibble = nibbleIndex % 2;
         
-        if (e.shiftKey && hexEditorState.selection.active) {
-            // Extend selection
+        if (e.shiftKey) {
+            // Shift-click: extend or start selection
+            if (!hexEditorState.selection.active) {
+                // Start selection from current cursor position
+                hexEditorState.selection.active = true;
+                hexEditorState.selection.anchorNibble = hexEditorGetCursorNibble();
+            }
+            // Extend selection to clicked position
             hexEditorState.selection.endNibble = nibbleIndex;
             hexEditorSetCursor(byteIndex, nibble);
             hexEditorRenderSelection();
         } else {
-            // Move cursor
-            hexEditorSetCursor(byteIndex, nibble);
+            // Regular click: prepare for potential drag
+            isDragging = true;
+            dragStartNibble = nibbleIndex;
+            
+            // Clear existing selection and move cursor
             hexEditorClearSelection();
+            hexEditorSetCursor(byteIndex, nibble);
+        }
+        
+        e.preventDefault(); // Prevent text selection
+    });
+    
+    // Mouse move during drag
+    hexEditorState.container.on('mousemove', '.hex-nibble', function(e) {
+        if (!hexEditorState.editMode || !isDragging) return;
+        
+        const nibbleIndex = parseInt($(this).data('nibble'));
+        const byteIndex = Math.floor(nibbleIndex / 2);
+        const nibble = nibbleIndex % 2;
+        
+        // Start selection if not already active
+        if (!hexEditorState.selection.active) {
+            hexEditorState.selection.active = true;
+            hexEditorState.selection.anchorNibble = dragStartNibble;
+        }
+        
+        // Extend selection to current position
+        hexEditorState.selection.endNibble = nibbleIndex;
+        hexEditorSetCursor(byteIndex, nibble);
+        hexEditorRenderSelection();
+    });
+    
+    // Mouse up anywhere (end drag)
+    $(document).on('mouseup.hexeditor', function(e) {
+        if (isDragging) {
+            isDragging = false;
+            dragStartNibble = null;
         }
     });
     
@@ -926,48 +1000,90 @@ function hexEditorSetupMouse() {
         }
     });
     
-    // Click on space between bytes (move to next nibble to the right)
-    hexEditorState.container.on('click', '.hex-bytes', function(e) {
-        if (!hexEditorState.editMode) return;
+    // Helper function to find nibble to the left of click position
+    function findNibbleToLeft(clickX, $container) {
+        const $nibbles = $container.find('.hex-nibble');
+        if ($nibbles.length === 0) return null;
         
-        // Only handle clicks on the element itself (spaces), not on child spans (nibbles)
-        if (e.target !== this) return;
-        
-        // Get click position and find nearest nibble
-        const $bytes = $(this);
-        const $nibbles = $bytes.find('.hex-nibble');
-        
-        if ($nibbles.length === 0) return;
-        
-        const clickX = e.pageX;
-        let closestNibble = null;
-        let minDistance = Infinity;
+        let leftmostNibble = null;
+        let maxLeftX = -Infinity;
         
         $nibbles.each(function() {
             const $nibble = $(this);
             const offset = $nibble.offset();
-            const width = $nibble.outerWidth();
-            const centerX = offset.left + width / 2;
-            const distance = Math.abs(clickX - centerX);
+            const rightX = offset.left + $nibble.outerWidth();
             
-            if (distance < minDistance) {
-                minDistance = distance;
-                closestNibble = $nibble;
+            // Find the rightmost nibble that ends before or at the click position
+            if (rightX <= clickX && rightX > maxLeftX) {
+                maxLeftX = rightX;
+                leftmostNibble = $nibble;
             }
         });
         
-        if (closestNibble) {
-            const nibbleIndex = parseInt(closestNibble.data('nibble'));
-            // Move to the nibble to the right (high nibble of next byte)
-            const nextNibbleIndex = nibbleIndex + 1;
-            const maxNibbleIndex = hexEditorState.currentData.length * 2 - 1;
+        return leftmostNibble;
+    }
+    
+    // Mouse down on space (start drag from nearest nibble)
+    hexEditorState.container.on('mousedown', '.hex-bytes', function(e) {
+        if (!hexEditorState.editMode) return;
+        if (e.target !== this) return; // Only handle clicks on spaces
+        
+        const leftNibble = findNibbleToLeft(e.pageX, $(this));
+        if (!leftNibble) return;
+        
+        const nibbleIndex = parseInt(leftNibble.data('nibble'));
+        const nextNibbleIndex = nibbleIndex + 1;
+        const maxNibbleIndex = hexEditorState.currentData.length * 2 - 1;
+        
+        if (nextNibbleIndex <= maxNibbleIndex) {
+            const byteIndex = Math.floor(nextNibbleIndex / 2);
+            const nibble = nextNibbleIndex % 2;
             
-            if (nextNibbleIndex <= maxNibbleIndex) {
-                const byteIndex = Math.floor(nextNibbleIndex / 2);
-                const nibble = nextNibbleIndex % 2;
+            if (e.shiftKey) {
+                // Shift-click: extend or start selection
+                if (!hexEditorState.selection.active) {
+                    hexEditorState.selection.active = true;
+                    hexEditorState.selection.anchorNibble = hexEditorGetCursorNibble();
+                }
+                hexEditorState.selection.endNibble = nextNibbleIndex;
                 hexEditorSetCursor(byteIndex, nibble);
+                hexEditorRenderSelection();
+            } else {
+                // Regular click: prepare for drag
+                isDragging = true;
+                dragStartNibble = nextNibbleIndex;
                 hexEditorClearSelection();
+                hexEditorSetCursor(byteIndex, nibble);
             }
+            
+            e.preventDefault();
+        }
+    });
+    
+    // Mouse move on space during drag
+    hexEditorState.container.on('mousemove', '.hex-bytes', function(e) {
+        if (!hexEditorState.editMode || !isDragging) return;
+        if (e.target !== this) return; // Only handle movement over spaces
+        
+        const leftNibble = findNibbleToLeft(e.pageX, $(this));
+        if (!leftNibble) return;
+        
+        const nibbleIndex = parseInt(leftNibble.data('nibble'));
+        const nextNibbleIndex = nibbleIndex + 1;
+        const maxNibbleIndex = hexEditorState.currentData.length * 2 - 1;
+        
+        if (nextNibbleIndex <= maxNibbleIndex) {
+            const byteIndex = Math.floor(nextNibbleIndex / 2);
+            const nibble = nextNibbleIndex % 2;
+            
+            if (!hexEditorState.selection.active) {
+                hexEditorState.selection.active = true;
+                hexEditorState.selection.anchorNibble = dragStartNibble;
+            }
+            
+            hexEditorState.selection.endNibble = nextNibbleIndex;
+            hexEditorSetCursor(byteIndex, nibble);
+            hexEditorRenderSelection();
         }
     });
 }
