@@ -416,15 +416,24 @@
                 // Set up mouse handlers
                 hexEditorSetupMouse();
                 
+                // Set up browsing mode keyboard navigation
+                hexEditorSetupBrowsingKeys();
+                
+                // Set navigation callback for keyboard navigation
+                hexEditorSetNavigationCallback(() => this.updateAddressDisplay());
+                
+                // Set up navigation controls
+                this.setupNavigation();
+                
                 // Set up Edit/Save/Cancel buttons
-                $('#hex-edit-btn').click(() => {
+                const enterEditMode = () => {
                     hexEditorEnterEditMode();
                     $('#hex-edit-btn').hide();
                     $('#hex-save-btn, #hex-cancel-btn').show();
                     this.updateAddressDisplay();
-                });
+                };
                 
-                $('#hex-save-btn').click(() => {
+                const saveChanges = () => {
                     hexEditorExitEditMode(true); // save = true
                     $('#hex-save-btn, #hex-cancel-btn').hide();
                     $('#hex-edit-btn').show();
@@ -435,9 +444,23 @@
                         console.log('Would write', changes.length, 'changed bytes to memory');
                     }
                     this.updateAddressDisplay();
-                });
+                };
+                
+                $('#hex-edit-btn').click(enterEditMode);
+                $('#hex-save-btn').click(saveChanges);
+                
+                // Set keyboard shortcut callbacks
+                hexEditorSetEnterEditModeCallback(enterEditMode);
+                hexEditorSetSaveCallback(saveChanges);
                 
                 $('#hex-cancel-btn').click(() => {
+                    // Check if there are unsaved changes
+                    if (hexEditorIsModified()) {
+                        if (!confirm('Discard all changes?')) {
+                            return; // User canceled, stay in edit mode
+                        }
+                    }
+                    
                     hexEditorExitEditMode(false); // save = false (cancel)
                     $('#hex-save-btn, #hex-cancel-btn').hide();
                     $('#hex-edit-btn').show();
@@ -448,10 +471,94 @@
                 this.updateAddressDisplay();
             },
             
+            setupNavigation: function() {
+                // Address input - navigate on Enter
+                $('#hex-address').on('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        let addressStr = $('#hex-address').val().trim();
+                        
+                        // Remove invalid hex characters (keep only 0-9, A-F, a-f)
+                        addressStr = addressStr.replace(/[^0-9A-Fa-f]/g, '');
+                        
+                        // Parse address
+                        let address = parseInt(addressStr, 16);
+                        
+                        // Validate address
+                        if (isNaN(address) || address < 0 || address > 0xFFFF) {
+                            alert('Invalid address. Please enter a hex value between 0000 and FFFF.');
+                            return;
+                        }
+                        
+                        // Validate and fix address using centralized function
+                        address = hexEditorValidateAddress(address);
+                        
+                        // Normalize to uppercase 4-digit hex
+                        const normalizedStr = address.toString(16).toUpperCase().padStart(4, '0');
+                        
+                        // Update input field with normalized address
+                        $('#hex-address').val(normalizedStr);
+                        
+                        // Select all text for next entry
+                        setTimeout(() => {
+                            $('#hex-address')[0].select();
+                        }, 0);
+                        
+                        hexEditorNavigateToAddress(address, () => {
+                            this.updateAddressDisplay();
+                        });
+                    }
+                });
+                
+                // Page size selector - reload data with new page size
+                $('#hex-pagesize').on('change', () => {
+                    const pageSize = parseInt($('#hex-pagesize').val());
+                    hexEditorSetPageSize(pageSize);
+                    
+                    // Validate current address with new page size
+                    const currentAddress = hexEditorValidateAddress(hexEditorState.startAddress, pageSize);
+                    
+                    // Reload data at (possibly adjusted) address with new page size
+                    hexEditorNavigateToAddress(currentAddress, () => {
+                        this.updateAddressDisplay();
+                    });
+                });
+                
+                // Navigation buttons
+                $('#hex-nav-up').click(() => {
+                    hexEditorNavigateUp(() => this.updateAddressDisplay());
+                });
+                
+                $('#hex-nav-down').click(() => {
+                    hexEditorNavigateDown(() => this.updateAddressDisplay());
+                });
+                
+                $('#hex-nav-left').click(() => {
+                    hexEditorNavigateLeft(() => this.updateAddressDisplay());
+                });
+                
+                $('#hex-nav-right').click(() => {
+                    hexEditorNavigateRight(() => this.updateAddressDisplay());
+                });
+                
+                $('#hex-prev-page').click(() => {
+                    hexEditorNavigatePrevPage(() => this.updateAddressDisplay());
+                });
+                
+                $('#hex-next-page').click(() => {
+                    hexEditorNavigateNextPage(() => this.updateAddressDisplay());
+                });
+            },
+            
             updateAddressDisplay: function() {
                 const range = hexEditorGetAddressRange();
                 const startHex = range.startAddress.toString(16).toUpperCase().padStart(4, '0');
                 const endHex = range.endAddress.toString(16).toUpperCase().padStart(4, '0');
+                
+                // Update address input to match current address
+                $('#hex-address').val(startHex);
+                
+                // Update address display
                 $('#hex-current-address').text(
                     `$${startHex} (${range.startAddress}) - $${endHex} (${range.endAddress})`
                 );

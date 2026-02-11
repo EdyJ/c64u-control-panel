@@ -21,6 +21,7 @@ let hexEditorState = {
     container: null,
     startAddress: 0x0000,
     bytesPerRow: 16,
+    pageSize: 256,           // Page size for navigation
     
     // Data
     originalData: null,      // Uint8Array - original data
@@ -621,6 +622,13 @@ function hexEditorHandleEscape() {
         hexEditorClearSelection();
     } else {
         // Second Escape (or first if no selection): exit edit mode (Cancel)
+        // Check if there are unsaved changes
+        if (hexEditorIsModified()) {
+            if (!confirm('Discard all changes?')) {
+                return; // User canceled, stay in edit mode
+            }
+        }
+        
         hexEditorExitEditMode(false);  // false = cancel (don't save)
         
         // Trigger UI update (hide Save/Cancel, show Edit button)
@@ -1282,3 +1290,233 @@ function hexEditorGetAddressRange() {
     };
 }
 
+// ============================================================================
+// NAVIGATION (BROWSING MODE)
+// ============================================================================
+
+/**
+ * Validate and fix address to be within memory boundaries
+ * @param {number} address - Address to validate
+ * @param {number} pageSize - Page size (optional, uses current if not provided)
+ * @returns {number} Valid address within boundaries
+ */
+function hexEditorValidateAddress(address, pageSize) {
+    if (pageSize === undefined) {
+        pageSize = hexEditorState.pageSize;
+    }
+    
+    // Clamp address to valid range
+    if (address < 0) {
+        address = 0;
+    }
+    
+    // Check if address + pageSize exceeds memory limit
+    if (address + pageSize > 0x10000) {
+        address = 0x10000 - pageSize;
+    }
+    
+    // Ensure address doesn't exceed 0xFFFF
+    if (address > 0xFFFF) {
+        address = 0xFFFF;
+    }
+    
+    return address;
+}
+
+/**
+ * Set page size for navigation
+ * @param {number} pageSize - Page size in bytes
+ */
+function hexEditorSetPageSize(pageSize) {
+    hexEditorState.pageSize = pageSize;
+    console.log('HexEditor: Page size set to', pageSize);
+}
+
+/**
+ * Navigate to a specific address
+ * @param {number} address - Target address
+ * @param {Function} callback - Callback function(data) to receive new data
+ */
+function hexEditorNavigateToAddress(address, callback) {
+    if (hexEditorState.editMode) {
+        console.warn('HexEditor: Cannot navigate while in edit mode');
+        return;
+    }
+    
+    // Validate and fix address to be within boundaries
+    address = hexEditorValidateAddress(address);
+    
+    console.log('HexEditor: Navigate to address', address.toString(16).toUpperCase());
+    
+    // For now, generate random data at the new address
+    // TODO: Replace with actual API call when ready
+    const newData = new Uint8Array(hexEditorState.pageSize);
+    for (let i = 0; i < hexEditorState.pageSize; i++) {
+        newData[i] = Math.floor(Math.random() * 256);
+    }
+    
+    hexEditorSetData(newData, address);
+    
+    if (callback) {
+        callback(newData);
+    }
+}
+
+/**
+ * Navigate up (previous row, -16 bytes)
+ * @param {Function} callback - Callback function(data) to receive new data
+ */
+function hexEditorNavigateUp(callback) {
+    const newAddress = hexEditorState.startAddress - hexEditorState.bytesPerRow;
+    hexEditorNavigateToAddress(newAddress, callback);
+}
+
+/**
+ * Navigate down (next row, +16 bytes)
+ * @param {Function} callback - Callback function(data) to receive new data
+ */
+function hexEditorNavigateDown(callback) {
+    const newAddress = hexEditorState.startAddress + hexEditorState.bytesPerRow;
+    hexEditorNavigateToAddress(newAddress, callback);
+}
+
+/**
+ * Navigate left (previous byte, -1 byte)
+ * @param {Function} callback - Callback function(data) to receive new data
+ */
+function hexEditorNavigateLeft(callback) {
+    const newAddress = hexEditorState.startAddress - 1;
+    hexEditorNavigateToAddress(newAddress, callback);
+}
+
+/**
+ * Navigate right (next byte, +1 byte)
+ * @param {Function} callback - Callback function(data) to receive new data
+ */
+function hexEditorNavigateRight(callback) {
+    const newAddress = hexEditorState.startAddress + 1;
+    hexEditorNavigateToAddress(newAddress, callback);
+}
+
+/**
+ * Navigate to previous page (-pageSize bytes)
+ * @param {Function} callback - Callback function(data) to receive new data
+ */
+function hexEditorNavigatePrevPage(callback) {
+    const newAddress = hexEditorState.startAddress - hexEditorState.pageSize;
+    hexEditorNavigateToAddress(newAddress, callback);
+}
+
+/**
+ * Navigate to next page (+pageSize bytes)
+ * @param {Function} callback - Callback function(data) to receive new data
+ */
+function hexEditorNavigateNextPage(callback) {
+    const newAddress = hexEditorState.startAddress + hexEditorState.pageSize;
+    hexEditorNavigateToAddress(newAddress, callback);
+}
+
+/**
+ * Setup keyboard handler for browsing mode navigation
+ */
+/**
+ * Set callback for navigation updates
+ * @param {Function} callback - Callback to call after navigation
+ */
+let hexEditorNavigationCallback = null;
+
+function hexEditorSetNavigationCallback(callback) {
+    hexEditorNavigationCallback = callback;
+}
+
+/**
+ * Callback for entering edit mode (set from UI)
+ */
+let hexEditorEnterEditModeCallback = null;
+
+function hexEditorSetEnterEditModeCallback(callback) {
+    hexEditorEnterEditModeCallback = callback;
+}
+
+/**
+ * Callback for saving changes (set from UI)
+ */
+let hexEditorSaveCallback = null;
+
+function hexEditorSetSaveCallback(callback) {
+    hexEditorSaveCallback = callback;
+}
+
+/**
+ * Setup keyboard handler for browsing mode navigation
+ */
+function hexEditorSetupBrowsingKeys() {
+    $(document).on('keydown.hexeditor-browse', function(e) {
+        // Don't handle if focus is in an input field (except for Ctrl+S)
+        const inInputField = $(e.target).is('input, textarea, select');
+        
+        // Ctrl+S to save in edit mode (works everywhere, except when modal is open)
+        if (e.key === 's' && e.ctrlKey && hexEditorState.editMode && !hexEditorState.modalOpen) {
+            e.preventDefault();
+            if (hexEditorSaveCallback) {
+                hexEditorSaveCallback();
+            }
+            return;
+        }
+        
+        // Only handle remaining keys in browsing mode (not edit mode)
+        if (hexEditorState.editMode) return;
+        
+        // Don't handle navigation keys if focus is in an input field
+        if (inInputField) return;
+        
+        // E key to enter edit mode
+        if (e.key === 'e' || e.key === 'E') {
+            e.preventDefault();
+            if (hexEditorEnterEditModeCallback) {
+                hexEditorEnterEditModeCallback();
+            }
+            return;
+        }
+        
+        // A key to focus address input
+        if (e.key === 'a' || e.key === 'A') {
+            e.preventDefault();
+            const addressInput = $('#hex-address')[0];
+            if (addressInput) {
+                addressInput.focus();
+                addressInput.select();
+            }
+            return;
+        }
+        
+        switch(e.key) {
+            case 'ArrowUp':
+                e.preventDefault();
+                hexEditorNavigateUp(hexEditorNavigationCallback);
+                break;
+            case 'ArrowDown':
+                e.preventDefault();
+                hexEditorNavigateDown(hexEditorNavigationCallback);
+                break;
+            case 'ArrowLeft':
+                e.preventDefault();
+                hexEditorNavigateLeft(hexEditorNavigationCallback);
+                break;
+            case 'ArrowRight':
+                e.preventDefault();
+                hexEditorNavigateRight(hexEditorNavigationCallback);
+                break;
+            case 'PageUp':
+                e.preventDefault();
+                hexEditorNavigatePrevPage(hexEditorNavigationCallback);
+                break;
+            case 'PageDown':
+                e.preventDefault();
+                hexEditorNavigateNextPage(hexEditorNavigationCallback);
+                break;
+        }
+    });
+    
+    console.log('HexEditor: Browsing mode keyboard navigation enabled');
+}
