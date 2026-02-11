@@ -162,7 +162,12 @@ function hexEditorRenderByte(byteIndex) {
     const highNibbleIndex = byteIndex * 2;
     const lowNibbleIndex = byteIndex * 2 + 1;
     
-    return `<span class="hex-byte" data-byte="${byteIndex}">` +
+    // Check if byte is modified (different from original)
+    const isModified = hexEditorState.editMode && 
+                       hexEditorState.currentData[byteIndex] !== hexEditorState.originalData[byteIndex];
+    const modifiedClass = isModified ? ' hex-byte-modified' : '';
+    
+    return `<span class="hex-byte${modifiedClass}" data-byte="${byteIndex}">` +
            `<span class="hex-nibble" data-nibble="${highNibbleIndex}">${highNibble}</span>` +
            `<span class="hex-nibble" data-nibble="${lowNibbleIndex}">${lowNibble}</span>` +
            `</span>`;
