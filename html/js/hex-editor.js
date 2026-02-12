@@ -1280,6 +1280,51 @@ function hexEditorGetChanges() {
 }
 
 /**
+ * Save changes to C64 memory
+ * Writes all bytes from first modified to last modified in a single operation
+ * @param {function} callback - Success callback
+ * @param {function} errorCallback - Error callback
+ */
+function hexEditorSaveChanges(callback, errorCallback) {
+    const changes = hexEditorGetChanges();
+    
+    if (changes.length === 0) {
+        console.log('HexEditor: No changes to save');
+        if (callback) callback();
+        return;
+    }
+    
+    // Find first and last modified byte
+    const firstChange = changes[0];
+    const lastChange = changes[changes.length - 1];
+    
+    const startAddress = firstChange.address;
+    const endAddress = lastChange.address;
+    const length = endAddress - startAddress + 1;
+    
+    // Extract all bytes from first to last modified (including unmodified in between)
+    const dataToWrite = [];
+    for (let i = 0; i < length; i++) {
+        const byteIndex = (startAddress - hexEditorState.startAddress) + i;
+        dataToWrite.push(hexEditorState.currentData[byteIndex]);
+    }
+    
+    console.log(`HexEditor: Writing ${length} bytes from $${startAddress.toString(16).toUpperCase()} to $${endAddress.toString(16).toUpperCase()}`);
+    
+    // Write to C64 memory
+    writeMemory(startAddress, dataToWrite,
+        function() {
+            console.log('HexEditor: Save successful');
+            if (callback) callback();
+        },
+        function(errorMsg) {
+            console.error('HexEditor: Save failed:', errorMsg);
+            if (errorCallback) errorCallback(errorMsg);
+        }
+    );
+}
+
+/**
  * Get address range information
  * @returns {object} {startAddress, endAddress, length}
  */
@@ -1358,18 +1403,22 @@ function hexEditorNavigateToAddress(address, callback) {
     
     console.log('HexEditor: Navigate to address', address.toString(16).toUpperCase());
     
-    // For now, generate random data at the new address
-    // TODO: Replace with actual API call when ready
-    const newData = new Uint8Array(hexEditorState.pageSize);
-    for (let i = 0; i < hexEditorState.pageSize; i++) {
-        newData[i] = Math.floor(Math.random() * 256);
-    }
-    
-    hexEditorSetData(newData, address);
-    
-    if (callback) {
-        callback(newData);
-    }
+    // Read memory from C64 via API
+    readMemory(address, hexEditorState.pageSize, 
+        function(arrayBuffer) {
+            // Success: convert ArrayBuffer to Uint8Array
+            const newData = new Uint8Array(arrayBuffer);
+            hexEditorSetData(newData, address);
+            
+            if (callback) {
+                callback(newData);
+            }
+        },
+        function(errorMsg) {
+            // Error: already displayed by readMemory via showError
+            console.error('HexEditor: Failed to read memory:', errorMsg);
+        }
+    );
 }
 
 /**
@@ -1483,6 +1532,10 @@ function hexEditorSetupBrowsingKeys() {
         // E key to enter edit mode
         if (e.key === 'e' || e.key === 'E') {
             e.preventDefault();
+            // Don't enter edit mode if API is busy
+            if (isApiBusy()) {
+                return;
+            }
             if (hexEditorEnterEditModeCallback) {
                 hexEditorEnterEditModeCallback();
             }
@@ -1496,6 +1549,15 @@ function hexEditorSetupBrowsingKeys() {
             if (addressInput) {
                 addressInput.focus();
                 addressInput.select();
+            }
+            return;
+        }
+        
+        // Don't navigate if API is busy
+        if (isApiBusy()) {
+            // Consume the key event but don't navigate
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown', 'Home', 'End', 'r', 'R'].includes(e.key)) {
+                e.preventDefault();
             }
             return;
         }
@@ -1524,6 +1586,24 @@ function hexEditorSetupBrowsingKeys() {
             case 'PageDown':
                 e.preventDefault();
                 hexEditorNavigateNextPage(hexEditorNavigationCallback);
+                break;
+            case 'Home':
+                e.preventDefault();
+                // Navigate to start of memory ($0000)
+                hexEditorNavigateToAddress(0x0000, hexEditorNavigationCallback);
+                break;
+            case 'End':
+                e.preventDefault();
+                // Navigate to end of memory (last valid page)
+                const lastAddress = 0x10000 - hexEditorState.pageSize;
+                hexEditorNavigateToAddress(lastAddress, hexEditorNavigationCallback);
+                break;
+            case 'r':
+            case 'R':
+                e.preventDefault();
+                // Refresh current memory
+                const currentAddress = hexEditorState.startAddress;
+                hexEditorNavigateToAddress(currentAddress, hexEditorNavigationCallback);
                 break;
         }
     });

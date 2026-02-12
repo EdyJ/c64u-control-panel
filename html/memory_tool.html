@@ -412,14 +412,11 @@
             initialize: function() {
                 console.log('HexViewer: initialize()');
                 
-                // Generate placeholder data (256 bytes)
-                const placeholderData = new Uint8Array(256);
-                for (let i = 0; i < 256; i++) {
-                    placeholderData[i] = Math.floor(Math.random() * 256);
-                }
-                
-                // Initialize hex editor
-                hexEditorInit($('#hex-display'), 0x0400, placeholderData);
+                // Initialize hex editor with empty data first
+                const initialAddress = parseInt($('#hex-address').val(), 16) || 0x0400;
+                const initialPageSize = parseInt($('#hex-pagesize').val()) || 256;
+                const emptyData = new Uint8Array(initialPageSize);
+                hexEditorInit($('#hex-display'), initialAddress, emptyData);
                 
                 // Set up mouse handlers
                 hexEditorSetupMouse();
@@ -433,8 +430,17 @@
                 // Set up navigation controls
                 this.setupNavigation();
                 
+                // Load initial memory from C64
+                hexEditorNavigateToAddress(initialAddress, () => {
+                    this.updateAddressDisplay();
+                });
+                
                 // Set up Edit/Save/Cancel buttons
                 const enterEditMode = () => {
+                    // Don't enter edit mode if API is busy
+                    if (isApiBusy()) {
+                        return;
+                    }
                     hexEditorEnterEditMode();
                     $('#hex-edit-btn').hide();
                     $('#hex-save-btn, #hex-cancel-btn').show();
@@ -442,16 +448,25 @@
                 };
                 
                 const saveChanges = () => {
-                    hexEditorExitEditMode(true); // save = true
-                    $('#hex-save-btn, #hex-cancel-btn').hide();
-                    $('#hex-edit-btn').show();
-                    
-                    // TODO: Get changes and write to memory via API
-                    const changes = hexEditorGetChanges();
-                    if (changes.length > 0) {
-                        console.log('Would write', changes.length, 'changed bytes to memory');
-                    }
-                    this.updateAddressDisplay();
+                    // Save changes using hex-editor.js function
+                    hexEditorSaveChanges(
+                        () => {
+                            // Success: exit edit mode and reload memory
+                            hexEditorExitEditMode(true);
+                            $('#hex-save-btn, #hex-cancel-btn').hide();
+                            $('#hex-edit-btn').show();
+                            
+                            // Reload memory to show saved state
+                            const currentAddress = hexEditorState.startAddress;
+                            hexEditorNavigateToAddress(currentAddress, () => {
+                                this.updateAddressDisplay();
+                            });
+                        },
+                        (errorMsg) => {
+                            // Error: stay in edit mode (error already displayed)
+                            console.error('Save failed:', errorMsg);
+                        }
+                    );
                 };
                 
                 $('#hex-edit-btn').click(enterEditMode);
@@ -484,6 +499,12 @@
                 $('#hex-address').on('keydown', (e) => {
                     if (e.key === 'Enter') {
                         e.preventDefault();
+                        
+                        // Don't navigate if API is busy
+                        if (isApiBusy()) {
+                            return;
+                        }
+                        
                         let addressStr = $('#hex-address').val().trim();
                         
                         // Remove invalid hex characters (keep only 0-9, A-F, a-f)
@@ -507,10 +528,8 @@
                         // Update input field with normalized address
                         $('#hex-address').val(normalizedStr);
                         
-                        // Select all text for next entry
-                        setTimeout(() => {
-                            $('#hex-address')[0].select();
-                        }, 0);
+                        // Remove focus to allow immediate navigation
+                        $('#hex-address').blur();
                         
                         hexEditorNavigateToAddress(address, () => {
                             this.updateAddressDisplay();
@@ -543,26 +562,32 @@
                 
                 // Navigation buttons
                 $('#hex-nav-up').click(() => {
+                    if (isApiBusy()) return;
                     hexEditorNavigateUp(() => this.updateAddressDisplay());
                 });
                 
                 $('#hex-nav-down').click(() => {
+                    if (isApiBusy()) return;
                     hexEditorNavigateDown(() => this.updateAddressDisplay());
                 });
                 
                 $('#hex-nav-left').click(() => {
+                    if (isApiBusy()) return;
                     hexEditorNavigateLeft(() => this.updateAddressDisplay());
                 });
                 
                 $('#hex-nav-right').click(() => {
+                    if (isApiBusy()) return;
                     hexEditorNavigateRight(() => this.updateAddressDisplay());
                 });
                 
                 $('#hex-prev-page').click(() => {
+                    if (isApiBusy()) return;
                     hexEditorNavigatePrevPage(() => this.updateAddressDisplay());
                 });
                 
                 $('#hex-next-page').click(() => {
+                    if (isApiBusy()) return;
                     hexEditorNavigateNextPage(() => this.updateAddressDisplay());
                 });
             },
@@ -600,7 +625,15 @@
             
             refresh: function() {
                 console.log('HexViewer: refresh()');
-                // To be implemented: reload data from memory
+                // Don't refresh if API is busy
+                if (isApiBusy()) {
+                    return;
+                }
+                // Reload current memory address
+                const currentAddress = hexEditorState.startAddress;
+                hexEditorNavigateToAddress(currentAddress, () => {
+                    this.updateAddressDisplay();
+                });
             }
         };
         

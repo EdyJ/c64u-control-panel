@@ -55,6 +55,28 @@ function parseApiError(jqXHR) {
 }
 
 // ============================================================================
+// BUSY STATE MANAGEMENT
+// ============================================================================
+
+let apiClientBusy = false;
+
+/**
+ * Check if an API operation is currently in progress
+ * @returns {boolean} True if busy, false otherwise
+ */
+function isApiBusy() {
+    return apiClientBusy;
+}
+
+/**
+ * Set the busy state (internal use only)
+ * @param {boolean} busy - True to set busy, false to clear
+ */
+function setApiBusy(busy) {
+    apiClientBusy = busy;
+}
+
+// ============================================================================
 // MEMORY OPERATIONS
 // ============================================================================
 
@@ -69,6 +91,7 @@ function readMemory(address, length, callback, errorCallback) {
     const password = $('#apiPassword').val();
     const hexAddr = address.toString(16).padStart(4, '0').toUpperCase();
 
+    setApiBusy(true);
     showSpinner(true);
 
     $.ajax({
@@ -77,12 +100,14 @@ function readMemory(address, length, callback, errorCallback) {
         headers: { "X-Password": password },
         xhrFields: { responseType: 'arraybuffer' },
         success: function(data) {
+            setApiBusy(false);
             showSpinner(false);
             hideError();
             // On success, the raw ArrayBuffer is passed to the callback.
             if (callback) callback(data);
         },
         error: function(jqXHR) {
+            setApiBusy(false);
             showSpinner(false);
             // Use the reusable parser for all errors.
             const errorMsg = parseApiError(jqXHR);
@@ -105,6 +130,7 @@ function writeMemory(address, dataArray, callback, errorCallback) {
     const hexAddr = address.toString(16).padStart(4, '0').toUpperCase();
 
     const handleSuccess = (response) => {
+        setApiBusy(false);
         showSpinner(false);
         hideError();
         // A successful write can return an empty body or a JSON object.
@@ -119,12 +145,14 @@ function writeMemory(address, dataArray, callback, errorCallback) {
     };
 
     const handleError = (jqXHR) => {
+        setApiBusy(false);
         showSpinner(false);
         const errorMsg = parseApiError(jqXHR);
         showError(`Write error: ${errorMsg}`);
         if (errorCallback) errorCallback(errorMsg);
     };
 
+    setApiBusy(true);
     showSpinner(true);
 
     if (dataArray.length <= 128) {
