@@ -22,6 +22,7 @@ let hexEditorState = {
     startAddress: 0x0000,
     bytesPerRow: 16,
     pageSize: 256,           // Page size for navigation
+    charsetPuaBase: 0xEF00,  // PUA base for C64 character display
     
     // Data
     originalData: null,      // Uint8Array - original data
@@ -181,11 +182,11 @@ function hexEditorRenderByte(byteIndex) {
  */
 function hexEditorRenderChar(byteIndex) {
     const byte = hexEditorState.currentData[byteIndex];
-    // Display printable ASCII, otherwise show '.'
-    const char = (byte >= 32 && byte <= 126) ? String.fromCharCode(byte) : '.';
-    const escaped = char.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    // Use C64 font with PUA base + byte value
+    const codepoint = hexEditorState.charsetPuaBase + byte;
+    const char = String.fromCodePoint(codepoint);
     
-    return `<span class="hex-char" data-byte="${byteIndex}">${escaped}</span>`;
+    return `<span class="hex-char" data-byte="${byteIndex}">${char}</span>`;
 }
 
 // ============================================================================
@@ -1330,6 +1331,15 @@ function hexEditorValidateAddress(address, pageSize) {
 function hexEditorSetPageSize(pageSize) {
     hexEditorState.pageSize = pageSize;
     console.log('HexEditor: Page size set to', pageSize);
+}
+
+/**
+ * Set charset PUA base for character display
+ * @param {number} puaBase - PUA base value (e.g., 0xEF00)
+ */
+function hexEditorSetCharsetPuaBase(puaBase) {
+    hexEditorState.charsetPuaBase = puaBase;
+    console.log('HexEditor: Charset PUA base set to', puaBase.toString(16).toUpperCase());
 }
 
 /**

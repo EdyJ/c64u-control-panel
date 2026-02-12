@@ -293,6 +293,14 @@
                         <option value="512">512</option>
                         <option value="1024">1024</option>
                     </select>
+                    
+                    <label>Charset:</label>
+                    <select id="hex-charset" class="hex-select">
+                        <option value="0xEE00">Screen: upper/graphics</option>
+                        <option value="0xEF00" selected>Screen: lower/upper</option>
+                        <option value="0xE000">PETSCII: upper/graphics</option>
+                        <option value="0xE100">PETSCII: lower/upper</option>
+                    </select>
                 </div>
                 
                 <div class="hex-header-right">
@@ -522,6 +530,15 @@
                     hexEditorNavigateToAddress(currentAddress, () => {
                         this.updateAddressDisplay();
                     });
+                });
+                
+                // Charset selector - update character display
+                $('#hex-charset').on('change', () => {
+                    const puaBase = parseInt($('#hex-charset').val());
+                    hexEditorSetCharsetPuaBase(puaBase);
+                    
+                    // Re-render display to show new charset
+                    hexEditorRender();
                 });
                 
                 // Navigation buttons

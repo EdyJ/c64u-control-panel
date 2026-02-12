@@ -3,6 +3,17 @@
  * Styles specific to displaying and editing hexadecimal memory data
  */
 
+/* C64 Font for Character Display */
+@font-face {
+    font-family: 'C64ProMono';
+    src: url('../fonts/C64ProMono.woff2') format('woff2'),
+         url('../fonts/C64ProMono.woff') format('woff'),
+         url('../fonts/C64ProMono.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
 /* Hex Editor Display Container */
 .hex-display {
     background: var(--card-bg);
@@ -48,10 +59,14 @@
     margin: -2px -4px;
 }
 
-/* Hex Characters Column */
+/* Hex Characters Column (C64 Font) */
 .hex-chars {
     color: var(--text-dim);
     min-width: 160px;
+    font-family: 'C64ProMono', 'Courier New', monospace;
+    font-size: 16px;
+    line-height: 1.0;
+    letter-spacing: 0;
 }
 
 /* Editable Hex Bytes Mode */
