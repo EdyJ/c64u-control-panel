@@ -62,11 +62,10 @@
 /* Hex Characters Column (C64 Font) */
 .hex-chars {
     color: var(--text-dim);
-    min-width: 160px;
     font-family: 'C64ProMono', 'Courier New', monospace;
     font-size: 16px;
     line-height: 1.0;
-    letter-spacing: 0;
+    letter-spacing: 2px;
 }
 
 /* Editable Hex Bytes Mode */
@@ -80,18 +79,10 @@
     margin: -2px -4px;
 }
 
-/* ============================================================================
-   MODIFICATION HIGHLIGHTING
-   ============================================================================ */
-
 /* Modified Byte (white text) */
 .hex-byte-modified .hex-nibble {
     color: #ffffff;  /* White text for modified bytes */
 }
-
-/* ============================================================================
-   CURSOR STYLING (C64-style reverse video)
-   ============================================================================ */
 
 /* Cursor on Unmodified Byte (green) */
 .hex-nibble-cursor {
@@ -115,10 +106,6 @@
     background: #ffffff;  /* White background (cursor on) */
 }
 
-/* ============================================================================
-   SELECTION STYLING
-   ============================================================================ */
-
 /* Selection on Unmodified Byte (green text) */
 .hex-nibble-selected {
     color: var(--success);  /* Green text for unmodified selected bytes */
@@ -130,10 +117,6 @@
     color: #ffffff;  /* White text */
     background: rgba(100, 150, 255, 0.4);  /* Blue selection background */
 }
-
-/* ============================================================================
-   CURSOR + SELECTION COMBINATIONS
-   ============================================================================ */
 
 /* Cursor within Selection (unmodified byte) */
 .hex-nibble-selected.hex-nibble-cursor {
@@ -147,23 +130,8 @@
     background: #ffffff;  /* White background for cursor in modified selection */
 }
 
-/* ============================================================================
-   CHARACTER COLUMN
-   ============================================================================ */
-
 /* Character Selection */
 .hex-char-selected {
     color: var(--text-primary);
     background: rgba(100, 150, 255, 0.4);
-}
-
-/* ============================================================================
-   RESPONSIVE ADJUSTMENTS
-   ============================================================================ */
-
-@media (max-width: 768px) {
-    .hex-display {
-        font-size: 13px;
-        padding: 15px;
-    }
 }

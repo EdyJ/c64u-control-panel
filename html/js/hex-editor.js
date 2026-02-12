@@ -1,13 +1,13 @@
 /**
  * hex-editor.js
  * Hex Editor Component
- * 
+ *
  * Provides hex editing functionality with nibble-level cursor control,
  * selection support, and clipboard operations.
- * 
+ *
  * Pattern: Function-based with global state (matches codebase standard)
  * Specification: HEX_EDITOR_SPEC.md v2.1
- * 
+ *
  * Version: 2.0 - Rewritten using function-based pattern
  * Date: February 6, 2026
  */
@@ -22,16 +22,16 @@ let hexEditorState = {
     startAddress: 0x0000,
     bytesPerRow: 16,
     pageSize: 256,           // Page size for navigation
-    charsetPuaBase: 0xEF00,  // PUA base for C64 character display
-    
+    charsetPuaBase: 0xEE00,  // PUA base for C64 character display
+
     // Data
     originalData: null,      // Uint8Array - original data
     currentData: null,       // Uint8Array - current data (edited)
-    
+
     // Edit mode
     editMode: false,
     modalOpen: false,        // Modal dialog open (disables input handlers)
-    
+
     // Cursor (nibble-level)
     cursor: {
         byteIndex: 0,        // Absolute byte index (0-based)
@@ -39,14 +39,14 @@ let hexEditorState = {
         row: 0,              // Row number (0-based)
         col: 0               // Column within row (0-based)
     },
-    
+
     // Selection
     selection: {
         active: false,
         anchorNibble: 0,     // Start of selection (absolute nibble index)
         endNibble: 0         // End of selection (absolute nibble index)
     },
-    
+
     // Cursor blink (C64-style)
     cursorBlinkInterval: null
 };
@@ -69,7 +69,7 @@ function hexEditorInit(container, startAddress, data) {
     hexEditorState.editMode = false;
     hexEditorState.cursor = { byteIndex: 0, nibble: 0, row: 0, col: 0 };
     hexEditorState.selection = { active: false, anchorNibble: 0, endNibble: 0 };
-    
+
     hexEditorRender();
     console.log('HexEditor: Initialized with', data.length, 'bytes at address', startAddress.toString(16).toUpperCase());
 }
@@ -86,7 +86,7 @@ function hexEditorSetData(data, startAddress) {
     hexEditorState.editMode = false;
     hexEditorState.cursor = { byteIndex: 0, nibble: 0, row: 0, col: 0 };
     hexEditorState.selection = { active: false, anchorNibble: 0, endNibble: 0 };
-    
+
     hexEditorRender();
 }
 
@@ -100,19 +100,19 @@ function hexEditorSetData(data, startAddress) {
 function hexEditorRender() {
     const html = [];
     const totalRows = Math.ceil(hexEditorState.currentData.length / hexEditorState.bytesPerRow);
-    
+
     for (let row = 0; row < totalRows; row++) {
         html.push(hexEditorRenderRow(row));
     }
-    
+
     hexEditorState.container.html(html.join(''));
-    
+
     // Apply edit mode styling if active
     if (hexEditorState.editMode) {
         $('.hex-bytes').addClass('edit-mode');
         hexEditorApplyCursor();
     }
-    
+
     // Apply selection if active
     if (hexEditorState.selection.active) {
         hexEditorRenderSelection();
@@ -128,22 +128,22 @@ function hexEditorRenderRow(row) {
     const startIndex = row * hexEditorState.bytesPerRow;
     const endIndex = Math.min(startIndex + hexEditorState.bytesPerRow, hexEditorState.currentData.length);
     const address = hexEditorState.startAddress + startIndex;
-    
+
     // Address column
     const addressHex = address.toString(16).toUpperCase().padStart(4, '0');
-    
+
     // Hex bytes column
     const bytesHtml = [];
     for (let i = startIndex; i < endIndex; i++) {
         bytesHtml.push(hexEditorRenderByte(i));
     }
-    
+
     // Characters column
     const charsHtml = [];
     for (let i = startIndex; i < endIndex; i++) {
         charsHtml.push(hexEditorRenderChar(i));
     }
-    
+
     return `<div class="hex-row" data-row="${row}">
         <span class="hex-address">${addressHex}:</span>
         <span class="hex-bytes">${bytesHtml.join(' ')}</span>
@@ -160,15 +160,15 @@ function hexEditorRenderByte(byteIndex) {
     const byte = hexEditorState.currentData[byteIndex];
     const highNibble = (byte >> 4).toString(16).toUpperCase();
     const lowNibble = (byte & 0x0F).toString(16).toUpperCase();
-    
+
     const highNibbleIndex = byteIndex * 2;
     const lowNibbleIndex = byteIndex * 2 + 1;
-    
+
     // Check if byte is modified (different from original)
-    const isModified = hexEditorState.editMode && 
+    const isModified = hexEditorState.editMode &&
                        hexEditorState.currentData[byteIndex] !== hexEditorState.originalData[byteIndex];
     const modifiedClass = isModified ? ' hex-byte-modified' : '';
-    
+
     return `<span class="hex-byte${modifiedClass}" data-byte="${byteIndex}">` +
            `<span class="hex-nibble" data-nibble="${highNibbleIndex}">${highNibble}</span>` +
            `<span class="hex-nibble" data-nibble="${lowNibbleIndex}">${lowNibble}</span>` +
@@ -185,7 +185,7 @@ function hexEditorRenderChar(byteIndex) {
     // Use C64 font with PUA base + byte value
     const codepoint = hexEditorState.charsetPuaBase + byte;
     const char = String.fromCodePoint(codepoint);
-    
+
     return `<span class="hex-char" data-byte="${byteIndex}">${char}</span>`;
 }
 
@@ -198,10 +198,10 @@ function hexEditorRenderChar(byteIndex) {
  */
 function hexEditorStartCursorBlink() {
     hexEditorStopCursorBlink();
-    
+
     // Make cursor visible initially
     $('.hex-nibble-cursor').addClass('hex-cursor-visible');
-    
+
     // Blink every 400ms
     hexEditorState.cursorBlinkInterval = setInterval(function() {
         $('.hex-nibble-cursor').toggleClass('hex-cursor-visible');
@@ -226,13 +226,13 @@ function hexEditorStopCursorBlink() {
 function hexEditorApplyCursor() {
     // Clear all cursors
     $('.hex-nibble').removeClass('hex-nibble-cursor hex-cursor-visible');
-    
+
     // Calculate absolute nibble index
     const nibbleIndex = hexEditorState.cursor.byteIndex * 2 + hexEditorState.cursor.nibble;
-    
+
     // Apply cursor class
     $(`.hex-nibble[data-nibble="${nibbleIndex}"]`).addClass('hex-nibble-cursor');
-    
+
     // Restart blink if in edit mode
     if (hexEditorState.editMode) {
         hexEditorStartCursorBlink();
@@ -256,13 +256,13 @@ function hexEditorSetCursor(byteIndex, nibble) {
     const maxByteIndex = hexEditorState.currentData.length - 1;
     byteIndex = Math.max(0, Math.min(byteIndex, maxByteIndex));
     nibble = Math.max(0, Math.min(nibble, 1));
-    
+
     // Update cursor state
     hexEditorState.cursor.byteIndex = byteIndex;
     hexEditorState.cursor.nibble = nibble;
     hexEditorState.cursor.row = Math.floor(byteIndex / hexEditorState.bytesPerRow);
     hexEditorState.cursor.col = byteIndex % hexEditorState.bytesPerRow;
-    
+
     // Update visual
     if (hexEditorState.editMode) {
         hexEditorApplyCursor();
@@ -286,30 +286,30 @@ function hexEditorGetCursorNibble() {
  */
 function hexEditorEnterEditMode() {
     hexEditorState.editMode = true;
-    
+
     // Reset cursor to first byte
     hexEditorSetCursor(0, 0);
-    
+
     // Visual feedback
     $('.hex-bytes').addClass('edit-mode');
     $('.hex-display').addClass('no-select');
-    
+
     // Disable header and refresh button
-    $('.hex-header').addClass('input-disabled');
+    $('.mem-header').addClass('input-disabled');
     $('#refreshBtn').addClass('input-disabled');
-    
+
     // Clear any text selection
     if (window.getSelection) {
         window.getSelection().removeAllRanges();
     }
-    
+
     // Start cursor blinking
     hexEditorApplyCursor();
     hexEditorStartCursorBlink();
-    
+
     // Bind keyboard handler
     $(document).on('keydown.hexeditor', hexEditorHandleKeyDown);
-    
+
     console.log('HexEditor: Entered edit mode');
 }
 
@@ -325,27 +325,27 @@ function hexEditorExitEditMode(save) {
         // Update original data to current (save changes)
         hexEditorState.originalData = new Uint8Array(hexEditorState.currentData);
     }
-    
+
     hexEditorState.editMode = false;
     hexEditorState.selection.active = false;
-    
+
     // Stop cursor blinking
     hexEditorStopCursorBlink();
-    
+
     // Remove visual feedback
     $('.hex-bytes').removeClass('edit-mode');
     $('.hex-display').removeClass('no-select');
-    
+
     // Re-enable header and refresh button
-    $('.hex-header').removeClass('input-disabled');
+    $('.mem-header').removeClass('input-disabled');
     $('#refreshBtn').removeClass('input-disabled');
-    
+
     // Unbind keyboard handler
     $(document).off('keydown.hexeditor');
-    
+
     // Re-render
     hexEditorRender();
-    
+
     console.log('HexEditor: Exited edit mode, save=' + save);
 }
 
@@ -373,11 +373,11 @@ function hexEditorIsModified() {
 function hexEditorHandleKeyDown(e) {
     if (!hexEditorState.editMode) return;
     if (hexEditorState.modalOpen) return;  // Disable input when modal is open
-    
+
     const key = e.key;
     const shift = e.shiftKey;
     const ctrl = e.ctrlKey;
-    
+
     // Handle different keys
     if (ctrl && key === 'c') {
         e.preventDefault();
@@ -445,10 +445,10 @@ function hexEditorMoveCursor(deltaCol, deltaRow, extend) {
         hexEditorState.selection.active = true;
         hexEditorState.selection.anchorNibble = hexEditorGetCursorNibble();
     }
-    
+
     let byteIndex = hexEditorState.cursor.byteIndex;
     let nibble = hexEditorState.cursor.nibble;
-    
+
     if (deltaCol !== 0) {
         // Move nibble by nibble
         let nibbleIndex = byteIndex * 2 + nibble + deltaCol;
@@ -457,27 +457,27 @@ function hexEditorMoveCursor(deltaCol, deltaRow, extend) {
         byteIndex = Math.floor(nibbleIndex / 2);
         nibble = nibbleIndex % 2;
     }
-    
+
     if (deltaRow !== 0) {
         // Move by rows
         const newByteIndex = byteIndex + (deltaRow * hexEditorState.bytesPerRow);
         const maxByteIndex = hexEditorState.currentData.length - 1;
-        
+
         // Stay in place if moving up from first row or down from last row
         const currentRow = Math.floor(byteIndex / hexEditorState.bytesPerRow);
         const newRow = Math.floor(newByteIndex / hexEditorState.bytesPerRow);
         const totalRows = Math.ceil(hexEditorState.currentData.length / hexEditorState.bytesPerRow);
-        
+
         if ((deltaRow < 0 && currentRow === 0) || (deltaRow > 0 && currentRow === totalRows - 1)) {
             // Stay in place
             return;
         }
-        
+
         byteIndex = Math.max(0, Math.min(newByteIndex, maxByteIndex));
     }
-    
+
     hexEditorSetCursor(byteIndex, nibble);
-    
+
     if (extend) {
         hexEditorState.selection.endNibble = hexEditorGetCursorNibble();
         hexEditorRenderSelection();
@@ -495,10 +495,10 @@ function hexEditorMoveHome(extend) {
         hexEditorState.selection.active = true;
         hexEditorState.selection.anchorNibble = hexEditorGetCursorNibble();
     }
-    
+
     const rowStart = hexEditorState.cursor.row * hexEditorState.bytesPerRow;
     hexEditorSetCursor(rowStart, 0);
-    
+
     if (extend) {
         hexEditorState.selection.endNibble = hexEditorGetCursorNibble();
         hexEditorRenderSelection();
@@ -516,17 +516,17 @@ function hexEditorMoveEnd(extend) {
         hexEditorState.selection.active = true;
         hexEditorState.selection.anchorNibble = hexEditorGetCursorNibble();
     }
-    
+
     const rowEnd = Math.min(
         (hexEditorState.cursor.row + 1) * hexEditorState.bytesPerRow - 1,
         hexEditorState.currentData.length - 1
     );
-    
+
     // Special case for Shift+End: go to last nibble of row
     const nibble = extend ? 1 : 0;
-    
+
     hexEditorSetCursor(rowEnd, nibble);
-    
+
     if (extend) {
         hexEditorState.selection.endNibble = hexEditorGetCursorNibble();
         hexEditorRenderSelection();
@@ -541,9 +541,9 @@ function hexEditorMoveEnd(extend) {
  */
 function hexEditorMoveTab(backward) {
     hexEditorClearSelection();
-    
+
     let byteIndex = hexEditorState.cursor.byteIndex;
-    
+
     if (backward) {
         // Shift+Tab: If on low nibble, go to high nibble of same byte, else prev byte
         if (hexEditorState.cursor.nibble === 1) {
@@ -564,7 +564,7 @@ function hexEditorMoveTab(backward) {
  */
 function hexEditorMoveEnter() {
     hexEditorClearSelection();
-    
+
     const nextRowStart = (hexEditorState.cursor.row + 1) * hexEditorState.bytesPerRow;
     if (nextRowStart < hexEditorState.currentData.length) {
         hexEditorSetCursor(nextRowStart, 0);
@@ -581,31 +581,31 @@ function hexEditorMovePage(deltaRows, extend) {
         hexEditorState.selection.active = true;
         hexEditorState.selection.anchorNibble = hexEditorGetCursorNibble();
     }
-    
+
     const currentRow = hexEditorState.cursor.row;
     const currentCol = hexEditorState.cursor.col;
     const nibble = hexEditorState.cursor.nibble;
     const totalRows = Math.ceil(hexEditorState.currentData.length / hexEditorState.bytesPerRow);
-    
+
     // Calculate target row
     let targetRow = currentRow + deltaRows;
-    
+
     // Clamp to first or last row
     if (targetRow < 0) {
         targetRow = 0;
     } else if (targetRow >= totalRows) {
         targetRow = totalRows - 1;
     }
-    
+
     // Calculate target byte index (same column and nibble)
     let targetByteIndex = targetRow * hexEditorState.bytesPerRow + currentCol;
-    
+
     // Clamp to valid range
     const maxByteIndex = hexEditorState.currentData.length - 1;
     targetByteIndex = Math.min(targetByteIndex, maxByteIndex);
-    
+
     hexEditorSetCursor(targetByteIndex, nibble);
-    
+
     if (extend) {
         hexEditorState.selection.endNibble = hexEditorGetCursorNibble();
         hexEditorRenderSelection();
@@ -629,9 +629,9 @@ function hexEditorHandleEscape() {
                 return; // User canceled, stay in edit mode
             }
         }
-        
+
         hexEditorExitEditMode(false);  // false = cancel (don't save)
-        
+
         // Trigger UI update (hide Save/Cancel, show Edit button)
         $('#hex-save-btn, #hex-cancel-btn').hide();
         $('#hex-edit-btn').show();
@@ -648,13 +648,13 @@ function hexEditorTypeChar(char) {
         hexEditorReplaceSelection(char);
         return;
     }
-    
+
     const byteIndex = hexEditorState.cursor.byteIndex;
     const nibble = hexEditorState.cursor.nibble;
-    
+
     // Get current byte
     let byte = hexEditorState.currentData[byteIndex];
-    
+
     // Replace nibble
     const nibbleValue = parseInt(char, 16);
     if (nibble === 0) {
@@ -664,19 +664,19 @@ function hexEditorTypeChar(char) {
         // Low nibble
         byte = (byte & 0xF0) | nibbleValue;
     }
-    
+
     // Update data
     hexEditorState.currentData[byteIndex] = byte;
-    
+
     // Move cursor forward
     const nibbleIndex = byteIndex * 2 + nibble;
     const maxNibble = hexEditorState.currentData.length * 2 - 1;
-    
+
     if (nibbleIndex < maxNibble) {
         const nextNibbleIndex = nibbleIndex + 1;
         hexEditorSetCursor(Math.floor(nextNibbleIndex / 2), nextNibbleIndex % 2);
     }
-    
+
     // Re-render
     hexEditorRender();
 }
@@ -688,18 +688,18 @@ function hexEditorBackspace() {
     const byteIndex = hexEditorState.cursor.byteIndex;
     const nibble = hexEditorState.cursor.nibble;
     const nibbleIndex = byteIndex * 2 + nibble;
-    
+
     if (nibbleIndex === 0) return;  // At start, do nothing
-    
+
     // Move back one nibble
     const prevNibbleIndex = nibbleIndex - 1;
     const prevByteIndex = Math.floor(prevNibbleIndex / 2);
     const prevNibble = prevNibbleIndex % 2;
-    
+
     // Restore original nibble value
     const originalByte = hexEditorState.originalData[prevByteIndex];
     let currentByte = hexEditorState.currentData[prevByteIndex];
-    
+
     if (prevNibble === 0) {
         // Restore high nibble
         currentByte = (originalByte & 0xF0) | (currentByte & 0x0F);
@@ -707,12 +707,12 @@ function hexEditorBackspace() {
         // Restore low nibble
         currentByte = (currentByte & 0xF0) | (originalByte & 0x0F);
     }
-    
+
     hexEditorState.currentData[prevByteIndex] = currentByte;
-    
+
     // Move cursor
     hexEditorSetCursor(prevByteIndex, prevNibble);
-    
+
     // Re-render
     hexEditorRender();
 }
@@ -735,13 +735,13 @@ function hexEditorClearSelection() {
 function hexEditorRenderSelection() {
     // Clear previous selection
     $('.hex-nibble').removeClass('hex-nibble-selected');
-    
+
     if (!hexEditorState.selection.active) return;
-    
+
     // Get selection range (normalized)
     const start = Math.min(hexEditorState.selection.anchorNibble, hexEditorState.selection.endNibble);
     const end = Math.max(hexEditorState.selection.anchorNibble, hexEditorState.selection.endNibble);
-    
+
     // Apply selection class to all nibbles in range
     for (let i = start; i <= end; i++) {
         $(`.hex-nibble[data-nibble="${i}"]`).addClass('hex-nibble-selected');
@@ -755,7 +755,7 @@ function hexEditorSelectAll() {
     hexEditorState.selection.active = true;
     hexEditorState.selection.anchorNibble = 0;
     hexEditorState.selection.endNibble = hexEditorState.currentData.length * 2 - 1;
-    
+
     hexEditorRenderSelection();
 }
 
@@ -766,30 +766,30 @@ function hexEditorSelectAll() {
 function hexEditorReplaceSelection(char) {
     const start = Math.min(hexEditorState.selection.anchorNibble, hexEditorState.selection.endNibble);
     const end = Math.max(hexEditorState.selection.anchorNibble, hexEditorState.selection.endNibble);
-    
+
     const nibbleValue = parseInt(char, 16);
-    
+
     // Replace each nibble in selection
     for (let nibbleIndex = start; nibbleIndex <= end; nibbleIndex++) {
         const byteIndex = Math.floor(nibbleIndex / 2);
         const nibble = nibbleIndex % 2;
         let byte = hexEditorState.currentData[byteIndex];
-        
+
         if (nibble === 0) {
             byte = (nibbleValue << 4) | (byte & 0x0F);
         } else {
             byte = (byte & 0xF0) | nibbleValue;
         }
-        
+
         hexEditorState.currentData[byteIndex] = byte;
     }
-    
+
     // Move cursor to end of selection
     hexEditorSetCursor(Math.floor(end / 2), end % 2);
-    
+
     // Clear selection
     hexEditorClearSelection();
-    
+
     // Re-render
     hexEditorRender();
 }
@@ -803,15 +803,15 @@ function hexEditorReplaceSelection(char) {
  */
 function hexEditorCopy() {
     let bytes = [];
-    
+
     if (hexEditorState.selection.active) {
         // Copy selection
         const start = Math.min(hexEditorState.selection.anchorNibble, hexEditorState.selection.endNibble);
         const end = Math.max(hexEditorState.selection.anchorNibble, hexEditorState.selection.endNibble);
-        
+
         const startByte = Math.floor(start / 2);
         const endByte = Math.floor(end / 2);
-        
+
         for (let i = startByte; i <= endByte; i++) {
             bytes.push(hexEditorState.currentData[i]);
         }
@@ -819,10 +819,10 @@ function hexEditorCopy() {
         // Copy current byte
         bytes.push(hexEditorState.currentData[hexEditorState.cursor.byteIndex]);
     }
-    
+
     // Format as space-separated uppercase hex
     const hexString = bytes.map(b => b.toString(16).toUpperCase().padStart(2, '0')).join(' ');
-    
+
     // Copy to clipboard (with fallback for non-secure contexts)
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(hexString).then(() => {
@@ -859,42 +859,42 @@ function hexEditorPaste() {
             console.warn('HexEditor: No valid hex data in clipboard');
             return;
         }
-        
+
         let byteIndex, maxBytes;
         let keepSelection = false;
         let keepCursor = false;
         let savedCursorByte = hexEditorState.cursor.byteIndex;
         let savedCursorNibble = hexEditorState.cursor.nibble;
-        
+
         // If there's a selection, paste within the selection
         if (hexEditorState.selection.active) {
             // Convert nibble indices to byte indices
             const startByteIndex = Math.floor(hexEditorState.selection.anchorNibble / 2);
             const endByteIndex = Math.floor(hexEditorState.selection.endNibble / 2);
             const selectionSize = Math.abs(endByteIndex - startByteIndex) + 1;
-            
+
             // Start at beginning of selection
             byteIndex = Math.min(startByteIndex, endByteIndex);
-            
+
             // Limit paste to selection size
             maxBytes = Math.min(bytes.length, selectionSize);
-            
+
             // Keep selection active and cursor at original position after paste
             keepSelection = true;
             keepCursor = true;
-            
+
             console.log('HexEditor: Pasting within selection (', maxBytes, 'bytes)');
         } else {
             // No selection, paste at cursor position
             byteIndex = hexEditorState.cursor.byteIndex;
             maxBytes = bytes.length;
         }
-        
+
         // Paste bytes
         for (let i = 0; i < maxBytes && byteIndex < hexEditorState.currentData.length; i++, byteIndex++) {
             hexEditorState.currentData[byteIndex] = bytes[i];
         }
-        
+
         // Move cursor (or restore original position)
         if (keepCursor) {
             // Restore original cursor position
@@ -903,7 +903,7 @@ function hexEditorPaste() {
             // Move cursor to end of pasted data
             hexEditorSetCursor(Math.min(byteIndex, hexEditorState.currentData.length - 1), 0);
         }
-        
+
         // Clear selection only if not pasting within selection
         if (!keepSelection) {
             hexEditorClearSelection();
@@ -911,13 +911,13 @@ function hexEditorPaste() {
             // Re-render selection
             hexEditorRenderSelection();
         }
-        
+
         // Re-render
         hexEditorRender();
-        
+
         console.log('HexEditor: Pasted', maxBytes, 'bytes');
     }
-    
+
     // Try modern clipboard API first
     if (navigator.clipboard && navigator.clipboard.readText) {
         navigator.clipboard.readText().then(text => {
@@ -938,37 +938,37 @@ function hexEditorPaste() {
 function hexEditorShowPasteDialog(callback) {
     // Set modal flag to disable hex editor input
     hexEditorState.modalOpen = true;
-    
+
     // Create overlay
     const overlay = document.createElement('div');
     overlay.className = 'modal-overlay';
-    
+
     // Create dialog
     const dialog = document.createElement('div');
     dialog.className = 'modal-dialog';
-    
+
     // Instructions (no title, simplified)
     const instructions = document.createElement('div');
     instructions.className = 'modal-instructions';
-    instructions.textContent = 'Paste your hex data below';
-    
+    instructions.textContent = 'Paste hex data below';
+
     // Input textarea
     const textarea = document.createElement('textarea');
     textarea.className = 'modal-textarea';
     textarea.placeholder = '41 42 43 or 414243';
-    
+
     // Buttons container
     const buttons = document.createElement('div');
     buttons.className = 'modal-buttons';
-    
+
     // Cancel button
     const cancelBtn = document.createElement('button');
     cancelBtn.textContent = 'Cancel';
-    
+
     // Paste button
     const pasteBtn = document.createElement('button');
     pasteBtn.textContent = 'Paste';
-    
+
     // Assemble dialog
     buttons.appendChild(cancelBtn);
     buttons.appendChild(pasteBtn);
@@ -977,16 +977,16 @@ function hexEditorShowPasteDialog(callback) {
     dialog.appendChild(buttons);
     overlay.appendChild(dialog);
     document.body.appendChild(overlay);
-    
+
     // Focus textarea
     setTimeout(() => textarea.focus(), 100);
-    
+
     // Helper to close dialog
     function closeDialog() {
         document.body.removeChild(overlay);
         hexEditorState.modalOpen = false;  // Re-enable hex editor input
     }
-    
+
     // Event handlers
     pasteBtn.onclick = function() {
         const text = textarea.value.trim();
@@ -995,11 +995,11 @@ function hexEditorShowPasteDialog(callback) {
         }
         closeDialog();
     };
-    
+
     cancelBtn.onclick = function() {
         closeDialog();
     };
-    
+
     // Overlay keydown - only handle ESC and Ctrl+V prevention
     overlay.onkeydown = function(e) {
         // ESC to cancel
@@ -1009,14 +1009,14 @@ function hexEditorShowPasteDialog(callback) {
             e.stopPropagation();
             return;
         }
-        
+
         // Prevent Ctrl+V from opening another dialog
         if (e.key === 'v' && e.ctrlKey) {
             e.stopPropagation();
             return;
         }
     };
-    
+
     // Textarea keydown - Enter to paste
     textarea.onkeydown = function(e) {
         // Enter (without Ctrl) to paste
@@ -1026,7 +1026,7 @@ function hexEditorShowPasteDialog(callback) {
             e.stopPropagation();
             return;
         }
-        
+
         // Prevent Ctrl+V from opening another dialog
         if (e.key === 'v' && e.ctrlKey) {
             e.stopPropagation();
@@ -1046,14 +1046,14 @@ function hexEditorParseHexString(text) {
                .replace(/,/g, ' ')
                .replace(/\s+/g, ' ')
                .trim();
-    
+
     const bytes = [];
-    
+
     // Try parsing as space-separated hex bytes
     const parts = text.split(' ');
     for (const part of parts) {
         if (part.length === 0) continue;
-        
+
         // Parse pairs of hex digits
         for (let i = 0; i < part.length; i += 2) {
             const hex = part.substr(i, 2);
@@ -1063,7 +1063,7 @@ function hexEditorParseHexString(text) {
             }
         }
     }
-    
+
     return bytes;
 }
 
@@ -1078,16 +1078,16 @@ function hexEditorSetupMouse() {
     // Track mouse drag state
     let isDragging = false;
     let dragStartNibble = null;
-    
+
     // Mouse down on nibble (start potential drag)
     hexEditorState.container.on('mousedown', '.hex-nibble', function(e) {
         if (!hexEditorState.editMode) return;
         if (hexEditorState.modalOpen) return;  // Disable input when modal is open
-        
+
         const nibbleIndex = parseInt($(this).data('nibble'));
         const byteIndex = Math.floor(nibbleIndex / 2);
         const nibble = nibbleIndex % 2;
-        
+
         if (e.shiftKey) {
             // Shift-click: extend or start selection
             if (!hexEditorState.selection.active) {
@@ -1103,36 +1103,36 @@ function hexEditorSetupMouse() {
             // Regular click: prepare for potential drag
             isDragging = true;
             dragStartNibble = nibbleIndex;
-            
+
             // Clear existing selection and move cursor
             hexEditorClearSelection();
             hexEditorSetCursor(byteIndex, nibble);
         }
-        
+
         e.preventDefault(); // Prevent text selection
     });
-    
+
     // Mouse move during drag
     hexEditorState.container.on('mousemove', '.hex-nibble', function(e) {
         if (!hexEditorState.editMode || !isDragging) return;
         if (hexEditorState.modalOpen) return;  // Disable input when modal is open
-        
+
         const nibbleIndex = parseInt($(this).data('nibble'));
         const byteIndex = Math.floor(nibbleIndex / 2);
         const nibble = nibbleIndex % 2;
-        
+
         // Start selection if not already active
         if (!hexEditorState.selection.active) {
             hexEditorState.selection.active = true;
             hexEditorState.selection.anchorNibble = dragStartNibble;
         }
-        
+
         // Extend selection to current position
         hexEditorState.selection.endNibble = nibbleIndex;
         hexEditorSetCursor(byteIndex, nibble);
         hexEditorRenderSelection();
     });
-    
+
     // Mouse up anywhere (end drag)
     $(document).on('mouseup.hexeditor', function(e) {
         if (isDragging) {
@@ -1140,14 +1140,14 @@ function hexEditorSetupMouse() {
             dragStartNibble = null;
         }
     });
-    
+
     // Click on character (position at corresponding byte)
     hexEditorState.container.on('click', '.hex-char', function(e) {
         if (!hexEditorState.editMode) return;
         if (hexEditorState.modalOpen) return;  // Disable input when modal is open
-        
+
         const byteIndex = parseInt($(this).data('byte'));
-        
+
         if (e.shiftKey && hexEditorState.selection.active) {
             // Extend selection to this byte
             hexEditorState.selection.endNibble = byteIndex * 2;
@@ -1159,47 +1159,47 @@ function hexEditorSetupMouse() {
             hexEditorClearSelection();
         }
     });
-    
+
     // Helper function to find nibble to the left of click position
     function findNibbleToLeft(clickX, $container) {
         const $nibbles = $container.find('.hex-nibble');
         if ($nibbles.length === 0) return null;
-        
+
         let leftmostNibble = null;
         let maxLeftX = -Infinity;
-        
+
         $nibbles.each(function() {
             const $nibble = $(this);
             const offset = $nibble.offset();
             const rightX = offset.left + $nibble.outerWidth();
-            
+
             // Find the rightmost nibble that ends before or at the click position
             if (rightX <= clickX && rightX > maxLeftX) {
                 maxLeftX = rightX;
                 leftmostNibble = $nibble;
             }
         });
-        
+
         return leftmostNibble;
     }
-    
+
     // Mouse down on space (start drag from nearest nibble)
     hexEditorState.container.on('mousedown', '.hex-bytes', function(e) {
         if (!hexEditorState.editMode) return;
         if (hexEditorState.modalOpen) return;  // Disable input when modal is open
         if (e.target !== this) return; // Only handle clicks on spaces
-        
+
         const leftNibble = findNibbleToLeft(e.pageX, $(this));
         if (!leftNibble) return;
-        
+
         const nibbleIndex = parseInt(leftNibble.data('nibble'));
         const nextNibbleIndex = nibbleIndex + 1;
         const maxNibbleIndex = hexEditorState.currentData.length * 2 - 1;
-        
+
         if (nextNibbleIndex <= maxNibbleIndex) {
             const byteIndex = Math.floor(nextNibbleIndex / 2);
             const nibble = nextNibbleIndex % 2;
-            
+
             if (e.shiftKey) {
                 // Shift-click: extend or start selection
                 if (!hexEditorState.selection.active) {
@@ -1216,33 +1216,33 @@ function hexEditorSetupMouse() {
                 hexEditorClearSelection();
                 hexEditorSetCursor(byteIndex, nibble);
             }
-            
+
             e.preventDefault();
         }
     });
-    
+
     // Mouse move on space during drag
     hexEditorState.container.on('mousemove', '.hex-bytes', function(e) {
         if (!hexEditorState.editMode || !isDragging) return;
         if (hexEditorState.modalOpen) return;  // Disable input when modal is open
         if (e.target !== this) return; // Only handle movement over spaces
-        
+
         const leftNibble = findNibbleToLeft(e.pageX, $(this));
         if (!leftNibble) return;
-        
+
         const nibbleIndex = parseInt(leftNibble.data('nibble'));
         const nextNibbleIndex = nibbleIndex + 1;
         const maxNibbleIndex = hexEditorState.currentData.length * 2 - 1;
-        
+
         if (nextNibbleIndex <= maxNibbleIndex) {
             const byteIndex = Math.floor(nextNibbleIndex / 2);
             const nibble = nextNibbleIndex % 2;
-            
+
             if (!hexEditorState.selection.active) {
                 hexEditorState.selection.active = true;
                 hexEditorState.selection.anchorNibble = dragStartNibble;
             }
-            
+
             hexEditorState.selection.endNibble = nextNibbleIndex;
             hexEditorSetCursor(byteIndex, nibble);
             hexEditorRenderSelection();
@@ -1287,30 +1287,30 @@ function hexEditorGetChanges() {
  */
 function hexEditorSaveChanges(callback, errorCallback) {
     const changes = hexEditorGetChanges();
-    
+
     if (changes.length === 0) {
         console.log('HexEditor: No changes to save');
         if (callback) callback();
         return;
     }
-    
+
     // Find first and last modified byte
     const firstChange = changes[0];
     const lastChange = changes[changes.length - 1];
-    
+
     const startAddress = firstChange.address;
     const endAddress = lastChange.address;
     const length = endAddress - startAddress + 1;
-    
+
     // Extract all bytes from first to last modified (including unmodified in between)
     const dataToWrite = [];
     for (let i = 0; i < length; i++) {
         const byteIndex = (startAddress - hexEditorState.startAddress) + i;
         dataToWrite.push(hexEditorState.currentData[byteIndex]);
     }
-    
+
     console.log(`HexEditor: Writing ${length} bytes from $${startAddress.toString(16).toUpperCase()} to $${endAddress.toString(16).toUpperCase()}`);
-    
+
     // Write to C64 memory
     writeMemory(startAddress, dataToWrite,
         function() {
@@ -1350,22 +1350,22 @@ function hexEditorValidateAddress(address, pageSize) {
     if (pageSize === undefined) {
         pageSize = hexEditorState.pageSize;
     }
-    
+
     // Clamp address to valid range
     if (address < 0) {
         address = 0;
     }
-    
+
     // Check if address + pageSize exceeds memory limit
     if (address + pageSize > 0x10000) {
         address = 0x10000 - pageSize;
     }
-    
+
     // Ensure address doesn't exceed 0xFFFF
     if (address > 0xFFFF) {
         address = 0xFFFF;
     }
-    
+
     return address;
 }
 
@@ -1397,19 +1397,19 @@ function hexEditorNavigateToAddress(address, callback) {
         console.warn('HexEditor: Cannot navigate while in edit mode');
         return;
     }
-    
+
     // Validate and fix address to be within boundaries
     address = hexEditorValidateAddress(address);
-    
+
     console.log('HexEditor: Navigate to address', address.toString(16).toUpperCase());
-    
+
     // Read memory from C64 via API
-    readMemory(address, hexEditorState.pageSize, 
+    readMemory(address, hexEditorState.pageSize,
         function(arrayBuffer) {
             // Success: convert ArrayBuffer to Uint8Array
             const newData = new Uint8Array(arrayBuffer);
             hexEditorSetData(newData, address);
-            
+
             if (callback) {
                 callback(newData);
             }
@@ -1513,7 +1513,7 @@ function hexEditorSetupBrowsingKeys() {
     $(document).on('keydown.hexeditor-browse', function(e) {
         // Don't handle if focus is in an input field (except for Ctrl+S)
         const inInputField = $(e.target).is('input, textarea, select');
-        
+
         // Ctrl+S to save in edit mode (works everywhere, except when modal is open)
         if (e.key === 's' && e.ctrlKey && hexEditorState.editMode && !hexEditorState.modalOpen) {
             e.preventDefault();
@@ -1522,13 +1522,13 @@ function hexEditorSetupBrowsingKeys() {
             }
             return;
         }
-        
+
         // Only handle remaining keys in browsing mode (not edit mode)
         if (hexEditorState.editMode) return;
-        
+
         // Don't handle navigation keys if focus is in an input field
         if (inInputField) return;
-        
+
         // E key to enter edit mode
         if (e.key === 'e' || e.key === 'E') {
             e.preventDefault();
@@ -1541,7 +1541,7 @@ function hexEditorSetupBrowsingKeys() {
             }
             return;
         }
-        
+
         // A key to focus address input
         if (e.key === 'a' || e.key === 'A') {
             e.preventDefault();
@@ -1552,7 +1552,7 @@ function hexEditorSetupBrowsingKeys() {
             }
             return;
         }
-        
+
         // Don't navigate if API is busy
         if (isApiBusy()) {
             // Consume the key event but don't navigate
@@ -1561,7 +1561,7 @@ function hexEditorSetupBrowsingKeys() {
             }
             return;
         }
-        
+
         switch(e.key) {
             case 'ArrowUp':
                 e.preventDefault();
@@ -1607,6 +1607,6 @@ function hexEditorSetupBrowsingKeys() {
                 break;
         }
     });
-    
+
     console.log('HexEditor: Browsing mode keyboard navigation enabled');
 }

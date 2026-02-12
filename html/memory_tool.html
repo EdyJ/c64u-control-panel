@@ -7,9 +7,9 @@
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/hex-display.css">
     <style>
-        /* Hex Viewer UI Styles (header, sub-header, buttons, navigation) */
-        
-        .hex-header {
+        /* Memory Viewer UI Styles (header, sub-header, buttons, navigation) */
+
+        .mem-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -19,21 +19,21 @@
             gap: 20px;
             flex-wrap: wrap;
         }
-        
-        .hex-header-left {
+
+        .mem-header-left {
             display: flex;
             align-items: center;
             gap: 10px;
             flex-wrap: wrap;
         }
-        
-        .hex-header-left label {
+
+        .mem-header-left label {
             font-size: 13px;
             color: var(--text-dim);
         }
-        
-        .hex-input-address {
-            width: 100px;
+
+        .mem-input-address {
+            width: 50px;
             padding: 6px 10px;
             border: 1px solid var(--border);
             background: var(--input-bg);
@@ -42,8 +42,8 @@
             font-family: monospace;
             font-size: 14px;
         }
-        
-        .hex-select {
+
+        .mem-select {
             padding: 6px 10px;
             border: 1px solid var(--border);
             background: var(--input-bg);
@@ -51,14 +51,14 @@
             border-radius: var(--radius-sm);
             font-size: 13px;
         }
-        
-        .hex-header-right {
+
+        .mem-header-right {
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        
-        .hex-nav-btn {
+
+        .mem-nav-btn {
             width: 32px;
             height: 32px;
             padding: 0;
@@ -72,18 +72,18 @@
             align-items: center;
             justify-content: center;
         }
-        
-        .hex-nav-btn.hex-nav-page {
+
+        .mem-nav-btn.mem-nav-page {
             width: auto;
             padding: 0 12px;
         }
-        
-        .hex-nav-btn:hover {
+
+        .mem-nav-btn:hover {
             background: var(--input-bg);
             border-color: var(--primary);
         }
-        
-        .hex-subheader {
+
+        .mem-subheader {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -92,29 +92,29 @@
             border-radius: var(--radius-sm);
             margin-bottom: 15px;
         }
-        
-        .hex-subheader-left {
+
+        .mem-subheader-left {
             font-family: monospace;
             font-size: 16px;
             color: var(--text-dim);
         }
-        
-        .hex-subheader-right {
+
+        .mem-subheader-right {
             display: flex;
             gap: 8px;
         }
-        
+
         /* Hex display and editor styles moved to css/hex-display.css */
-        
+
         /* Responsive adjustments */
         @media (max-width: 768px) {
-            .hex-header {
+            .mem-header {
                 flex-direction: column;
                 align-items: stretch;
             }
-            
-            .hex-header-left,
-            .hex-header-right {
+
+            .mem-header-left,
+            .mem-header-right {
                 justify-content: center;
             }
         }
@@ -125,79 +125,79 @@
     <script>
     (function() {
         'use strict';
-        
+
         var requiredScripts = [
             'js/ui-components.js',
             'js/api-client.js',
             'js/tab-lifecycle.js',
             'js/hex-editor.js'
         ];
-        
+
         var contentItems = [
             '.viewer-content',
             '.tab-bar'
         ];
-        
+
         var currentIndex = 0;
         var syntaxErrorDetected = false;
-        
+
         function showSpinner() {
             var spinner = document.getElementById('spinner');
             if (spinner) spinner.style.display = 'inline-block';
         }
-        
+
         function hideSpinner() {
             var spinner = document.getElementById('spinner');
             if (spinner) spinner.style.display = 'none';
         }
-        
+
         function disableContent() {
             contentItems.forEach(function(selector) {
                 var element = document.querySelector(selector);
                 if (element) element.classList.add('content-disabled');
             });
         }
-        
+
         function enableContent() {
             contentItems.forEach(function(selector) {
                 var element = document.querySelector(selector);
                 if (element) element.classList.remove('content-disabled');
             });
         }
-        
+
         function showError() {
             hideSpinner();
             // Keep content disabled
-            
+
             var span = document.createElement('span');
             span.textContent = '❌ Failed to fetch the page from the device. Please reload.';
             span.style.cssText = 'color: #e74c3c; font-weight: bold; font-size: 14px; margin-right: 25px;';
-            
+
             var headerActions = document.querySelector('.header-actions');
             if (headerActions) {
                 headerActions.insertBefore(span, headerActions.firstChild);
             }
         }
-        
+
         function loadNextScript() {
             // All scripts loaded
             if (currentIndex >= requiredScripts.length) {
                 hideSpinner();
                 enableContent();
-                
+
                 if (typeof window.initializeApp === 'function') {
                     window.initializeApp();
                 }
                 return;
             }
-            
+
             var url = requiredScripts[currentIndex];
-            
+
             var script = document.createElement('script');
             script.src = url;
-            
+
             syntaxErrorDetected = false;
-            
+
             // Syntax error handler
             var errorHandler = function(event) {
                 if (event.filename && event.filename.includes(url)) {
@@ -206,11 +206,11 @@
                 }
             };
             window.addEventListener('error', errorHandler);
-            
+
             script.onload = function() {
                 setTimeout(function() {
                     window.removeEventListener('error', errorHandler);
-                    
+
                     if (syntaxErrorDetected) {
                         console.error('✗ Failed to load ' + url);
                         showError();
@@ -220,16 +220,16 @@
                     }
                 }, 100);
             };
-            
+
             script.onerror = function() {
                 console.error('✗ Network error loading ' + url);
                 window.removeEventListener('error', errorHandler);
                 showError();
             };
-            
+
             document.head.appendChild(script);
         }
-        
+
         $(document).ready(function() {
             setTimeout(function() {
                 // Check HTML complete
@@ -237,13 +237,13 @@
                     location.reload(true);
                     return;
                 }
-                
+
                 showSpinner();
                 disableContent();
                 loadNextScript();
             }, 50);
         });
-        
+
     })();
     </script>
 </head>
@@ -266,10 +266,10 @@
                 </div>
             </div>
         </header>
-        
+
         <!-- Error Box -->
         <div id="errorBox"></div>
-        
+
         <!-- Tab Bar -->
         <div class="tab-bar">
             <button class="tab-button active" data-tab="tab0">Hex Viewer</button>
@@ -277,60 +277,60 @@
             <button class="tab-button" data-tab="tab2">Debug Viewer 2</button>
             <button class="tab-button" data-tab="tab3">Debug Viewer 3</button>
         </div>
-        
+
         <!-- Hex Viewer: Memory Browser -->
         <div id="tab0-content" class="viewer-content">
             <!-- Hex Viewer Header -->
-            <div class="hex-header">
-                <div class="hex-header-left">
+            <div class="mem-header">
+                <div class="mem-header-left">
                     <label>Address:</label>
-                    <input type="text" id="hex-address" value="0400" placeholder="0400" class="hex-input-address">
-                    
+                    <input type="text" id="hex-address" value="0400" placeholder="0400" class="mem-input-address">
+
                     <label>Page Size:</label>
-                    <select id="hex-pagesize" class="hex-select">
+                    <select id="hex-pagesize" class="mem-select">
                         <option value="128">128</option>
                         <option value="256" selected>256</option>
                         <option value="512">512</option>
                         <option value="1024">1024</option>
                     </select>
-                    
+
                     <label>Charset:</label>
-                    <select id="hex-charset" class="hex-select">
-                        <option value="0xEE00">Screen: upper/graphics</option>
-                        <option value="0xEF00" selected>Screen: lower/upper</option>
-                        <option value="0xE000">PETSCII: upper/graphics</option>
-                        <option value="0xE100">PETSCII: lower/upper</option>
+                    <select id="hex-charset" class="mem-select">
+                        <option value="0xEE00" selected>Screen 1</option>
+                        <option value="0xEF00">Screen 2</option>
+                        <option value="0xE000">PETSCII 1</option>
+                        <option value="0xE100">PETSCII 2</option>
                     </select>
                 </div>
-                
-                <div class="hex-header-right">
-                    <button class="hex-nav-btn" id="hex-nav-up" title="Up">▲</button>
-                    <button class="hex-nav-btn" id="hex-nav-down" title="Down">▼</button>
-                    <button class="hex-nav-btn" id="hex-nav-left" title="Left">◄</button>
-                    <button class="hex-nav-btn" id="hex-nav-right" title="Right">►</button>
-                    <button class="hex-nav-btn hex-nav-page" id="hex-prev-page">Prev Page</button>
-                    <button class="hex-nav-btn hex-nav-page" id="hex-next-page">Next Page</button>
+
+                <div class="mem-header-right">
+                    <button class="mem-nav-btn" id="mem-nav-up" title="Up">▲</button>
+                    <button class="mem-nav-btn" id="mem-nav-down" title="Down">▼</button>
+                    <button class="mem-nav-btn" id="mem-nav-left" title="Left">◄</button>
+                    <button class="mem-nav-btn" id="mem-nav-right" title="Right">►</button>
+                    <button class="mem-nav-btn mem-nav-page" id="hex-prev-page">Prev Page</button>
+                    <button class="mem-nav-btn mem-nav-page" id="hex-next-page">Next Page</button>
                 </div>
             </div>
-            
+
             <!-- Hex Viewer Sub-header -->
-            <div class="hex-subheader">
-                <div class="hex-subheader-left">
+            <div class="mem-subheader">
+                <div class="mem-subheader-left">
                     <span id="hex-current-address">$0400 (1024) - $04FF (1279)</span>
                 </div>
-                <div class="hex-subheader-right">
+                <div class="mem-subheader-right">
                     <button class="btn-primary" id="hex-edit-btn" style="display:inline-block;">Edit</button>
                     <button class="btn-success" id="hex-save-btn" style="display:none;">Save</button>
                     <button class="btn-danger" id="hex-cancel-btn" style="display:none;">Cancel</button>
                 </div>
             </div>
-            
+
             <!-- Hex Viewer Memory Display -->
             <div class="hex-display" id="hex-display">
                 <!-- Placeholder data will be generated here -->
             </div>
         </div>
-        
+
         <!-- Debug Viewer 1: Simple Read Test -->
         <div id="tab1-content" class="viewer-content" style="display:none;">
             <div class="info-box">
@@ -340,7 +340,7 @@
             <button id="debug1-read" class="btn-primary">Test Read Memory ($0400, 256 bytes)</button>
             <div id="debug1-display" class="console-display" style="display:none;"></div>
         </div>
-        
+
         <!-- Debug Viewer 2: Parameterized Read -->
         <div id="tab2-content" class="viewer-content" style="display:none;">
             <div class="info-box">
@@ -354,7 +354,7 @@
             </div>
             <div id="debug2-display" class="console-display" style="display:none;"></div>
         </div>
-        
+
         <!-- Debug Viewer 3: Write Test with Confirmation -->
         <div id="tab3-content" class="viewer-content" style="display:none;">
             <div class="info-box">
@@ -369,7 +369,7 @@
                 <button id="debug3-write" class="btn-primary">Write Byte</button>
             </div>
             <div id="debug3-status" style="margin-top: 15px; color: var(--text-dim);"></div>
-            
+
             <div class="control-group" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
                 <div style="margin-bottom: 10px; color: var(--text-dim); font-size: 13px;">
                     <strong>POST Write Test (>128 bytes)</strong><br>
@@ -386,55 +386,55 @@
             <div id="debug3-post-status" style="margin-top: 15px; color: var(--text-dim);"></div>
         </div>
     </div>
-    
+
     <script>
         // ============================================================================
         // SHARED LIBRARIES (ui-components.js, api-client.js, tab-lifecycle.js)
         // ============================================================================
         // All common API methods and UI functions are now in shared libraries
-        
+
         // ============================================================================
         // TAB MANAGEMENT (using tab-lifecycle.js)
         // ============================================================================
-        
+
         const viewerMap = {
             'tab0': 'HexViewer',
             'tab1': 'DebugViewer1',
             'tab2': 'DebugViewer2',
             'tab3': 'DebugViewer3'
         };
-        
+
         // ============================================================================
         // HEX VIEWER: Memory Browser (using hex-editor.js)
         // ============================================================================
-        
+
         var HexViewer = {
             initialize: function() {
                 console.log('HexViewer: initialize()');
-                
+
                 // Initialize hex editor with empty data first
                 const initialAddress = parseInt($('#hex-address').val(), 16) || 0x0400;
                 const initialPageSize = parseInt($('#hex-pagesize').val()) || 256;
                 const emptyData = new Uint8Array(initialPageSize);
                 hexEditorInit($('#hex-display'), initialAddress, emptyData);
-                
+
                 // Set up mouse handlers
                 hexEditorSetupMouse();
-                
+
                 // Set up browsing mode keyboard navigation
                 hexEditorSetupBrowsingKeys();
-                
+
                 // Set navigation callback for keyboard navigation
                 hexEditorSetNavigationCallback(() => this.updateAddressDisplay());
-                
+
                 // Set up navigation controls
                 this.setupNavigation();
-                
+
                 // Load initial memory from C64
                 hexEditorNavigateToAddress(initialAddress, () => {
                     this.updateAddressDisplay();
                 });
-                
+
                 // Set up Edit/Save/Cancel buttons
                 const enterEditMode = () => {
                     // Don't enter edit mode if API is busy
@@ -446,7 +446,7 @@
                     $('#hex-save-btn, #hex-cancel-btn').show();
                     this.updateAddressDisplay();
                 };
-                
+
                 const saveChanges = () => {
                     // Save changes using hex-editor.js function
                     hexEditorSaveChanges(
@@ -455,7 +455,7 @@
                             hexEditorExitEditMode(true);
                             $('#hex-save-btn, #hex-cancel-btn').hide();
                             $('#hex-edit-btn').show();
-                            
+
                             // Reload memory to show saved state
                             const currentAddress = hexEditorState.startAddress;
                             hexEditorNavigateToAddress(currentAddress, () => {
@@ -468,14 +468,14 @@
                         }
                     );
                 };
-                
+
                 $('#hex-edit-btn').click(enterEditMode);
                 $('#hex-save-btn').click(saveChanges);
-                
+
                 // Set keyboard shortcut callbacks
                 hexEditorSetEnterEditModeCallback(enterEditMode);
                 hexEditorSetSaveCallback(saveChanges);
-                
+
                 $('#hex-cancel-btn').click(() => {
                     // Check if there are unsaved changes
                     if (hexEditorIsModified()) {
@@ -483,133 +483,133 @@
                             return; // User canceled, stay in edit mode
                         }
                     }
-                    
+
                     hexEditorExitEditMode(false); // save = false (cancel)
                     $('#hex-save-btn, #hex-cancel-btn').hide();
                     $('#hex-edit-btn').show();
                     this.updateAddressDisplay();
                 });
-                
+
                 // Update address display
                 this.updateAddressDisplay();
             },
-            
+
             setupNavigation: function() {
                 // Address input - navigate on Enter
                 $('#hex-address').on('keydown', (e) => {
                     if (e.key === 'Enter') {
                         e.preventDefault();
-                        
+
                         // Don't navigate if API is busy
                         if (isApiBusy()) {
                             return;
                         }
-                        
+
                         let addressStr = $('#hex-address').val().trim();
-                        
+
                         // Remove invalid hex characters (keep only 0-9, A-F, a-f)
                         addressStr = addressStr.replace(/[^0-9A-Fa-f]/g, '');
-                        
+
                         // Parse address
                         let address = parseInt(addressStr, 16);
-                        
+
                         // Validate address
                         if (isNaN(address) || address < 0 || address > 0xFFFF) {
                             alert('Invalid address. Please enter a hex value between 0000 and FFFF.');
                             return;
                         }
-                        
+
                         // Validate and fix address using centralized function
                         address = hexEditorValidateAddress(address);
-                        
+
                         // Normalize to uppercase 4-digit hex
                         const normalizedStr = address.toString(16).toUpperCase().padStart(4, '0');
-                        
+
                         // Update input field with normalized address
                         $('#hex-address').val(normalizedStr);
-                        
+
                         // Remove focus to allow immediate navigation
                         $('#hex-address').blur();
-                        
+
                         hexEditorNavigateToAddress(address, () => {
                             this.updateAddressDisplay();
                         });
                     }
                 });
-                
+
                 // Page size selector - reload data with new page size
                 $('#hex-pagesize').on('change', () => {
                     const pageSize = parseInt($('#hex-pagesize').val());
                     hexEditorSetPageSize(pageSize);
-                    
+
                     // Validate current address with new page size
                     const currentAddress = hexEditorValidateAddress(hexEditorState.startAddress, pageSize);
-                    
+
                     // Reload data at (possibly adjusted) address with new page size
                     hexEditorNavigateToAddress(currentAddress, () => {
                         this.updateAddressDisplay();
                     });
                 });
-                
+
                 // Charset selector - update character display
                 $('#hex-charset').on('change', () => {
                     const puaBase = parseInt($('#hex-charset').val());
                     hexEditorSetCharsetPuaBase(puaBase);
-                    
+
                     // Re-render display to show new charset
                     hexEditorRender();
                 });
-                
+
                 // Navigation buttons
-                $('#hex-nav-up').click(() => {
+                $('#mem-nav-up').click(() => {
                     if (isApiBusy()) return;
                     hexEditorNavigateUp(() => this.updateAddressDisplay());
                 });
-                
-                $('#hex-nav-down').click(() => {
+
+                $('#mem-nav-down').click(() => {
                     if (isApiBusy()) return;
                     hexEditorNavigateDown(() => this.updateAddressDisplay());
                 });
-                
-                $('#hex-nav-left').click(() => {
+
+                $('#mem-nav-left').click(() => {
                     if (isApiBusy()) return;
                     hexEditorNavigateLeft(() => this.updateAddressDisplay());
                 });
-                
-                $('#hex-nav-right').click(() => {
+
+                $('#mem-nav-right').click(() => {
                     if (isApiBusy()) return;
                     hexEditorNavigateRight(() => this.updateAddressDisplay());
                 });
-                
+
                 $('#hex-prev-page').click(() => {
                     if (isApiBusy()) return;
                     hexEditorNavigatePrevPage(() => this.updateAddressDisplay());
                 });
-                
+
                 $('#hex-next-page').click(() => {
                     if (isApiBusy()) return;
                     hexEditorNavigateNextPage(() => this.updateAddressDisplay());
                 });
             },
-            
+
             updateAddressDisplay: function() {
                 const range = hexEditorGetAddressRange();
                 const startHex = range.startAddress.toString(16).toUpperCase().padStart(4, '0');
                 const endHex = range.endAddress.toString(16).toUpperCase().padStart(4, '0');
-                
+
                 // Update address input to match current address
                 $('#hex-address').val(startHex);
-                
+
                 // Update address display
                 $('#hex-current-address').text(
                     `$${startHex} (${range.startAddress}) - $${endHex} (${range.endAddress})`
                 );
             },
-            
+
             activate: function() {
                 console.log('HexViewer: activate()');
             },
-            
+
             canDeactivate: function() {
                 console.log('HexViewer: canDeactivate()');
                 // Check if in edit mode with unsaved changes
@@ -618,11 +618,11 @@
                 }
                 return true;
             },
-            
+
             deactivate: function() {
                 console.log('HexViewer: deactivate()');
             },
-            
+
             refresh: function() {
                 console.log('HexViewer: refresh()');
                 // Don't refresh if API is busy
@@ -636,125 +636,125 @@
                 });
             }
         };
-        
+
         // ============================================================================
         // DEBUG VIEWER 1: Simple Read Test
         // ============================================================================
-        
+
         var DebugViewer1 = {
             initialize: function() {
                 console.log('DebugViewer1: initialize()');
                 $('#debug1-read').click(() => this.refresh());
             },
-            
+
             activate: function() {
                 console.log('DebugViewer1: activate()');
             },
-            
+
             canDeactivate: function() {
                 console.log('DebugViewer1: canDeactivate() -> true');
                 return true;
             },
-            
+
             deactivate: function() {
                 console.log('DebugViewer1: deactivate()');
             },
-            
+
             refresh: function() {
                 console.log('DebugViewer1: refresh()');
                 const address = 0x0400; // Screen memory
                 const length = 256;
-                
+
                 readMemory(address, length, (data) => {
                     const bytes = new Uint8Array(data);
                     let output = 'Memory dump from $0400 (256 bytes):\n\n';
-                    
+
                     for (let i = 0; i < bytes.length; i += 16) {
                         const addr = (address + i).toString(16).padStart(4, '0').toUpperCase();
                         output += `$${addr}: `;
-                        
+
                         // Hex bytes
                         for (let j = 0; j < 16 && i + j < bytes.length; j++) {
                             output += bytes[i + j].toString(16).padStart(2, '0').toUpperCase() + ' ';
                         }
-                        
+
                         output += '\n';
                     }
-                    
+
                     $('#debug1-display').text(output).show();
                 }, (error) => {
                     $('#debug1-display').text(`Error: ${error}`).show();
                 });
             }
         };
-        
+
         // ============================================================================
         // DEBUG VIEWER 2: Parameterized Read
         // ============================================================================
-        
+
         var DebugViewer2 = {
             initialize: function() {
                 console.log('DebugViewer2: initialize()');
                 $('#debug2-read').click(() => this.refresh());
             },
-            
+
             activate: function() {
                 console.log('DebugViewer2: activate()');
             },
-            
+
             canDeactivate: function() {
                 console.log('DebugViewer2: canDeactivate() -> true');
                 return true;
             },
-            
+
             deactivate: function() {
                 console.log('DebugViewer2: deactivate()');
             },
-            
+
             refresh: function() {
                 console.log('DebugViewer2: refresh()');
                 const addressStr = $('#debug2-address').val().replace(/[^0-9A-Fa-f]/g, '');
                 const address = parseInt(addressStr, 16);
-                
+
                 if (isNaN(address) || address < 0 || address > 0xFFFF) {
                     showError('Invalid address. Enter hex value (0000-FFFF)');
                     return;
                 }
-                
+
                 readMemory(address, 16, (data) => {
                     const bytes = new Uint8Array(data);
                     const addr = address.toString(16).padStart(4, '0').toUpperCase();
                     let output = `Memory at $${addr} (16 bytes):\n\n`;
                     output += `$${addr}: `;
-                    
+
                     for (let i = 0; i < bytes.length; i++) {
                         output += bytes[i].toString(16).padStart(2, '0').toUpperCase() + ' ';
                     }
-                    
+
                     $('#debug2-display').text(output).show();
                 }, (error) => {
                     $('#debug2-display').text(`Error: ${error}`).show();
                 });
             }
         };
-        
+
         // ============================================================================
         // DEBUG VIEWER 3: Write Test with Confirmation
         // ============================================================================
-        
+
         var DebugViewer3 = {
             hasUnsavedChanges: false,
-            
+
             initialize: function() {
                 console.log('DebugViewer3: initialize()');
                 $('#debug3-write').click(() => this.writeValue());
                 $('#debug3-post-write').click(() => this.writeMultipleBytes());
             },
-            
+
             activate: function() {
                 console.log('DebugViewer3: activate()');
             },
-            
+
             canDeactivate: function() {
                 console.log(`DebugViewer3: canDeactivate() -> hasUnsavedChanges=${this.hasUnsavedChanges}`);
                 if (this.hasUnsavedChanges) {
@@ -767,32 +767,32 @@
                 }
                 return true;
             },
-            
+
             deactivate: function() {
                 console.log('DebugViewer3: deactivate()');
             },
-            
+
             refresh: function() {
                 console.log('DebugViewer3: refresh() - not implemented for this viewer');
             },
-            
+
             writeValue: function() {
                 const addressStr = $('#debug3-address').val().replace(/[^0-9A-Fa-f]/g, '');
                 const address = parseInt(addressStr, 16);
-                
+
                 const valueStr = $('#debug3-value').val().replace(/[^0-9A-Fa-f]/g, '');
                 const value = parseInt(valueStr, 16);
-                
+
                 if (isNaN(address) || address < 0 || address > 0xFFFF) {
                     showError('Invalid address. Enter hex value (0000-FFFF)');
                     return;
                 }
-                
+
                 if (isNaN(value) || value < 0 || value > 0xFF) {
                     showError('Invalid value. Enter hex byte (00-FF)');
                     return;
                 }
-                
+
                 writeMemory(address, [value], () => {
                     const addr = address.toString(16).padStart(4, '0').toUpperCase();
                     const val = value.toString(16).padStart(2, '0').toUpperCase();
@@ -802,35 +802,35 @@
                     $('#debug3-status').html(`<span style="color: var(--danger);">✗ Write failed: ${error}</span>`);
                 });
             },
-            
+
             writeMultipleBytes: function() {
                 const addressStr = $('#debug3-post-address').val().replace(/[^0-9A-Fa-f]/g, '');
                 const address = parseInt(addressStr, 16);
-                
+
                 const valueStr = $('#debug3-post-value').val().replace(/[^0-9A-Fa-f]/g, '');
                 const value = parseInt(valueStr, 16);
-                
+
                 const countStr = $('#debug3-post-count').val().replace(/[^0-9]/g, '');
                 const count = parseInt(countStr, 10);
-                
+
                 if (isNaN(address) || address < 0 || address > 0xFFFF) {
                     showError('Invalid address. Enter hex value (0000-FFFF)');
                     return;
                 }
-                
+
                 if (isNaN(value) || value < 0 || value > 0xFF) {
                     showError('Invalid value. Enter hex byte (00-FF)');
                     return;
                 }
-                
+
                 if (isNaN(count) || count < 1 || count > 65536) {
                     showError('Invalid count. Enter value (1-65536)');
                     return;
                 }
-                
+
                 // Create array filled with the value
                 const dataArray = new Array(count).fill(value);
-                
+
                 writeMemory(address, dataArray, () => {
                     const addr = address.toString(16).padStart(4, '0').toUpperCase();
                     const val = value.toString(16).padStart(2, '0').toUpperCase();
@@ -842,27 +842,27 @@
                 });
             }
         };
-        
+
         // ============================================================================
         // INITIALIZATION
         // ============================================================================
-        
+
         // ============================================================================
         // INITIALIZATION
         // ============================================================================
-        
+
         window.initializeApp = function() {
             console.log('=== Ultimate Memory Browser Tool Initializing ===');
-            
+
             // Initialize all viewers
             initializeViewers(['HexViewer', 'DebugViewer1', 'DebugViewer2', 'DebugViewer3']);
-            
+
             // Set up tab system
             setupTabs(viewerMap, 'tab0');
-            
+
             // Activate first tab
             HexViewer.activate();
-            
+
             // Set up Refresh button
             $('#refreshBtn').click(function() {
                 const activeViewer = getActiveViewer();
@@ -870,7 +870,7 @@
                     activeViewer.refresh();
                 }
             });
-            
+
             // Handle page unload - check for unsaved changes
             window.addEventListener('beforeunload', function(e) {
                 const activeViewer = getActiveViewer();
@@ -880,7 +880,7 @@
                     return '';
                 }
             });
-            
+
             console.log('=== Initialization Complete ===');
         };
     </script>
