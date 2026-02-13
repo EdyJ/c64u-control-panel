@@ -1,7 +1,119 @@
 /**
- * Hex Display & Editor Styles
- * Styles specific to displaying and editing hexadecimal memory data
+ * Memory Display & Editor Styles
+ * Styles specific to displaying and editing memory data
  */
+
+/* Memory Viewer UI Styles (header, sub-header, buttons, navigation) */
+
+.mem-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--card-bg);
+    border-radius: var(--radius-sm);
+    margin-bottom: 10px;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.mem-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.mem-header-left label {
+    font-size: 13px;
+    color: var(--text-dim);
+}
+
+.mem-input-address {
+    width: 50px;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    background: var(--input-bg);
+    color: var(--text);
+    border-radius: var(--radius-sm);
+    font-family: monospace;
+    font-size: 14px;
+}
+
+.mem-select {
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    background: var(--input-bg);
+    color: var(--text);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+}
+
+.mem-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mem-nav-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mem-nav-btn.mem-nav-page {
+    width: auto;
+    padding: 0 12px;
+}
+
+.mem-nav-btn:hover {
+    background: var(--input-bg);
+    border-color: var(--primary);
+}
+
+.mem-subheader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: var(--input-bg);
+    border-radius: var(--radius-sm);
+    margin-bottom: 15px;
+}
+
+.mem-subheader-left {
+    font-family: monospace;
+    font-size: 16px;
+    color: var(--text-dim);
+}
+
+.mem-subheader-right {
+    display: flex;
+    gap: 8px;
+}
+
+/* Hex display and editor styles moved to css/mem-tool.css */
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .mem-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .mem-header-left,
+    .mem-header-right {
+        justify-content: center;
+    }
+}
 
 /* C64 Font for Character Display */
 @font-face {

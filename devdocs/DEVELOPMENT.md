@@ -20,7 +20,7 @@ All files are deployed to the C64U device's web server root directory at `/flash
 ├── (other tool files)
 ├── css/
 │   ├── common.css          # Shared styles and CSS variables
-│   ├── hex-display.css     # Hex editor display and editing styles
+│   ├── mem-tool.css        # Memory display and editing styles
 │   └── (other CSS files)
 └── js/
     ├── api-client.js       # API wrapper functions (memory, config, drives, etc.)
