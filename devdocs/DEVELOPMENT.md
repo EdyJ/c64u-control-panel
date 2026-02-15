@@ -173,7 +173,23 @@ CDN URL: https://code.jquery.com/jquery-3.7.1.min.js
 
 ## Testing procedure
 
-Testing should be performed on the actual C64 Ultimate device to ensure proper integration with the REST API and verify behavior in the target environment. Upload the modified or new files to the device via FTP, maintaining the proper file structure with HTML files in the root directory, CSS files in the `/css/` subdirectory, and JavaScript libraries in the `/js/` subdirectory. Access the tools through the device's web interface and verify that all functionality works as expected, including shared library integration, API operations, UI responsiveness, and error handling.
+Testing is divided into two categories:
+
+### Local UI Testing
+
+The HTML, CSS, and JavaScript structure can be tested in a desktop browser by opening the HTML file directly. This allows verification of:
+- Layout and styling
+- JavaScript syntax and logic
+- Tab switching behavior
+- Form interactions and UI components
+
+Note: REST API calls will fail in local testing (no C64U device available).
+
+### Hardware Testing
+
+Features that use the C64 REST API **must be tested on an actual Commodore 64 Ultimate device** to ensure proper integration. Upload the modified or new files to the device via FTP, maintaining the proper file structure with HTML files in the root directory, CSS files in the `/css/` subdirectory, and JavaScript libraries in the `/js/` subdirectory. Access the tools through the device's web interface and verify that all functionality works as expected, including shared library integration, API operations, UI responsiveness, and error handling.
+
+The C64U embedded web server has unique behavior (intermittent file truncation with concurrent requests) that can only be verified on actual hardware.
 
 Refer to the **Shared_Libraries_Roadmap.md** document for the complete development workflow, testing strategy, and expansion guidelines for the shared libraries.
 
