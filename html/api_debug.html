@@ -7,6 +7,19 @@
     <link rel="stylesheet" href="css/common.css">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     
+    <!-- CommonJS shim for 6502-reasm library -->
+    <script>
+        var module = { exports: {} };
+    </script>
+    
+    <!-- Load 6502-reasm library from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/6502-reasm@1.0.0/6502.min.js"></script>
+    
+    <!-- Make library globally accessible -->
+    <script>
+        window.reasm6502 = module.exports;
+    </script>
+    
     <!-- Sequential Script Loader - Loads external JS files one at a time -->
     <script>
     (function() {
@@ -160,6 +173,7 @@
             <button class="tab-button active" data-tab="tab1">Debug Viewer 1</button>
             <button class="tab-button" data-tab="tab2">Debug Viewer 2</button>
             <button class="tab-button" data-tab="tab3">Debug Viewer 3</button>
+            <button class="tab-button" data-tab="tab4">Disassembler</button>
         </div>
         
         <!-- Debug Viewer 1: Simple Read Test -->
@@ -216,6 +230,24 @@
             </div>
             <div id="debug3-post-status" style="margin-top: 15px; color: var(--text-dim);"></div>
         </div>
+        
+        <!-- Debug Viewer 4: 6502 Disassembler -->
+        <div id="tab4-content" class="viewer-content" style="display:none;">
+            <div class="info-box">
+                <strong>6502 Disassembler</strong><br>
+                Reads C64 memory and disassembles it to 6502 assembly language.
+            </div>
+            <div class="control-group">
+                <label>Start Address:</label>
+                <input type="text" id="disasm-address" value="C000" placeholder="C000">
+                <label>Bytes to Read:</label>
+                <input type="text" id="disasm-length" value="64" placeholder="64" style="width: 80px;">
+                <button id="disasm-read" class="btn-primary">Disassemble</button>
+                <button id="disasm-read-formatted" class="btn-primary">Disassemble (Formatted)</button>
+            </div>
+            <div id="disasm-display" class="console-display" style="display:none;"></div>
+            <div id="disasm-display-formatted" class="console-display" style="display:none;"></div>
+        </div>
     </div>
     
     <script>
@@ -231,7 +263,8 @@
         const viewerMap = {
             'tab1': 'DebugViewer1',
             'tab2': 'DebugViewer2',
-            'tab3': 'DebugViewer3'
+            'tab3': 'DebugViewer3',
+            'tab4': 'DisassemblerViewer'
         };
         
         // ============================================================================
@@ -441,6 +474,131 @@
         };
         
         // ============================================================================
+        // DEBUG VIEWER 4: 6502 Disassembler
+        // ============================================================================
+        
+        var DisassemblerViewer = {
+            initialize: function() {
+                console.log('DisassemblerViewer: initialize()');
+                $('#disasm-read').click(() => this.disassembleRaw());
+                $('#disasm-read-formatted').click(() => this.disassembleFormatted());
+            },
+            
+            activate: function() {
+                console.log('DisassemblerViewer: activate()');
+            },
+            
+            canDeactivate: function() {
+                console.log('DisassemblerViewer: canDeactivate() -> true');
+                return true;
+            },
+            
+            deactivate: function() {
+                console.log('DisassemblerViewer: deactivate()');
+            },
+            
+            refresh: function() {
+                console.log('DisassemblerViewer: refresh() - calling disassembleFormatted()');
+                this.disassembleFormatted();
+            },
+            
+            disassembleRaw: function() {
+                console.log('DisassemblerViewer: disassembleRaw()');
+                const addressStr = $('#disasm-address').val().replace(/[^0-9A-Fa-f]/g, '');
+                const address = parseInt(addressStr, 16);
+                
+                const lengthStr = $('#disasm-length').val().replace(/[^0-9]/g, '');
+                const length = parseInt(lengthStr, 10);
+                
+                if (isNaN(address) || address < 0 || address > 0xFFFF) {
+                    showError('Invalid address. Enter hex value (0000-FFFF)');
+                    return;
+                }
+                
+                if (isNaN(length) || length < 1 || length > 4096) {
+                    showError('Invalid length. Enter value (1-4096)');
+                    return;
+                }
+                
+                // Check if library is loaded
+                if (typeof window.reasm6502 === 'undefined' || !window.reasm6502.disasm) {
+                    showError('6502-reasm library not loaded');
+                    return;
+                }
+                
+                readMemory(address, length, (data) => {
+                    try {
+                        const bytes = Array.from(new Uint8Array(data));
+                        
+                        // Disassemble using 6502-reasm library
+                        const disasmResult = window.reasm6502.disasm(bytes, address);
+                        
+                        const addr = address.toString(16).padStart(4, '0').toUpperCase();
+                        let output = `Disassembly from $${addr} (${length} bytes, ${disasmResult.length} instructions):\n\n`;
+                        output += JSON.stringify(disasmResult, null, 2);
+                        
+                        $('#disasm-display').text(output).show();
+                        $('#disasm-display-formatted').hide();
+                    } catch (error) {
+                        $('#disasm-display').text(`Disassembly error: ${error.message}`).show();
+                        $('#disasm-display-formatted').hide();
+                    }
+                }, (error) => {
+                    $('#disasm-display').text(`Error reading memory: ${error}`).show();
+                    $('#disasm-display-formatted').hide();
+                });
+            },
+            
+            disassembleFormatted: function() {
+                console.log('DisassemblerViewer: disassembleFormatted()');
+                const addressStr = $('#disasm-address').val().replace(/[^0-9A-Fa-f]/g, '');
+                const address = parseInt(addressStr, 16);
+                
+                const lengthStr = $('#disasm-length').val().replace(/[^0-9]/g, '');
+                const length = parseInt(lengthStr, 10);
+                
+                if (isNaN(address) || address < 0 || address > 0xFFFF) {
+                    showError('Invalid address. Enter hex value (0000-FFFF)');
+                    return;
+                }
+                
+                if (isNaN(length) || length < 1 || length > 4096) {
+                    showError('Invalid length. Enter value (1-4096)');
+                    return;
+                }
+                
+                // Check if library is loaded
+                if (typeof window.reasm6502 === 'undefined' || !window.reasm6502.disasm) {
+                    showError('6502-reasm library not loaded');
+                    return;
+                }
+                
+                readMemory(address, length, (data) => {
+                    try {
+                        const bytes = Array.from(new Uint8Array(data));
+                        
+                        // Disassemble using 6502-reasm library
+                        const disasmResult = window.reasm6502.disasm(bytes, address);
+                        const formatted = window.reasm6502.formatDisasm(disasmResult);
+                        
+                        const addr = address.toString(16).padStart(4, '0').toUpperCase();
+                        let output = `Disassembly from $${addr} (${length} bytes, ${disasmResult.length} instructions):\n\n`;
+                        output += formatted;
+                        
+                        $('#disasm-display').hide();
+                        $('#disasm-display-formatted').text(output).show();
+                    } catch (error) {
+                        $('#disasm-display').hide();
+                        $('#disasm-display-formatted').text(`Disassembly error: ${error.message}`).show();
+                    }
+                }, (error) => {
+                    $('#disasm-display').hide();
+                    $('#disasm-display-formatted').text(`Error reading memory: ${error}`).show();
+                });
+            }
+        };
+        
+        // ============================================================================
         // INITIALIZATION
         // ============================================================================
         
@@ -449,7 +607,7 @@
             console.log('=== API Debug Tool Initializing ===');
             
             // Initialize all viewers
-            initializeViewers(['DebugViewer1', 'DebugViewer2', 'DebugViewer3']);
+            initializeViewers(['DebugViewer1', 'DebugViewer2', 'DebugViewer3', 'DisassemblerViewer']);
             
             // Set up tab system
             setupTabs(viewerMap, 'tab1');
