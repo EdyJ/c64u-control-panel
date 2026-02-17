@@ -1,11 +1,11 @@
 /**
  * ui-components.js
  * UI Utility Functions
- * 
+ *
  * Provides reusable UI utility functions for common operations.
  * These functions manipulate existing HTML elements and provide
  * formatting/validation helpers.
- * 
+ *
  * Version: 1.0
  * Date: February 6, 2026
  */

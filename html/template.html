@@ -23,14 +23,15 @@
 
     // CSS: objects with url
     var requiredCSS = [
-      { url: "css/common.css" }
+      // { url: "css/mem-tool.css" }
     ];
+
 
     // JS: objects with url
     var requiredJS = [
-      { url: "js/ui-components.js" },
-      { url: "js/api-client.js" },
-      { url: "js/tab-lifecycle.js" }
+      // { url: "js/ui-components.js" },
+      // { url: "js/api-client.js" },
+      // { url: "js/tab-lifecycle.js" }
     ];
 
     // UI selectors to disable during load
@@ -737,7 +738,7 @@
         </header>
 
         <!-- Error Box -->
-        <div id="errorBox"></div>
+        <div id="errorBox" class="error-box"></div>
 
         <!-- Tab Bar (optional - remove if not needed) -->
         <!--
@@ -769,7 +770,7 @@
     //
     // window.initializeApp = function() {
     //     console.log('Tool initializing...');
-    //     
+    //
     //     // Set up your tool here
     //     $('#myButton').click(function() {
     //         // Handle click
