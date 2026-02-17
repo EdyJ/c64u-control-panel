@@ -4,146 +4,687 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ultimate Memory Browser Tool</title>
-    <link rel="stylesheet" href="css/common.css">
-    <link rel="stylesheet" href="css/mem-tool.css">
+
+    <!-- Local requests section ---->
+    <!-- --------------------------->
+
+    <script>
+    // Fonts: objects (url + font metadata)
+    var requiredFonts = [
+      {
+        url: "fonts/C64ProMono.woff2",
+        family: "C64ProMono",
+        weight: "normal",
+        style: "normal",
+        display: "swap",
+        format: "woff2"
+      }
+    ];
+
+    // CSS: objects with url
+    var requiredCSS = [
+      { url: "css/mem-tools.css" }
+    ];
+
+    // JS: objects with url
+    var requiredJS = [
+      { url: "js/ui-components.js" },
+      { url: "js/api-client.js" },
+      { url: "js/tab-lifecycle.js" },
+      { url: "js/hex-editor.js" }
+    ];
+
+    // UI selectors to disable during load
+    var contentItems = [
+      ".viewer-content",
+      ".tab-bar"
+    ];
+    </script>
+
+    <!-- External requests section ---->
+    <!-- ------------------------------>
+
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    
+
     <!-- CommonJS shim for 6502-reasm library -->
     <script>
         var module = { exports: {} };
     </script>
-    
+
     <!-- Load 6502-reasm library from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/6502-reasm@1.0.0/6502.min.js"></script>
-    
+
     <!-- Make library globally accessible -->
     <script>
         window.reasm6502 = module.exports;
     </script>
 
-    <!-- Sequential Script Loader - Loads external JS files one at a time -->
+    <!-- Inline CSS Syles section ---->
+    <!-- ----------------------------->
+
+    <style>
+    /* common-inline.css - Shared styles for C64U Web Control Panel */
+
+    :root {
+        /* Colors */
+        --primary: #3498db;
+        --success: #2ecc71;
+        --danger: #e74c3c;
+        --warning: #ff9800;
+        --bg: #1a1c1e;
+        --card-bg: #25282c;
+        --text: #e0e0e0;
+        --text-dim: #a0a0a0;
+        --border: #3a3f44;
+        --input-bg: #2d3136;
+
+        /* Spacing */
+        --spacing-xs: 5px;
+        --spacing-sm: 10px;
+        --spacing-md: 20px;
+        --spacing-lg: 30px;
+
+        /* Border Radius */
+        --radius-sm: 4px;
+        --radius-md: 8px;
+
+        /* Transitions */
+        --transition: all 0.2s ease;
+    }
+
+    /* Base Styles */
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--bg);
+        margin: 0;
+        padding: var(--spacing-md);
+        color: var(--text);
+    }
+
+    .container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    /* Header Components */
+    header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--spacing-md);
+        border-bottom: 2px solid var(--primary);
+        padding-bottom: var(--spacing-sm);
+    }
+
+    h1 {
+        margin: 0;
+        font-size: 24px;
+        color: var(--primary);
+    }
+
+    .back-link {
+        font-size: 12px;
+        color: var(--text-dim);
+        text-decoration: none;
+        margin-top: var(--spacing-xs);
+        display: inline-block;
+    }
+
+    .back-link:hover {
+        color: var(--primary);
+    }
+
+    .header-actions {
+        display: flex;
+        gap: var(--spacing-sm);
+        align-items: center;
+    }
+
+    /* Authentication Box */
+    .auth-box {
+        /* No background or border - just contains the password input */
+    }
+
+    .auth-password-input {
+        width: 120px;
+        border: none;
+        background: transparent;
+        padding: 0;
+        color: var(--text);
+        font-family: monospace;
+    }
+
+    /* Loading Spinner */
+    .spinner {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border: 2px solid var(--text-dim);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    /* Error/Success Messages */
+    .error-box {
+        display: none;
+        background: var(--danger);
+        color: white;
+        padding: var(--spacing-sm);
+        border-radius: var(--radius-sm);
+        margin-bottom: 15px;
+        font-weight: bold;
+    }
+
+    .success-message {
+        color: var(--success);
+    }
+
+    .error-message {
+        color: var(--danger);
+    }
+
+    /* Tab Components */
+    .tab-bar {
+        display: flex;
+        gap: var(--spacing-xs);
+        margin-bottom: var(--spacing-md);
+        border-bottom: 2px solid var(--border);
+    }
+
+    .tab-button {
+        padding: var(--spacing-sm) var(--spacing-md);
+        background: var(--input-bg);
+        color: var(--text-dim);
+        border: none;
+        border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+        cursor: pointer;
+        font-weight: bold;
+        border: 1px solid var(--border);
+        border-bottom: none;
+        transition: var(--transition);
+    }
+
+    .tab-button:hover {
+        background: var(--card-bg);
+        color: var(--text);
+    }
+
+    .tab-button.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+
+    .viewer-content {
+        background: var(--card-bg);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
+        padding: var(--spacing-md);
+        min-height: 400px;
+    }
+
+    /* Form Controls */
+    input[type="text"],
+    input[type="password"],
+    select {
+        padding: 8px;
+        background: var(--input-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--text);
+        font-family: monospace;
+    }
+
+    select {
+        cursor: pointer;
+    }
+
+    input:focus,
+    select:focus {
+        outline: none;
+        border-color: var(--primary);
+    }
+
+    label {
+        color: var(--text-dim);
+        font-weight: bold;
+    }
+
+    /* Buttons */
+    button {
+        padding: 8px 16px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        font-weight: bold;
+        transition: var(--transition);
+    }
+
+    button:hover {
+        opacity: 0.8;
+    }
+
+    .btn-primary { background: var(--primary); }
+    .btn-success { background: var(--success); }
+    .btn-danger { background: var(--danger); }
+    .btn-warning { background: var(--warning); }
+
+    /* Control Groups */
+    .control-group {
+        display: flex;
+        gap: var(--spacing-sm);
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .control-group label {
+        color: var(--text-dim);
+        font-weight: bold;
+    }
+
+    .control-group input {
+        width: 100px;
+    }
+
+    /* Info/Status Boxes */
+    .info-box {
+        background: rgba(255, 255, 255, 0.05);
+        padding: var(--spacing-sm);
+        border-radius: var(--radius-sm);
+        margin-bottom: 15px;
+        font-size: 12px;
+        color: var(--text-dim);
+    }
+
+    /* Console/Code Display */
+    .console-display {
+        background: #121416;
+        color: #7fdbff;
+        padding: 15px;
+        border-radius: var(--radius-sm);
+        font-family: monospace;
+        font-size: 13px;
+        white-space: pre;
+        overflow-x: auto;
+        margin-top: 15px;
+        border: 1px solid #333;
+    }
+
+    .code-display {
+        background: var(--input-bg);
+        color: var(--text);
+        padding: 15px;
+        border-radius: var(--radius-sm);
+        font-family: monospace;
+        font-size: 13px;
+        white-space: pre;
+        overflow-x: auto;
+        border: 1px solid var(--border);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        body {
+            padding: var(--spacing-sm);
+        }
+
+        header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--spacing-sm);
+        }
+
+        .header-actions {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .tab-bar {
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            flex-wrap: wrap;
+        }
+    }
+
+    /* Content Disabled State - Used during script loading */
+    .content-disabled {
+        filter: grayscale(100%) brightness(0.8);
+        opacity: 0.6;
+        pointer-events: none;
+    }
+
+    /* Input Disabled State */
+    .input-disabled {
+        opacity: 0.4;
+        pointer-events: none;
+    }
+
+    /* Modal Dialog Styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-dialog {
+        background: var(--card-bg);
+        border: 2px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: var(--spacing-md);
+        min-width: 400px;
+        max-width: 600px;
+    }
+
+    .modal-instructions {
+        color: var(--text-dim);
+        font-size: 14px;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .modal-textarea {
+        width: 100%;
+        height: 100px;
+        background: var(--input-bg);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 8px;
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        resize: vertical;
+        margin-bottom: var(--spacing-md);
+        box-sizing: border-box;
+    }
+
+    .modal-textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+    }
+
+    .modal-buttons {
+        display: flex;
+        gap: var(--spacing-sm);
+        justify-content: flex-end;
+    }
+    </style>
+
+    <!-- Inline JS Scripts section ---->
+    <!-- ------------------------------>
+
     <script>
-    (function() {
-        'use strict';
+    /* common-inline.js
+     * No Concurrent File Load (sequential): Fonts -> CSS -> JS
+     *
+     * Per-page globals (define BEFORE this runs):
+     *   var requiredFonts = [{ url, family, weight, style, display?, format? }, ...];
+     *   var requiredCSS   = [{ url }, ...];
+     *   var requiredJS    = [{ url }, ...];
+     *   var contentItems  = ['.selector', ...];
+     *
+     * Optional:
+     *   window.initializeApp()
+     */
 
-        var requiredScripts = [
-            'js/ui-components.js',
-            'js/api-client.js',
-            'js/tab-lifecycle.js',
-            'js/hex-editor.js'
-        ];
+    (function () {
+      'use strict';
 
-        var contentItems = [
-            '.viewer-content',
-            '.tab-bar'
-        ];
+      // ----------------------------
+      // Defaults (if page forgets)
+      // ----------------------------
+      if (!Array.isArray(window.requiredFonts)) window.requiredFonts = [];
+      if (!Array.isArray(window.requiredCSS)) window.requiredCSS = [];
+      if (!Array.isArray(window.requiredJS)) window.requiredJS = [];
+      if (!Array.isArray(window.contentItems)) window.contentItems = [];
 
-        var currentIndex = 0;
-        var syntaxErrorDetected = false;
+      // ----------------------------
+      // UI helpers
+      // ----------------------------
+      function showSpinner() {
+        var spinner = document.getElementById('spinner');
+        if (spinner) spinner.style.display = 'inline-block';
+      }
 
-        function showSpinner() {
-            var spinner = document.getElementById('spinner');
-            if (spinner) spinner.style.display = 'inline-block';
+      function hideSpinner() {
+        var spinner = document.getElementById('spinner');
+        if (spinner) spinner.style.display = 'none';
+      }
+
+      function disableContent() {
+        window.contentItems.forEach(function (selector) {
+          var el = document.querySelector(selector);
+          if (el) el.classList.add('content-disabled');
+        });
+      }
+
+      function enableContent() {
+        window.contentItems.forEach(function (selector) {
+          var el = document.querySelector(selector);
+          if (el) el.classList.remove('content-disabled');
+        });
+      }
+
+      function showCriticalError(message, fileUrl) {
+        hideSpinner(); // keep content disabled
+
+        var text = '❌ ' + message + (fileUrl ? (' (' + fileUrl + ')') : '') + ' Please reload.';
+
+        var host = document.querySelector('.header-actions') || document.body;
+
+        var existing = document.getElementById('critical-error-inline');
+        if (existing) {
+          existing.textContent = text;
+          return;
         }
 
-        function hideSpinner() {
-            var spinner = document.getElementById('spinner');
-            if (spinner) spinner.style.display = 'none';
+        var span = document.createElement('span');
+        span.id = 'critical-error-inline';
+        span.textContent = text;
+        span.style.cssText =
+          'color:#e74c3c;font-weight:bold;font-size:14px;margin-right:25px;';
+
+        if (host.firstChild) host.insertBefore(span, host.firstChild);
+        else host.appendChild(span);
+      }
+
+      // Optional exports (handy for debugging)
+      window.showSpinner = showSpinner;
+      window.hideSpinner = hideSpinner;
+      window.disableContent = disableContent;
+      window.enableContent = enableContent;
+      window.showCriticalError = showCriticalError;
+
+      // ----------------------------
+      // Sequential loaders
+      // ----------------------------
+
+      function loadFontsSequential(list) {
+        if (!list.length) return Promise.resolve();
+
+        if (!('FontFace' in window) || !document.fonts) {
+          // If you prefer: treat as fatal -> return Promise.reject(...)
+          return Promise.resolve();
         }
 
-        function disableContent() {
-            contentItems.forEach(function(selector) {
-                var element = document.querySelector(selector);
-                if (element) element.classList.add('content-disabled');
-            });
+        var i = 0;
+
+        function next() {
+          if (i >= list.length) return Promise.resolve();
+
+          var f = list[i++];
+          if (!f || !f.url || !f.family) {
+            return Promise.reject({ stage: 'font', url: (f && f.url) || null, error: new Error('Invalid font spec') });
+          }
+
+          var descriptors = {
+            weight: f.weight || 'normal',
+            style: f.style || 'normal'
+          };
+          if (f.display) descriptors.display = f.display;
+
+          // Use the FontFace API to explicitly control requests (sequential)
+          var face = new FontFace(
+            f.family,
+            "url('" + f.url + "')" + (f.format ? (" format('" + f.format + "')") : ''),
+            descriptors
+          );
+
+          return face.load().then(function (loaded) {
+            document.fonts.add(loaded);
+            return next();
+          }).catch(function (e) {
+            return Promise.reject({ stage: 'font', url: f.url, error: e });
+          });
         }
 
-        function enableContent() {
-            contentItems.forEach(function(selector) {
-                var element = document.querySelector(selector);
-                if (element) element.classList.remove('content-disabled');
-            });
+        return next();
+      }
+
+      function loadCSSSequential(list) {
+        if (!list.length) return Promise.resolve();
+
+        var i = 0;
+
+        function next() {
+          if (i >= list.length) return Promise.resolve();
+
+          var item = list[i++];
+          var url = item && item.url;
+
+          if (!url) {
+            return Promise.reject({ stage: 'css', url: null, error: new Error('Invalid CSS spec') });
+          }
+
+          return new Promise(function (resolve, reject) {
+            var link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = url;
+
+            link.onload = function () { resolve(); };
+            link.onerror = function () { reject(new Error('CSS load error')); };
+
+            document.head.appendChild(link);
+          }).then(next).catch(function (e) {
+            return Promise.reject({ stage: 'css', url: url, error: e });
+          });
         }
 
-        function showError() {
-            hideSpinner();
-            // Keep content disabled
+        return next();
+      }
 
-            var span = document.createElement('span');
-            span.textContent = '❌ Failed to fetch the page from the device. Please reload.';
-            span.style.cssText = 'color: #e74c3c; font-weight: bold; font-size: 14px; margin-right: 25px;';
+      function loadJSSequential(list) {
+        if (!list.length) return Promise.resolve();
 
-            var headerActions = document.querySelector('.header-actions');
-            if (headerActions) {
-                headerActions.insertBefore(span, headerActions.firstChild);
-            }
-        }
+        var i = 0;
 
-        function loadNextScript() {
-            // All scripts loaded
-            if (currentIndex >= requiredScripts.length) {
-                hideSpinner();
-                enableContent();
+        function next() {
+          if (i >= list.length) return Promise.resolve();
 
-                if (typeof window.initializeApp === 'function') {
-                    window.initializeApp();
-                }
-                return;
-            }
+          var item = list[i++];
+          var url = item && item.url;
 
-            var url = requiredScripts[currentIndex];
+          if (!url) {
+            return Promise.reject({ stage: 'js', url: null, error: new Error('Invalid JS spec') });
+          }
 
+          return new Promise(function (resolve, reject) {
             var script = document.createElement('script');
             script.src = url;
 
-            syntaxErrorDetected = false;
+            var hadErrorForThisScript = false;
 
-            // Syntax error handler
-            var errorHandler = function(event) {
-                if (event.filename && event.filename.includes(url)) {
-                    console.error('✗ Syntax error in ' + url);
-                    syntaxErrorDetected = true;
+            function onWindowError(event) {
+              // Best-effort: match errors to the currently-loading script by filename.
+              if (event && event.filename && event.filename.indexOf(url) !== -1) {
+                hadErrorForThisScript = true;
+              }
+            }
+
+            window.addEventListener('error', onWindowError);
+
+            script.onload = function () {
+              setTimeout(function () {
+                window.removeEventListener('error', onWindowError);
+
+                if (hadErrorForThisScript) {
+                  reject(new Error('JS syntax/runtime error'));
+                } else {
+                  resolve();
                 }
-            };
-            window.addEventListener('error', errorHandler);
-
-            script.onload = function() {
-                setTimeout(function() {
-                    window.removeEventListener('error', errorHandler);
-
-                    if (syntaxErrorDetected) {
-                        console.error('✗ Failed to load ' + url);
-                        showError();
-                    } else {
-                        currentIndex++;
-                        loadNextScript();
-                    }
-                }, 100);
+              }, 50);
             };
 
-            script.onerror = function() {
-                console.error('✗ Network error loading ' + url);
-                window.removeEventListener('error', errorHandler);
-                showError();
+            script.onerror = function () {
+              window.removeEventListener('error', onWindowError);
+              reject(new Error('JS network error'));
             };
 
             document.head.appendChild(script);
+          }).then(next).catch(function (e) {
+            return Promise.reject({ stage: 'js', url: url, error: e });
+          });
         }
 
-        $(document).ready(function() {
-            setTimeout(function() {
-                // Check HTML complete
-                if (typeof window.initializeApp !== 'function') {
-                    location.reload(true);
-                    return;
-                }
+        return next();
+      }
 
-                showSpinner();
-                disableContent();
-                loadNextScript();
-            }, 50);
+      // ----------------------------
+      // Orchestrator + boot
+      // ----------------------------
+
+      function loadAllSequentially() {
+        return loadFontsSequential(window.requiredFonts)
+          .then(function () { return loadCSSSequential(window.requiredCSS); })
+          .then(function () { return loadJSSequential(window.requiredJS); });
+      }
+
+      function startPageLoad() {
+        showSpinner();
+        disableContent();
+
+        loadAllSequentially()
+          .then(function () {
+            hideSpinner();
+            enableContent();
+
+            if (typeof window.initializeApp === 'function') {
+              window.initializeApp();
+            }
+          })
+          .catch(function (info) {
+            var stage = (info && info.stage) ? info.stage : 'unknown';
+            var url = (info && info.url) ? info.url : null;
+
+            showCriticalError('Failed to load local ' + stage + ' resource.', url);
+            console.error('Critical load failure:', info);
+          });
+      }
+
+      if (window.jQuery && typeof window.jQuery === 'function') {
+        jQuery(document).ready(function () {
+          setTimeout(startPageLoad, 25);
         });
-
+      } else {
+        document.addEventListener('DOMContentLoaded', function () {
+          setTimeout(startPageLoad, 25);
+        });
+      }
     })();
     </script>
 </head>
@@ -579,14 +1120,14 @@
         // ============================================================================
         // DISASSEMBLY VIEWER: 6502 Assembly Browser
         // ============================================================================
-        
+
         var DisassemblyViewer = {
             currentAddress: 0xC000,
             currentLength: 64,
-            
+
             initialize: function() {
                 console.log('DisassemblyViewer: initialize()');
-                
+
                 // Address input
                 $('#disasm-address').on('input', () => this.onAddressChange());
                 $('#disasm-address').on('keydown', (e) => {
@@ -596,25 +1137,25 @@
                         $('#disasm-address').blur();
                     }
                 });
-                
+
                 // Length selector
                 $('#disasm-length').change(() => this.onLengthChange());
-                
+
                 // Navigation buttons
                 $('#disasm-nav-up').click(() => this.navigateUp());
                 $('#disasm-nav-down').click(() => this.navigateDown());
                 $('#disasm-prev-page').click(() => this.navigatePrevPage());
                 $('#disasm-next-page').click(() => this.navigateNextPage());
-                
+
                 // Keyboard shortcuts
                 $(document).on('keydown', (e) => {
                     if (!this.isActive()) return;
-                    
+
                     // Ignore if typing in input field
                     if ($(e.target).is('input, textarea, select')) {
                         return;
                     }
-                    
+
                     switch(e.key.toLowerCase()) {
                         case 'r':
                             e.preventDefault();
@@ -643,39 +1184,39 @@
                     }
                 });
             },
-            
+
             activate: function() {
                 console.log('DisassemblyViewer: activate()');
                 this.refresh();
             },
-            
+
             canDeactivate: function() {
                 console.log('DisassemblyViewer: canDeactivate() -> true');
                 return true;
             },
-            
+
             deactivate: function() {
                 console.log('DisassemblyViewer: deactivate()');
             },
-            
+
             isActive: function() {
                 return $('#tab1-content').is(':visible');
             },
-            
+
             refresh: function() {
                 console.log('DisassemblyViewer: refresh()');
                 this.loadMemoryAndDisassemble();
             },
-            
+
             onAddressChange: function() {
                 const addressStr = $('#disasm-address').val().replace(/[^0-9A-Fa-f]/g, '');
                 const address = parseInt(addressStr, 16);
-                
+
                 if (!isNaN(address) && address >= 0 && address <= 0xFFFF) {
                     this.currentAddress = address;
                 }
             },
-            
+
             onLengthChange: function() {
                 const length = parseInt($('#disasm-length').val(), 10);
                 this.currentLength = length;
@@ -683,40 +1224,40 @@
                 this.updateAddressInput();
                 this.refresh();
             },
-            
+
             navigateToAddress: function() {
                 this.onAddressChange();
                 this.clampAddress();
                 this.updateAddressInput();
                 this.refresh();
             },
-            
+
             navigateUp: function() {
                 this.currentAddress = Math.max(0, this.currentAddress - 1);
                 this.updateAddressInput();
                 this.refresh();
             },
-            
+
             navigateDown: function() {
                 this.currentAddress = Math.min(0xFFFF, this.currentAddress + 1);
                 this.clampAddress();
                 this.updateAddressInput();
                 this.refresh();
             },
-            
+
             navigatePrevPage: function() {
                 this.currentAddress = Math.max(0, this.currentAddress - this.currentLength);
                 this.updateAddressInput();
                 this.refresh();
             },
-            
+
             navigateNextPage: function() {
                 this.currentAddress = Math.min(0xFFFF, this.currentAddress + this.currentLength);
                 this.clampAddress();
                 this.updateAddressInput();
                 this.refresh();
             },
-            
+
             clampAddress: function() {
                 // Ensure address + length doesn't exceed 0xFFFF
                 if (this.currentAddress + this.currentLength > 0x10000) {
@@ -724,43 +1265,43 @@
                 }
                 this.currentAddress = Math.max(0, Math.min(0xFFFF, this.currentAddress));
             },
-            
+
             updateAddressInput: function() {
                 const addressStr = this.currentAddress.toString(16).padStart(4, '0').toUpperCase();
                 $('#disasm-address').val(addressStr);
             },
-            
+
             updateSubheader: function() {
                 const startAddr = this.currentAddress;
                 const endAddr = Math.min(0xFFFF, startAddr + this.currentLength - 1);
-                
+
                 const startHex = startAddr.toString(16).padStart(4, '0').toUpperCase();
                 const endHex = endAddr.toString(16).padStart(4, '0').toUpperCase();
-                
+
                 $('#disasm-current-address').text(
                     `$${startHex} (${startAddr}) - $${endHex} (${endAddr})`
                 );
             },
-            
+
             loadMemoryAndDisassemble: function() {
                 const address = this.currentAddress;
                 const length = this.currentLength;
-                
+
                 this.updateSubheader();
-                
+
                 // Check if library is loaded
                 if (typeof window.reasm6502 === 'undefined' || !window.reasm6502.disasm) {
                     showError('6502-reasm library not loaded');
                     return;
                 }
-                
+
                 readMemory(address, length, (data) => {
                     try {
                         const bytes = Array.from(new Uint8Array(data));
-                        
+
                         // Disassemble using 6502-reasm library
                         const disasmResult = window.reasm6502.disasm(bytes, address);
-                        
+
                         this.renderDisassembly(disasmResult, bytes, address);
                     } catch (error) {
                         showError(`Disassembly error: ${error.message}`);
@@ -769,22 +1310,22 @@
                     showError(`Error reading memory: ${error}`);
                 });
             },
-            
+
             renderDisassembly: function(instructions, bytes, startAddress) {
                 const $display = $('#disasm-display');
                 $display.empty();
-                
+
                 let html = '';
                 let byteOffset = 0;
-                
+
                 for (let i = 0; i < instructions.length; i++) {
                     const instr = instructions[i];
                     const addr = instr.address;
                     const addrHex = addr.toString(16).padStart(4, '0').toUpperCase();
-                    
+
                     // Column 1: Address
                     const col1 = `<span class="disasm-col-addr">$${addrHex}</span>`;
-                    
+
                     // Column 2: Hex bytes (1-3 bytes)
                     const instrBytes = instr.bytes || [];
                     let bytesHex = '';
@@ -793,27 +1334,27 @@
                     }
                     bytesHex = bytesHex.padEnd(9, ' '); // Pad to 3 bytes width
                     const col2 = `<span class="disasm-col-bytes">${bytesHex}</span>`;
-                    
+
                     // Column 3: Assembly instruction
                     const assembly = instr.assembly || '???';
                     const col3 = `<span class="disasm-col-instr">${assembly}</span>`;
-                    
+
                     // Column 4: Jump/branch target
                     const col4 = this.getJumpTarget(instr, bytes, startAddress);
-                    
+
                     html += `<div class="disasm-row">${col1}${col2}${col3}${col4}</div>`;
-                    
+
                     byteOffset += instrBytes.length;
                 }
-                
+
                 $display.html(html);
             },
-            
+
             getJumpTarget: function(instr, bytes, startAddress) {
                 const assembly = instr.assembly || '';
                 const addr = instr.address;
                 const instrBytes = instr.bytes || [];
-                
+
                 // Conditional branches (relative addressing)
                 if (/^(BCC|BCS|BEQ|BMI|BNE|BPL|BVC|BVS)\s/.test(assembly)) {
                     if (instrBytes.length === 2) {
@@ -824,7 +1365,7 @@
                         return `<span class="disasm-col-target">→ $${targetHex}</span>`;
                     }
                 }
-                
+
                 // Unconditional jumps (absolute addressing)
                 if (/^JMP\s\$[0-9A-F]{4}/.test(assembly)) {
                     if (instrBytes.length === 3) {
@@ -833,7 +1374,7 @@
                         return `<span class="disasm-col-target">→ $${targetHex}</span>`;
                     }
                 }
-                
+
                 // JSR (absolute addressing)
                 if (/^JSR\s\$[0-9A-F]{4}/.test(assembly)) {
                     if (instrBytes.length === 3) {
@@ -842,13 +1383,13 @@
                         return `<span class="disasm-col-target">→ $${targetHex}</span>`;
                     }
                 }
-                
+
                 // Indirect jumps - peek memory to get actual target
                 if (/^JMP\s\(\$[0-9A-F]{4}\)/.test(assembly)) {
                     if (instrBytes.length === 3) {
                         const indirectAddr = instrBytes[1] | (instrBytes[2] << 8);
                         const indirectHex = indirectAddr.toString(16).padStart(4, '0').toUpperCase();
-                        
+
                         // Try to peek the target address (asynchronously)
                         this.peekIndirectTarget(indirectAddr, (targetAddr) => {
                             if (targetAddr !== null) {
@@ -856,14 +1397,14 @@
                                 return `<span class="disasm-col-target">→ ($${indirectHex}) $${targetHex}</span>`;
                             }
                         });
-                        
+
                         return `<span class="disasm-col-target">→ ($${indirectHex})</span>`;
                     }
                 }
-                
+
                 return '<span class="disasm-col-target"></span>';
             },
-            
+
             peekIndirectTarget: function(indirectAddr, callback) {
                 // Read 2 bytes from indirect address to get actual target
                 readMemory(indirectAddr, 2, (data) => {

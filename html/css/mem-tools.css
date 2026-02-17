@@ -100,7 +100,7 @@
     gap: 8px;
 }
 
-/* Hex display and editor styles moved to css/mem-tool.css */
+/* Hex display and editor styles */
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
@@ -113,17 +113,6 @@
     .mem-header-right {
         justify-content: center;
     }
-}
-
-/* C64 Font for Character Display */
-@font-face {
-    font-family: 'C64ProMono';
-    src: url('../fonts/C64ProMono.woff2') format('woff2'),
-         url('../fonts/C64ProMono.woff') format('woff'),
-         url('../fonts/C64ProMono.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
 }
 
 /* Hex Editor Display Container */
