@@ -1,10 +1,10 @@
 /**
  * api-client.js
  * C64U REST API Interface Layer
- * 
+ *
  * Provides all methods for interfacing with the C64U REST API.
  * This is the only file that should make direct REST API calls.
- * 
+ *
  * Version: 1.0
  * Date: February 6, 2026
  */
@@ -91,6 +91,10 @@ function readMemory(address, length, callback, errorCallback) {
     const password = $('#apiPassword').val();
     const hexAddr = address.toString(16).padStart(4, '0').toUpperCase();
 
+    if (isApiBusy()) {
+        console.warn('readMemory: REST API is already busy!');
+    }
+
     setApiBusy(true);
     showSpinner(true);
 
@@ -151,6 +155,10 @@ function writeMemory(address, dataArray, callback, errorCallback) {
         showError(`Write error: ${errorMsg}`);
         if (errorCallback) errorCallback(errorMsg);
     };
+
+    if (isApiBusy()) {
+        console.warn('readMemory: REST API is already busy!');
+    }
 
     setApiBusy(true);
     showSpinner(true);

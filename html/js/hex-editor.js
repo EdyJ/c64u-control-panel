@@ -1401,7 +1401,7 @@ function hexEditorNavigateToAddress(address, callback) {
     // Validate and fix address to be within boundaries
     address = hexEditorValidateAddress(address);
 
-    console.log('HexEditor: Navigate to address', address.toString(16).toUpperCase());
+    // console.log('HexEditor: Navigate to address', address.toString(16).toUpperCase());
 
     // Read memory from C64 via API
     readMemory(address, hexEditorState.pageSize,
