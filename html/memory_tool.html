@@ -956,11 +956,6 @@
                 // Set up navigation controls
                 this.setupNavigation();
 
-                // Load initial memory from C64
-                hexEditorNavigateToAddress(initialAddress, () => {
-                    this.updateAddressDisplay();
-                });
-
                 // Set up Edit/Save/Cancel buttons
                 const enterEditMode = () => {
                     // Don't enter edit mode if API is busy
@@ -1015,9 +1010,6 @@
                     $('#hex-edit-btn').show();
                     this.updateAddressDisplay();
                 });
-
-                // Update address display
-                this.updateAddressDisplay();
             },
 
             setupNavigation: function() {
@@ -1134,6 +1126,7 @@
 
             activate: function() {
                 console.log('HexViewer: activate()');
+                this.refresh();
             },
 
             canDeactivate: function() {
@@ -1268,40 +1261,40 @@
                 this.currentLength = length;
                 this.clampAddress();
                 this.updateAddressInput();
-                this.refresh();
+                this.loadMemoryAndDisassemble();
             },
 
             navigateToAddress: function() {
                 this.onAddressChange();
                 this.clampAddress();
                 this.updateAddressInput();
-                this.refresh();
+                this.loadMemoryAndDisassemble();
             },
 
             navigateUp: function() {
                 this.currentAddress = Math.max(0, this.currentAddress - 1);
                 this.updateAddressInput();
-                this.refresh();
+                this.loadMemoryAndDisassemble();
             },
 
             navigateDown: function() {
                 this.currentAddress = Math.min(0xFFFF, this.currentAddress + 1);
                 this.clampAddress();
                 this.updateAddressInput();
-                this.refresh();
+                this.loadMemoryAndDisassemble();
             },
 
             navigatePrevPage: function() {
                 this.currentAddress = Math.max(0, this.currentAddress - this.currentLength);
                 this.updateAddressInput();
-                this.refresh();
+                this.loadMemoryAndDisassemble();
             },
 
             navigateNextPage: function() {
                 this.currentAddress = Math.min(0xFFFF, this.currentAddress + this.currentLength);
                 this.clampAddress();
                 this.updateAddressInput();
-                this.refresh();
+                this.loadMemoryAndDisassemble();
             },
 
             clampAddress: function() {
