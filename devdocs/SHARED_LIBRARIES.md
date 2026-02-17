@@ -1,7 +1,7 @@
 # Shared JavaScript Libraries Specification
 
-**Version:** 1.0  
-**Date:** February 6, 2026  
+**Version:** 2.0
+**Date:** February 17, 2026  
 **Purpose:** This document defines the specification for the three shared JavaScript libraries used across the C64U Web Control Panel project.
 
 ---
@@ -33,6 +33,24 @@ Provides all methods that interface with the C64U REST API. This is the **only**
 - Stream operations
 - Any helper methods needed by multiple tools
 
+### Core Functions
+
+The library provides these primary functions:
+
+1. `parseApiError(jqXHR)` - Robust error parser that handles JSON errors array
+2. `readMemory(address, length, callback, errorCallback)` - Read memory operation
+3. `writeMemory(address, dataArray, callback, errorCallback)` - Write memory operation (handles both PUT and POST)
+4. `getConfigCategories(callback, errorCallback)` - Get list of all config categories
+5. `getConfigCategory(category, callback, errorCallback)` - Get all items in a category
+6. `getConfigItem(category, item, callback, errorCallback)` - Get specific config item
+7. `setConfigItem(category, item, value, callback, errorCallback)` - Set config item value
+8. `mountDisk(drive, path, callback, errorCallback)` - Mount disk image to drive
+9. `unmountDisk(drive, callback, errorCallback)` - Unmount disk from drive
+10. `getDriveStatus(drive, callback, errorCallback)` - Get current drive status
+11. `enableStream(streamName, ip, callback, errorCallback)` - Enable a data stream
+12. `disableStream(streamName, callback, errorCallback)` - Disable a data stream
+13. `getStreamStatus(callback, errorCallback)` - Get status of all streams
+
 ### Design Principles
 
 - **Simple functions** - No modules, namespaces, or classes
@@ -41,12 +59,6 @@ Provides all methods that interface with the C64U REST API. This is the **only**
 - **Password retrieval** - Each method reads password from `$('#apiPassword').val()`
 - **Spinner integration** - Methods should call `showSpinner()` from ui-components.js
 - **Error display** - Methods should call `showError()` from ui-components.js on errors
-
-### Code Reference
-
-See **C64U Memory REST API Reference.md** for the complete implementation of memory operations with proper error handling.
-
-See **C64U REST API.md** for the complete endpoint catalog and API specifications.
 
 ---
 
@@ -67,12 +79,31 @@ Provides reusable UI utility functions for common operations. These functions ma
 
 ### Functions
 
+#### Core Functions
+
 1. `showSpinner(show)` - Show/hide the global spinner
 2. `showError(message)` - Display error in the global error box
 3. `hideError()` - Hide the global error box
 4. `showSuccess(containerId, message)` - Display success message with checkmark
 5. `showErrorStatus(containerId, message)` - Display error message with cross
 6. `formatAddress(addressStr)` - Format and validate hex address (returns null if invalid)
+7. `isApiBusy()` - Check if an API call is currently in progress (returns boolean)
+
+#### Keyboard Handling
+
+1. `setupHexInput(inputId)` - Configure input to accept only hex characters
+2. `handleEnterKey(inputId, callback)` - Execute callback when Enter is pressed
+
+#### Data Formatting
+
+1. `formatHexByte(value)` - Format byte as 2-digit hex (e.g., "0F")
+2. `formatHexWord(value)` - Format word as 4-digit hex (e.g., "C000")
+3. `formatByteArray(bytes)` - Format array of bytes as hex string
+
+#### Form Validation
+
+1. `validateRange(value, min, max)` - Validate numeric range
+2. `validateHexString(str, length)` - Validate hex string of specific length
 
 ### Design Principles
 
@@ -83,7 +114,7 @@ Provides reusable UI utility functions for common operations. These functions ma
 
 ### Code Reference
 
-See **STYLE_GUIDE.md** section "JavaScript Helper Functions (`ui-components.js`)" for complete implementation examples.
+See `ui-components.js` in the `/flash/html/js/` directory for complete implementation examples.
 
 ---
 
@@ -139,41 +170,6 @@ Tools using this library should:
 ### Code Reference
 
 See **Tab_Lifecycle_Pattern.md** for complete implementation examples and flow diagrams.
-
----
-
-## Integration Example
-
-### HTML Structure
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Tool Name</title>
-    <link rel="stylesheet" href="common.css">
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="js/api-client.js"></script>
-    <script src="js/ui-components.js"></script>
-    <script src="js/tab-lifecycle.js"></script>
-</head>
-<body>
-    <!-- Tool content -->
-    <script>
-        // Tool-specific code
-    </script>
-</body>
-</html>
-```
-
-### Script Loading Order
-
-1. jQuery (from CDN)
-2. api-client.js (depends on jQuery)
-3. ui-components.js (depends on jQuery)
-4. tab-lifecycle.js (depends on jQuery)
-5. Tool-specific inline scripts (depend on all libraries)
 
 ---
 

@@ -2,8 +2,6 @@
 
 This document is the unified reference for the REST API of the Commodore 64 Ultimate (C64U) device. The first part covers the general usage guide (URL format, authentication, error handling). The second part is the complete endpoint catalog.
 
-The memory read/write operations have additional client-side implementation details documented in the **C64U Memory REST API Reference.md** document.
-
 ---
 
 ## REST API Calls
