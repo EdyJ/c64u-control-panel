@@ -1,11 +1,11 @@
 # No Concurrent File Load Protocol
 
-Protocol and template files to create simple web pages that don’t cause concurrent file request to the host.
+Protocol and template files to create simple web pages that don't cause concurrent file request to the host.
 
 ## Rules
 
-- Local font, css and js files can only be loaded sequentially via the inline loader code. No <link> / <script src> declarations in the head section of the html page.
-- No `@font-face`, `@import`, or `url(’…’)` elements in css files.
+- Local font, css and js files can only be loaded sequentially via the inline loader code. No `<link>` / `<script src>` declarations in the head section of the html page.
+- No `@font-face`, `@import`, or `url('...')` elements in css files.
 - The inline styles and scripts must be maintained in separate files:
     - `common-inline.css`
     - `common-inline.js`
@@ -19,6 +19,50 @@ Protocol and template files to create simple web pages that don’t cause concur
     ```css
     font-family: 'C64ProMono', monospace;
     ```
+
+---
+
+## How to Create a New Page
+
+1. **Duplicate the template file:**
+   - Copy `template.html` from the `/flash/html/` directory
+   - Rename it to your tool's name (e.g., `mytool.html`)
+
+2. **Update the page metadata:**
+   - Change the `<title>` element (line 6)
+   - Update the `<h1>` in the header (line 232)
+   - Modify the back link `href` if needed (line 238)
+
+3. **Configure page-specific resources:**
+   - Edit `requiredFonts`, `requiredCSS`, `requiredJS` arrays (lines 14-42) to include only the files your tool needs
+   - Update `contentItems` array (lines 44-47) to specify which elements should be disabled during load
+
+4. **Add your tool content:**
+   - Replace the placeholder content in the `<body>` with your tool's HTML
+   - Add your tool's JavaScript code in the final `<script>` block (lines 280-295)
+   - Define `window.initializeApp = function() { ... }` to run initialization code after all resources load
+
+5. **Test the page:**
+   - Open the HTML file in a browser to verify layout and functionality
+   - Note: REST API calls will fail without a C64U device
+
+---
+
+## Template File Reference
+
+The template file (`/flash/html/template.html`) contains:
+
+| Section | Description |
+|---------|-------------|
+| **HEAD** | Meta tags, title, favicon, resource declarations |
+| **Local Requests** | JavaScript variables defining required fonts, CSS, JS files |
+| **External Requests** | jQuery and other CDN scripts |
+| **Inline CSS** | All styles from `common-inline.css` |
+| **Inline JS** | Page loader from `common-inline.js` |
+| **BODY** | Header, error box, tab bar, content area |
+| **Tool Script** | Placeholder for tool-specific JavaScript |
+
+For detailed HTML templates for common patterns (headers, tabs, forms, etc.), see **STYLE_GUIDE.md**.
 
 # Template
 

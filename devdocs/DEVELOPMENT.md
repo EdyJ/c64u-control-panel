@@ -11,6 +11,7 @@ All files are deployed to the C64U device's web server root directory at `/flash
 ```
 /flash/html/
 ├── index.html              # Landing page with links to all tools
+├── template.html           # Template for creating new tools
 ├── memory_tool.html        # Memory browser and editor tool
 ├── api_debug.html          # API testing and debugging tool
 ├── drives_tool.html        # Drive management tool
@@ -40,8 +41,13 @@ All files are deployed to the C64U device's web server root directory at `/flash
 
 ## How to add new tools
 
-- (recommended) Duplicate an existing html page and edit content.
-- Follow the **PAGE_TEMPLATE.md** file for page specifications.
+1. **Use the template file (recommended):**
+   - Copy `/flash/html/template.html` to your new tool's name (e.g., `mytool.html`)
+   - See **PAGE_TEMPLATE.md** for detailed instructions on customizing the template
+
+2. **Alternative: Duplicate an existing tool:**
+   - Copy an existing HTML file and modify its content
+   - This works well if your tool is similar to an existing one
 
 ## Common code patterns
 
