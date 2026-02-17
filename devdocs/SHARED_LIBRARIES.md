@@ -50,6 +50,8 @@ The library provides these primary functions:
 11. `enableStream(streamName, ip, callback, errorCallback)` - Enable a data stream
 12. `disableStream(streamName, callback, errorCallback)` - Disable a data stream
 13. `getStreamStatus(callback, errorCallback)` - Get status of all streams
+14. `isApiBusy()` - Check if an API call is currently in progress (returns boolean)
+15. `setApiBusy(busy)` - Internal function to set the busy state
 
 ### Design Principles
 
@@ -87,7 +89,6 @@ Provides reusable UI utility functions for common operations. These functions ma
 4. `showSuccess(containerId, message)` - Display success message with checkmark
 5. `showErrorStatus(containerId, message)` - Display error message with cross
 6. `formatAddress(addressStr)` - Format and validate hex address (returns null if invalid)
-7. `isApiBusy()` - Check if an API call is currently in progress (returns boolean)
 
 #### Keyboard Handling
 
@@ -149,12 +150,13 @@ Each viewer object must implement these five methods:
 
 ### Core Functions
 
-The library should provide:
+The library provides:
 
-1. `setupTabs()` - Bind click handlers to tab buttons
+1. `setupTabs(tabToViewerMap, initialTab)` - Bind click handlers to tab buttons and initialize tab system
 2. `switchToTab(tabId)` - Switch to a specific tab (with canDeactivate check)
 3. `getActiveViewer()` - Get the currently active viewer object
 4. `getViewerByTab(tabId)` - Get viewer object for a specific tab
+5. `initializeViewers(viewerNames)` - Initialize all viewers by calling their initialize() method
 
 ### Integration Pattern
 
@@ -162,10 +164,11 @@ Tools using this library should:
 
 1. Define viewer objects with lifecycle methods
 2. Create a `viewerMap` mapping tab IDs to viewer names
-3. Call `setupTabs()` during initialization
-4. Activate the first viewer
-5. Set up the global Refresh button to call `refresh()` on active viewer
-6. Set up `beforeunload` handler for unsaved changes protection
+3. Call `initializeViewers(viewerNames)` to initialize all viewers
+4. Call `setupTabs(viewerMap, initialTab)` to set up tab switching
+5. Activate the first viewer
+6. Set up the global Refresh button to call `refresh()` on active viewer
+7. Set up `beforeunload` handler for unsaved changes protection
 
 ### Code Reference
 
