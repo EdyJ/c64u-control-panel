@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ultimate Memory Browser Tool</title>
+    <link id="app-favicon" rel="icon" href="data:,">
 
     <!-- Local requests section ---->
     <!-- --------------------------->
@@ -430,7 +431,7 @@
 
     <script>
     /* common-inline.js
-     * No Concurrent File Load (sequential): Fonts -> CSS -> JS
+     * No Concurrent File Load (sequential): CSS -> Fonts -> JS -> Favicon
      *
      * Per-page globals (define BEFORE this runs):
      *   var requiredFonts = [{ url, family, weight, style, display?, format? }, ...];
@@ -503,7 +504,7 @@
         else host.appendChild(span);
       }
 
-      // Optional exports (handy for debugging)
+      // Optional exports
       window.showSpinner = showSpinner;
       window.hideSpinner = hideSpinner;
       window.disableContent = disableContent;
@@ -511,50 +512,50 @@
       window.showCriticalError = showCriticalError;
 
       // ----------------------------
-      // Sequential loaders
+      // Favicon stage (best-effort, last)
       // ----------------------------
 
-      function loadFontsSequential(list) {
-        if (!list.length) return Promise.resolve();
-
-        if (!('FontFace' in window) || !document.fonts) {
-          // If you prefer: treat as fatal -> return Promise.reject(...)
-          return Promise.resolve();
+      function ensurePlaceholderFaviconLink() {
+        var link = document.getElementById('app-favicon');
+        if (!link) {
+          link = document.createElement('link');
+          link.id = 'app-favicon';
+          link.rel = 'icon';
+          document.head.appendChild(link);
         }
-
-        var i = 0;
-
-        function next() {
-          if (i >= list.length) return Promise.resolve();
-
-          var f = list[i++];
-          if (!f || !f.url || !f.family) {
-            return Promise.reject({ stage: 'font', url: (f && f.url) || null, error: new Error('Invalid font spec') });
-          }
-
-          var descriptors = {
-            weight: f.weight || 'normal',
-            style: f.style || 'normal'
-          };
-          if (f.display) descriptors.display = f.display;
-
-          // Use the FontFace API to explicitly control requests (sequential)
-          var face = new FontFace(
-            f.family,
-            "url('" + f.url + "')" + (f.format ? (" format('" + f.format + "')") : ''),
-            descriptors
-          );
-
-          return face.load().then(function (loaded) {
-            document.fonts.add(loaded);
-            return next();
-          }).catch(function (e) {
-            return Promise.reject({ stage: 'font', url: f.url, error: e });
-          });
-        }
-
-        return next();
+        if (!link.href) link.href = 'data:,';
+        return link;
       }
+
+      function setFaviconHref(url) {
+        var link = ensurePlaceholderFaviconLink();
+        link.href = url;
+      }
+
+      // Best-effort: if favicon.ico exists next to the HTML file, set it.
+      // Do nothing on any failure.
+      function tryLoadFaviconLast() {
+        ensurePlaceholderFaviconLink();
+
+        var url = 'favicon.ico';
+
+        // Use HEAD probe to avoid downloading it; fallback to GET if HEAD fails.
+        return fetch(url, { method: 'HEAD', cache: 'no-store' })
+          .then(function (r) {
+            if (r && r.ok) setFaviconHref(url);
+          })
+          .catch(function () {
+            return fetch(url, { method: 'GET', cache: 'no-store' })
+              .then(function (r) {
+                if (r && r.ok) setFaviconHref(url);
+              })
+              .catch(function () { /* ignore */ });
+          });
+      }
+
+      // ----------------------------
+      // Sequential loaders
+      // ----------------------------
 
       function loadCSSSequential(list) {
         if (!list.length) return Promise.resolve();
@@ -588,6 +589,47 @@
         return next();
       }
 
+      function loadFontsSequential(list) {
+        if (!list.length) return Promise.resolve();
+
+        if (!('FontFace' in window) || !document.fonts) {
+          // Non-fatal: allow fallback fonts
+          return Promise.resolve();
+        }
+
+        var i = 0;
+
+        function next() {
+          if (i >= list.length) return Promise.resolve();
+
+          var f = list[i++];
+          if (!f || !f.url || !f.family) {
+            return Promise.reject({ stage: 'font', url: (f && f.url) || null, error: new Error('Invalid font spec') });
+          }
+
+          var descriptors = {
+            weight: f.weight || 'normal',
+            style: f.style || 'normal'
+          };
+          if (f.display) descriptors.display = f.display;
+
+          var face = new FontFace(
+            f.family,
+            "url('" + f.url + "')" + (f.format ? (" format('" + f.format + "')") : ''),
+            descriptors
+          );
+
+          return face.load().then(function (loaded) {
+            document.fonts.add(loaded);
+            return next();
+          }).catch(function (e) {
+            return Promise.reject({ stage: 'font', url: f.url, error: e });
+          });
+        }
+
+        return next();
+      }
+
       function loadJSSequential(list) {
         if (!list.length) return Promise.resolve();
 
@@ -610,7 +652,6 @@
             var hadErrorForThisScript = false;
 
             function onWindowError(event) {
-              // Best-effort: match errors to the currently-loading script by filename.
               if (event && event.filename && event.filename.indexOf(url) !== -1) {
                 hadErrorForThisScript = true;
               }
@@ -621,12 +662,8 @@
             script.onload = function () {
               setTimeout(function () {
                 window.removeEventListener('error', onWindowError);
-
-                if (hadErrorForThisScript) {
-                  reject(new Error('JS syntax/runtime error'));
-                } else {
-                  resolve();
-                }
+                if (hadErrorForThisScript) reject(new Error('JS syntax/runtime error'));
+                else resolve();
               }, 50);
             };
 
@@ -649,9 +686,11 @@
       // ----------------------------
 
       function loadAllSequentially() {
-        return loadFontsSequential(window.requiredFonts)
-          .then(function () { return loadCSSSequential(window.requiredCSS); })
-          .then(function () { return loadJSSequential(window.requiredJS); });
+        // Favicon is last and best-effort: never fails the pipeline.
+        return loadCSSSequential(window.requiredCSS)
+          .then(function () { return loadFontsSequential(window.requiredFonts); })
+          .then(function () { return loadJSSequential(window.requiredJS); })
+          .then(function () { return tryLoadFaviconLast().catch(function () { /* ignore */ }); });
       }
 
       function startPageLoad() {
