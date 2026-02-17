@@ -83,7 +83,7 @@ function switchToTab(tabId) {
     }
     
     // Hide all viewer contents
-    $('.viewer-content').hide();
+    $('.tab-content').hide();
     
     // Update tab styling
     $('.tab-button').removeClass('active');

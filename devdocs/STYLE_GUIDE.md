@@ -251,7 +251,7 @@ When the tool uses a tabbed interface, each tab should implement the following l
     border-color: var(--primary);
 }
 
-.viewer-content {
+.tab-content {
     background: var(--card-bg);
     border-radius: var(--radius-md);
     border: 1px solid var(--border);
@@ -444,11 +444,11 @@ button:hover {
     <button class="tab-button" data-tab="tab2">Tab 2 Name</button>
 </div>
 
-<div id="tab1-content" class="viewer-content">
+<div id="tab1-content" class="tab-content">
     <!-- Tab 1 content -->
 </div>
 
-<div id="tab2-content" class="viewer-content" style="display:none;">
+<div id="tab2-content" class="tab-content" style="display:none;">
     <!-- Tab 2 content -->
 </div>
 ```
@@ -643,7 +643,7 @@ Use this checklist to ensure new tools and pages adhere to the standards.
 
 **After:**
 ```html
-<div class="viewer-content">
+<div class="tab-content">
 ```
 
 ### Step 3: Standardize Password Input

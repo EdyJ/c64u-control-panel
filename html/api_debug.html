@@ -32,7 +32,7 @@
         ];
         
         var contentItems = [
-            '.viewer-content',
+            '.tab-content',
             '.tab-bar'
         ];
         
@@ -177,7 +177,7 @@
         </div>
         
         <!-- Debug Viewer 1: Simple Read Test -->
-        <div id="tab1-content" class="viewer-content">
+        <div id="tab1-content" class="tab-content">
             <div class="info-box">
                 <strong>Debug Viewer 1</strong><br>
                 Tests basic memory reading. Reads 256 bytes from address $0400 (screen memory start).
@@ -187,7 +187,7 @@
         </div>
         
         <!-- Debug Viewer 2: Parameterized Read -->
-        <div id="tab2-content" class="viewer-content" style="display:none;">
+        <div id="tab2-content" class="tab-content" style="display:none;">
             <div class="info-box">
                 <strong>Debug Viewer 2</strong><br>
                 Tests parameterized reading. Enter any address and read 16 bytes.
@@ -201,7 +201,7 @@
         </div>
         
         <!-- Debug Viewer 3: Write Test with Confirmation -->
-        <div id="tab3-content" class="viewer-content" style="display:none;">
+        <div id="tab3-content" class="tab-content" style="display:none;">
             <div class="info-box">
                 <strong>Debug Viewer 3</strong><br>
                 Tests memory writing and canDeactivate() protocol. Write a byte and try switching tabs - you'll be prompted to confirm.
@@ -232,7 +232,7 @@
         </div>
         
         <!-- Debug Viewer 4: 6502 Disassembler -->
-        <div id="tab4-content" class="viewer-content" style="display:none;">
+        <div id="tab4-content" class="tab-content" style="display:none;">
             <div class="info-box">
                 <strong>6502 Disassembler</strong><br>
                 Reads C64 memory and disassembles it to 6502 assembly language.

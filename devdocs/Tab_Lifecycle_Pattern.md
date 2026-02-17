@@ -192,7 +192,7 @@ function switchToTab(tabId) {
     }
     
     // Hide all viewer contents
-    $('.viewer-content').hide();
+    $('.tab-content').hide();
     
     // Update tab styling
     $('.tab-button').removeClass('active');
@@ -530,7 +530,7 @@ refresh: function() {
 
 ## HTML Structure and CSS
 
-Refer to **STYLE_GUIDE.md** for the HTML templates (tab bar, tab content containers) and the CSS classes (`.tab-bar`, `.tab-button`, `.viewer-content`) used by the tabbed interface.
+Refer to **STYLE_GUIDE.md** for the HTML templates (tab bar, tab content containers) and the CSS classes (`.tab-bar`, `.tab-button`, `.tab-content`) used by the tabbed interface.
 
 ---
 

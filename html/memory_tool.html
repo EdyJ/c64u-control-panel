@@ -37,7 +37,7 @@
 
     // UI selectors to disable during load
     var contentItems = [
-      ".viewer-content",
+      ".tab-content",
       ".tab-bar"
     ];
     </script>
@@ -222,12 +222,16 @@
         border-color: var(--primary);
     }
 
-    .viewer-content {
+    .tab-content {
         background: var(--card-bg);
         border-radius: var(--radius-md);
         border: 1px solid var(--border);
         padding: var(--spacing-md);
         min-height: 400px;
+    }
+
+    .tab-content.content-hidden {
+        visibility: hidden;
     }
 
     /* Form Controls */
@@ -477,7 +481,10 @@
       function enableContent() {
         window.contentItems.forEach(function (selector) {
           var el = document.querySelector(selector);
-          if (el) el.classList.remove('content-disabled');
+          if (el) {
+            el.classList.remove('content-disabled');
+            el.classList.remove('content-hidden');
+            }
         });
       }
 
@@ -751,7 +758,7 @@
         <div id="errorBox"></div>
 
         <!-- Tab Bar -->
-        <div class="tab-bar">
+        <div class="tab-bar content-disabled">
             <button class="tab-button active" data-tab="tab0">Hex Viewer</button>
             <button class="tab-button" data-tab="tab1">Disassembly</button>
             <button class="tab-button" data-tab="tab2">Debug Viewer 1</button>
@@ -760,7 +767,7 @@
         </div>
 
         <!-- Hex Viewer: Memory Browser -->
-        <div id="tab0-content" class="viewer-content">
+        <div id="tab0-content" class="tab-content content-hidden">
             <!-- Hex Viewer Header -->
             <div class="mem-header">
                 <div class="mem-header-left">
@@ -813,7 +820,7 @@
         </div>
 
         <!-- Disassembly Viewer: 6502 Assembly Browser -->
-        <div id="tab1-content" class="viewer-content" style="display:none;">
+        <div id="tab1-content" class="tab-content" style="display:none;">
             <!-- Disassembly Viewer Header -->
             <div class="mem-header">
                 <div class="mem-header-left">
@@ -850,7 +857,7 @@
         </div>
 
         <!-- Debug Viewer 1: Simple Read Test -->
-        <div id="tab2-content" class="viewer-content" style="display:none;">
+        <div id="tab2-content" class="tab-content" style="display:none;">
             <div class="info-box">
                 <strong>Debug Viewer 1</strong><br>
                 Tests basic memory reading. Reads 256 bytes from address $0400 (screen memory start).
@@ -860,7 +867,7 @@
         </div>
 
         <!-- Debug Viewer 2: Parameterized Read -->
-        <div id="tab3-content" class="viewer-content" style="display:none;">
+        <div id="tab3-content" class="tab-content" style="display:none;">
             <div class="info-box">
                 <strong>Debug Viewer 2</strong><br>
                 Tests parameterized reading. Enter any address and read 16 bytes.
@@ -874,7 +881,7 @@
         </div>
 
         <!-- Debug Viewer 3: Write Test with Confirmation -->
-        <div id="tab4-content" class="viewer-content" style="display:none;">
+        <div id="tab4-content" class="tab-content" style="display:none;">
             <div class="info-box">
                 <strong>Debug Viewer 3</strong><br>
                 Tests memory writing and canDeactivate() protocol. Write a byte and try switching tabs - you'll be prompted to confirm.

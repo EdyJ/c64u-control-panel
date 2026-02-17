@@ -156,7 +156,7 @@ h1 {
     border-color: var(--primary);
 }
 
-.viewer-content {
+.tab-content {
     background: var(--card-bg);
     border-radius: var(--radius-md);
     border: 1px solid var(--border);

@@ -30,7 +30,7 @@ This code is the standard implementation and should be copied verbatim into each
     
     var contentItems = [
         // List of CSS selectors for content to be disabled during load
-        // Example: '.viewer-content',
+        // Example: '.tab-content',
     ];
     // -------------------------------------
     

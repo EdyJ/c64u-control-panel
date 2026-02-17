@@ -45,7 +45,10 @@
   function enableContent() {
     window.contentItems.forEach(function (selector) {
       var el = document.querySelector(selector);
-      if (el) el.classList.remove('content-disabled');
+      if (el) {
+        el.classList.remove('content-disabled');
+        el.classList.remove('content-hidden');
+        }
     });
   }
 

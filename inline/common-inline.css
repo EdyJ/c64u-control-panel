@@ -156,12 +156,16 @@ h1 {
     border-color: var(--primary);
 }
 
-.viewer-content {
+.tab-content {
     background: var(--card-bg);
     border-radius: var(--radius-md);
     border: 1px solid var(--border);
     padding: var(--spacing-md);
     min-height: 400px;
+}
+
+.tab-content.content-hidden {
+    visibility: hidden;
 }
 
 /* Form Controls */
