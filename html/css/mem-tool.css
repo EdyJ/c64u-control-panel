@@ -247,3 +247,45 @@
     color: var(--text-primary);
     background: rgba(100, 150, 255, 0.4);
 }
+
+/* Disassembly Viewer Display Container */
+.disasm-display {
+    background: var(--card-bg);
+    border-radius: var(--radius-sm);
+    overflow-x: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    line-height: 1.0;
+}
+
+/* Disassembly Row Layout */
+.disasm-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 2px;
+}
+
+/* Disassembly Address Column */
+.disasm-col-addr {
+    color: var(--primary);
+    min-width: 50px;
+}
+
+/* Disassembly Hex Bytes Column */
+.disasm-col-bytes {
+    color: var(--success);
+    letter-spacing: 1px;
+    min-width: 80px;
+}
+
+/* Disassembly Instruction Column */
+.disasm-col-instr {
+    color: var(--text-dim);
+    min-width: 120px;
+}
+
+/* Disassembly Jump Target Column */
+.disasm-col-target {
+    color: var(--text-dim);
+    min-width: 100px;
+}

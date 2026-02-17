@@ -7,6 +7,19 @@
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/mem-tool.css">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
+    <!-- CommonJS shim for 6502-reasm library -->
+    <script>
+        var module = { exports: {} };
+    </script>
+    
+    <!-- Load 6502-reasm library from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/6502-reasm@1.0.0/6502.min.js"></script>
+    
+    <!-- Make library globally accessible -->
+    <script>
+        window.reasm6502 = module.exports;
+    </script>
 
     <!-- Sequential Script Loader - Loads external JS files one at a time -->
     <script>
@@ -160,9 +173,10 @@
         <!-- Tab Bar -->
         <div class="tab-bar">
             <button class="tab-button active" data-tab="tab0">Hex Viewer</button>
-            <button class="tab-button" data-tab="tab1">Debug Viewer 1</button>
-            <button class="tab-button" data-tab="tab2">Debug Viewer 2</button>
-            <button class="tab-button" data-tab="tab3">Debug Viewer 3</button>
+            <button class="tab-button" data-tab="tab1">Disassembly</button>
+            <button class="tab-button" data-tab="tab2">Debug Viewer 1</button>
+            <button class="tab-button" data-tab="tab3">Debug Viewer 2</button>
+            <button class="tab-button" data-tab="tab4">Debug Viewer 3</button>
         </div>
 
         <!-- Hex Viewer: Memory Browser -->
@@ -218,8 +232,45 @@
             </div>
         </div>
 
-        <!-- Debug Viewer 1: Simple Read Test -->
+        <!-- Disassembly Viewer: 6502 Assembly Browser -->
         <div id="tab1-content" class="viewer-content" style="display:none;">
+            <!-- Disassembly Viewer Header -->
+            <div class="mem-header">
+                <div class="mem-header-left">
+                    <label>Address:</label>
+                    <input type="text" id="disasm-address" value="C000" placeholder="C000" class="mem-input-address">
+
+                    <label>Length:</label>
+                    <select id="disasm-length" class="mem-select">
+                        <option value="32">32</option>
+                        <option value="64" selected>64</option>
+                        <option value="128">128</option>
+                    </select>
+                </div>
+
+                <div class="mem-header-right">
+                    <button class="mem-nav-btn" id="disasm-nav-up" title="Up">▲</button>
+                    <button class="mem-nav-btn" id="disasm-nav-down" title="Down">▼</button>
+                    <button class="mem-nav-btn mem-nav-page" id="disasm-prev-page">Prev Page</button>
+                    <button class="mem-nav-btn mem-nav-page" id="disasm-next-page">Next Page</button>
+                </div>
+            </div>
+
+            <!-- Disassembly Viewer Sub-header -->
+            <div class="mem-subheader">
+                <div class="mem-subheader-left">
+                    <span id="disasm-current-address">$C000 (49152) - $C03F (49215)</span>
+                </div>
+            </div>
+
+            <!-- Disassembly Viewer Memory Display -->
+            <div class="disasm-display" id="disasm-display">
+                <!-- Disassembly data will be generated here -->
+            </div>
+        </div>
+
+        <!-- Debug Viewer 1: Simple Read Test -->
+        <div id="tab2-content" class="viewer-content" style="display:none;">
             <div class="info-box">
                 <strong>Debug Viewer 1</strong><br>
                 Tests basic memory reading. Reads 256 bytes from address $0400 (screen memory start).
@@ -229,7 +280,7 @@
         </div>
 
         <!-- Debug Viewer 2: Parameterized Read -->
-        <div id="tab2-content" class="viewer-content" style="display:none;">
+        <div id="tab3-content" class="viewer-content" style="display:none;">
             <div class="info-box">
                 <strong>Debug Viewer 2</strong><br>
                 Tests parameterized reading. Enter any address and read 16 bytes.
@@ -243,7 +294,7 @@
         </div>
 
         <!-- Debug Viewer 3: Write Test with Confirmation -->
-        <div id="tab3-content" class="viewer-content" style="display:none;">
+        <div id="tab4-content" class="viewer-content" style="display:none;">
             <div class="info-box">
                 <strong>Debug Viewer 3</strong><br>
                 Tests memory writing and canDeactivate() protocol. Write a byte and try switching tabs - you'll be prompted to confirm.
@@ -286,9 +337,10 @@
 
         const viewerMap = {
             'tab0': 'HexViewer',
-            'tab1': 'DebugViewer1',
-            'tab2': 'DebugViewer2',
-            'tab3': 'DebugViewer3'
+            'tab1': 'DisassemblyViewer',
+            'tab2': 'DebugViewer1',
+            'tab3': 'DebugViewer2',
+            'tab4': 'DebugViewer3'
         };
 
         // ============================================================================
@@ -525,6 +577,305 @@
         };
 
         // ============================================================================
+        // DISASSEMBLY VIEWER: 6502 Assembly Browser
+        // ============================================================================
+        
+        var DisassemblyViewer = {
+            currentAddress: 0xC000,
+            currentLength: 64,
+            
+            initialize: function() {
+                console.log('DisassemblyViewer: initialize()');
+                
+                // Address input
+                $('#disasm-address').on('input', () => this.onAddressChange());
+                $('#disasm-address').on('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.navigateToAddress();
+                        $('#disasm-address').blur();
+                    }
+                });
+                
+                // Length selector
+                $('#disasm-length').change(() => this.onLengthChange());
+                
+                // Navigation buttons
+                $('#disasm-nav-up').click(() => this.navigateUp());
+                $('#disasm-nav-down').click(() => this.navigateDown());
+                $('#disasm-prev-page').click(() => this.navigatePrevPage());
+                $('#disasm-next-page').click(() => this.navigateNextPage());
+                
+                // Keyboard shortcuts
+                $(document).on('keydown', (e) => {
+                    if (!this.isActive()) return;
+                    
+                    // Ignore if typing in input field
+                    if ($(e.target).is('input, textarea, select')) {
+                        return;
+                    }
+                    
+                    switch(e.key.toLowerCase()) {
+                        case 'r':
+                            e.preventDefault();
+                            this.refresh();
+                            break;
+                        case 'arrowup':
+                            e.preventDefault();
+                            this.navigateUp();
+                            break;
+                        case 'arrowdown':
+                            e.preventDefault();
+                            this.navigateDown();
+                            break;
+                        case 'pageup':
+                            e.preventDefault();
+                            this.navigatePrevPage();
+                            break;
+                        case 'pagedown':
+                            e.preventDefault();
+                            this.navigateNextPage();
+                            break;
+                        case 'a':
+                            e.preventDefault();
+                            $('#disasm-address').focus().select();
+                            break;
+                    }
+                });
+            },
+            
+            activate: function() {
+                console.log('DisassemblyViewer: activate()');
+                this.refresh();
+            },
+            
+            canDeactivate: function() {
+                console.log('DisassemblyViewer: canDeactivate() -> true');
+                return true;
+            },
+            
+            deactivate: function() {
+                console.log('DisassemblyViewer: deactivate()');
+            },
+            
+            isActive: function() {
+                return $('#tab1-content').is(':visible');
+            },
+            
+            refresh: function() {
+                console.log('DisassemblyViewer: refresh()');
+                this.loadMemoryAndDisassemble();
+            },
+            
+            onAddressChange: function() {
+                const addressStr = $('#disasm-address').val().replace(/[^0-9A-Fa-f]/g, '');
+                const address = parseInt(addressStr, 16);
+                
+                if (!isNaN(address) && address >= 0 && address <= 0xFFFF) {
+                    this.currentAddress = address;
+                }
+            },
+            
+            onLengthChange: function() {
+                const length = parseInt($('#disasm-length').val(), 10);
+                this.currentLength = length;
+                this.clampAddress();
+                this.updateAddressInput();
+                this.refresh();
+            },
+            
+            navigateToAddress: function() {
+                this.onAddressChange();
+                this.clampAddress();
+                this.updateAddressInput();
+                this.refresh();
+            },
+            
+            navigateUp: function() {
+                this.currentAddress = Math.max(0, this.currentAddress - 1);
+                this.updateAddressInput();
+                this.refresh();
+            },
+            
+            navigateDown: function() {
+                this.currentAddress = Math.min(0xFFFF, this.currentAddress + 1);
+                this.clampAddress();
+                this.updateAddressInput();
+                this.refresh();
+            },
+            
+            navigatePrevPage: function() {
+                this.currentAddress = Math.max(0, this.currentAddress - this.currentLength);
+                this.updateAddressInput();
+                this.refresh();
+            },
+            
+            navigateNextPage: function() {
+                this.currentAddress = Math.min(0xFFFF, this.currentAddress + this.currentLength);
+                this.clampAddress();
+                this.updateAddressInput();
+                this.refresh();
+            },
+            
+            clampAddress: function() {
+                // Ensure address + length doesn't exceed 0xFFFF
+                if (this.currentAddress + this.currentLength > 0x10000) {
+                    this.currentAddress = 0x10000 - this.currentLength;
+                }
+                this.currentAddress = Math.max(0, Math.min(0xFFFF, this.currentAddress));
+            },
+            
+            updateAddressInput: function() {
+                const addressStr = this.currentAddress.toString(16).padStart(4, '0').toUpperCase();
+                $('#disasm-address').val(addressStr);
+            },
+            
+            updateSubheader: function() {
+                const startAddr = this.currentAddress;
+                const endAddr = Math.min(0xFFFF, startAddr + this.currentLength - 1);
+                
+                const startHex = startAddr.toString(16).padStart(4, '0').toUpperCase();
+                const endHex = endAddr.toString(16).padStart(4, '0').toUpperCase();
+                
+                $('#disasm-current-address').text(
+                    `$${startHex} (${startAddr}) - $${endHex} (${endAddr})`
+                );
+            },
+            
+            loadMemoryAndDisassemble: function() {
+                const address = this.currentAddress;
+                const length = this.currentLength;
+                
+                this.updateSubheader();
+                
+                // Check if library is loaded
+                if (typeof window.reasm6502 === 'undefined' || !window.reasm6502.disasm) {
+                    showError('6502-reasm library not loaded');
+                    return;
+                }
+                
+                readMemory(address, length, (data) => {
+                    try {
+                        const bytes = Array.from(new Uint8Array(data));
+                        
+                        // Disassemble using 6502-reasm library
+                        const disasmResult = window.reasm6502.disasm(bytes, address);
+                        
+                        this.renderDisassembly(disasmResult, bytes, address);
+                    } catch (error) {
+                        showError(`Disassembly error: ${error.message}`);
+                    }
+                }, (error) => {
+                    showError(`Error reading memory: ${error}`);
+                });
+            },
+            
+            renderDisassembly: function(instructions, bytes, startAddress) {
+                const $display = $('#disasm-display');
+                $display.empty();
+                
+                let html = '';
+                let byteOffset = 0;
+                
+                for (let i = 0; i < instructions.length; i++) {
+                    const instr = instructions[i];
+                    const addr = instr.address;
+                    const addrHex = addr.toString(16).padStart(4, '0').toUpperCase();
+                    
+                    // Column 1: Address
+                    const col1 = `<span class="disasm-col-addr">$${addrHex}</span>`;
+                    
+                    // Column 2: Hex bytes (1-3 bytes)
+                    const instrBytes = instr.bytes || [];
+                    let bytesHex = '';
+                    for (let j = 0; j < instrBytes.length; j++) {
+                        bytesHex += instrBytes[j].toString(16).padStart(2, '0').toUpperCase() + ' ';
+                    }
+                    bytesHex = bytesHex.padEnd(9, ' '); // Pad to 3 bytes width
+                    const col2 = `<span class="disasm-col-bytes">${bytesHex}</span>`;
+                    
+                    // Column 3: Assembly instruction
+                    const assembly = instr.assembly || '???';
+                    const col3 = `<span class="disasm-col-instr">${assembly}</span>`;
+                    
+                    // Column 4: Jump/branch target
+                    const col4 = this.getJumpTarget(instr, bytes, startAddress);
+                    
+                    html += `<div class="disasm-row">${col1}${col2}${col3}${col4}</div>`;
+                    
+                    byteOffset += instrBytes.length;
+                }
+                
+                $display.html(html);
+            },
+            
+            getJumpTarget: function(instr, bytes, startAddress) {
+                const assembly = instr.assembly || '';
+                const addr = instr.address;
+                const instrBytes = instr.bytes || [];
+                
+                // Conditional branches (relative addressing)
+                if (/^(BCC|BCS|BEQ|BMI|BNE|BPL|BVC|BVS)\s/.test(assembly)) {
+                    if (instrBytes.length === 2) {
+                        const offset = instrBytes[1];
+                        const signedOffset = offset > 127 ? offset - 256 : offset;
+                        const targetAddr = (addr + 2 + signedOffset) & 0xFFFF;
+                        const targetHex = targetAddr.toString(16).padStart(4, '0').toUpperCase();
+                        return `<span class="disasm-col-target">→ $${targetHex}</span>`;
+                    }
+                }
+                
+                // Unconditional jumps (absolute addressing)
+                if (/^JMP\s\$[0-9A-F]{4}/.test(assembly)) {
+                    if (instrBytes.length === 3) {
+                        const targetAddr = instrBytes[1] | (instrBytes[2] << 8);
+                        const targetHex = targetAddr.toString(16).padStart(4, '0').toUpperCase();
+                        return `<span class="disasm-col-target">→ $${targetHex}</span>`;
+                    }
+                }
+                
+                // JSR (absolute addressing)
+                if (/^JSR\s\$[0-9A-F]{4}/.test(assembly)) {
+                    if (instrBytes.length === 3) {
+                        const targetAddr = instrBytes[1] | (instrBytes[2] << 8);
+                        const targetHex = targetAddr.toString(16).padStart(4, '0').toUpperCase();
+                        return `<span class="disasm-col-target">→ $${targetHex}</span>`;
+                    }
+                }
+                
+                // Indirect jumps - peek memory to get actual target
+                if (/^JMP\s\(\$[0-9A-F]{4}\)/.test(assembly)) {
+                    if (instrBytes.length === 3) {
+                        const indirectAddr = instrBytes[1] | (instrBytes[2] << 8);
+                        const indirectHex = indirectAddr.toString(16).padStart(4, '0').toUpperCase();
+                        
+                        // Try to peek the target address (asynchronously)
+                        this.peekIndirectTarget(indirectAddr, (targetAddr) => {
+                            if (targetAddr !== null) {
+                                const targetHex = targetAddr.toString(16).padStart(4, '0').toUpperCase();
+                                return `<span class="disasm-col-target">→ ($${indirectHex}) $${targetHex}</span>`;
+                            }
+                        });
+                        
+                        return `<span class="disasm-col-target">→ ($${indirectHex})</span>`;
+                    }
+                }
+                
+                return '<span class="disasm-col-target"></span>';
+            },
+            
+            peekIndirectTarget: function(indirectAddr, callback) {
+                // Read 2 bytes from indirect address to get actual target
+                readMemory(indirectAddr, 2, (data) => {
+                    const bytes = new Uint8Array(data);
+                    const targetAddr = bytes[0] | (bytes[1] << 8);
+                    callback(targetAddr);
+                }, (error) => {
+                    callback(null);
+                });
+            }
+        };
+        // ============================================================================
         // DEBUG VIEWER 1: Simple Read Test
         // ============================================================================
 
@@ -742,7 +1093,7 @@
             console.log('=== Ultimate Memory Browser Tool Initializing ===');
 
             // Initialize all viewers
-            initializeViewers(['HexViewer', 'DebugViewer1', 'DebugViewer2', 'DebugViewer3']);
+            initializeViewers(['HexViewer', 'DisassemblyViewer', 'DebugViewer1', 'DebugViewer2', 'DebugViewer3']);
 
             // Set up tab system
             setupTabs(viewerMap, 'tab0');
