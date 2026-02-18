@@ -256,6 +256,7 @@
     color: var(--text-dim);
     font-family: 'Courier New', monospace;
     font-size: 16px;
+    line-height: normal;
 }
 
 /* Disassembly Row Layout */
@@ -288,6 +289,87 @@
 .disasm-col-target {
     color: var(--text-dim);
     min-width: 100px;
+}
+
+/* Disassembly Edit Mode Styles */
+
+/* Disable text selection in edit mode */
+.disasm-display.no-select {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* Edit mode bytes container */
+.disasm-col-bytes.edit-mode {
+    background: #1a1a1a;
+    border-radius: 2px;
+    padding: 2px 4px;
+    margin: -2px -4px;
+}
+
+/* Disassembly Byte */
+.disasm-byte {
+    display: inline-block;
+}
+
+/* Disassembly Nibble */
+.disasm-nibble {
+    display: inline-block;
+    width: 10px;
+    text-align: center;
+}
+
+/* Modified byte (white text) */
+.disasm-byte-modified .disasm-nibble {
+    color: #ffffff;
+}
+
+/* Cursor on unmodified byte (green) */
+.disasm-nibble-cursor {
+    color: var(--success);
+    background: transparent;
+}
+
+.disasm-nibble-cursor.disasm-cursor-visible {
+    color: #0a0c0e;
+    background: #39ff14;
+}
+
+/* Cursor on modified byte (white) */
+.disasm-byte-modified .disasm-nibble-cursor {
+    color: #ffffff;
+    background: transparent;
+}
+
+.disasm-byte-modified .disasm-nibble-cursor.disasm-cursor-visible {
+    color: #0a0c0e;
+    background: #ffffff;
+}
+
+/* Selection on unmodified byte */
+.disasm-nibble-selected {
+    color: var(--success);
+    background: rgba(100, 150, 255, 0.4);
+}
+
+/* Selection on modified byte */
+.disasm-byte-modified .disasm-nibble-selected {
+    color: #ffffff;
+    background: rgba(100, 150, 255, 0.4);
+}
+
+/* Cursor within selection (unmodified) */
+.disasm-nibble-selected.disasm-nibble-cursor {
+    color: #0a0c0e;
+    background: #7fdbff;
+}
+
+/* Cursor within selection (modified) */
+.disasm-byte-modified .disasm-nibble-selected.disasm-nibble-cursor {
+    color: #0a0c0e;
+    background: #ffffff;
 }
 
 /* Checkbox Label */

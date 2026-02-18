@@ -867,6 +867,11 @@
                 <div class="mem-subheader-left">
                     <span id="disasm-current-address">$C000 (49152) - $C03F (49215)</span>
                 </div>
+                <div class="mem-subheader-right">
+                    <button class="btn-primary" id="disasm-edit-btn" style="display:inline-block;">Edit</button>
+                    <button class="btn-success" id="disasm-save-btn" style="display:none;">Save</button>
+                    <button class="btn-danger" id="disasm-cancel-btn" style="display:none;">Cancel</button>
+                </div>
             </div>
 
             <!-- Disassembly Viewer Memory Display -->
@@ -1112,7 +1117,53 @@
 
                 disasmEditorSetNavigationCallback(() => this.updateAddressDisplay());
 
+                // Set up mouse handlers
+                disasmEditorSetupMouse();
+
                 this.setupNavigation();
+
+                // === EDIT MODE SETUP ===
+                const enterEditMode = () => {
+                    if (isApiBusy()) {
+                        return;
+                    }
+                    disasmEditorEnterEditMode();
+                    $('#disasm-edit-btn').hide();
+                    $('#disasm-save-btn, #disasm-cancel-btn').show();
+                    this.updateAddressDisplay();
+                };
+
+                const saveChanges = () => {
+                    disasmEditorSaveChanges(
+                        () => {
+                            disasmEditorExitEditMode(true);
+                            $('#disasm-save-btn, #disasm-cancel-btn').hide();
+                            $('#disasm-edit-btn').show();
+                            this.refresh();
+                        },
+                        (errorMsg) => {
+                            console.error('Save failed:', errorMsg);
+                        }
+                    );
+                };
+
+                handleButtonClick('disasm-edit-btn', enterEditMode);
+                handleButtonClick('disasm-save-btn', saveChanges);
+                handleButtonClick('disasm-cancel-btn', () => {
+                    if (disasmEditorIsModified()) {
+                        if (!confirm('Discard all changes?')) {
+                            return;
+                        }
+                    }
+                    disasmEditorExitEditMode(false);
+                    $('#disasm-save-btn, #disasm-cancel-btn').hide();
+                    $('#disasm-edit-btn').show();
+                    this.updateAddressDisplay();
+                });
+
+                // Keyboard shortcuts
+                disasmEditorSetEnterEditModeCallback(enterEditMode);
+                disasmEditorSetSaveCallback(saveChanges);
             },
 
             setupNavigation: function() {
@@ -1186,7 +1237,10 @@
             },
 
             canDeactivate: function() {
-                console.log('DisassemblyViewer: canDeactivate() -> true');
+                console.log('DisassemblyViewer: canDeactivate()');
+                if (disasmEditorState.editMode && disasmEditorIsModified()) {
+                    return confirm('You have unsaved changes. Leave anyway?');
+                }
                 return true;
             },
 
