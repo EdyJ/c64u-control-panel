@@ -1665,39 +1665,11 @@
         // INITIALIZATION
         // ============================================================================
 
-        // ============================================================================
-        // INITIALIZATION
-        // ============================================================================
-
         window.initializeApp = function() {
             console.log('=== Ultimate Memory Browser Tool Initializing ===');
 
-            // Initialize all tabs
-            initializeTabs(['HexViewer', 'DisassemblyViewer', 'DebugViewer1', 'DebugViewer2', 'DebugViewer3']);
-
-            // Set up tab system
-            setupTabs(tabMap, 'tab0');
-
-            // Activate first tab
-            HexViewer.activate();
-
-            // Set up Refresh button
-            $('#refreshBtn').click(function() {
-                const activeTab = getActiveTab();
-                if (activeTab && activeTab.refresh) {
-                    activeTab.refresh();
-                }
-            });
-
-            // Handle page unload - check for unsaved changes
-            window.addEventListener('beforeunload', function(e) {
-                const activeTab = getActiveTab();
-                if (activeTab && activeTab.canDeactivate && !activeTab.canDeactivate()) {
-                    e.preventDefault();
-                    e.returnValue = '';
-                    return '';
-                }
-            });
+            // Initialize tab system
+            initializeTabs(tabMap, 'tab0');
 
             console.log('=== Initialization Complete ===');
         };

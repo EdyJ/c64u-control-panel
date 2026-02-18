@@ -152,11 +152,10 @@ Each tab object must implement these five methods:
 
 The library provides:
 
-1. `setupTabs(tabMap, initialTab)` - Bind click handlers to tab buttons and initialize tab system
+1. `initializeTabs(tabMap, initialTab)` - Initialize the entire tab system (all tabs, click handlers, Refresh button, beforeunload, initial tab activation)
 2. `switchToTab(tabId)` - Switch to a specific tab (with canDeactivate check)
 3. `getActiveTab()` - Get the currently active tab object
 4. `getTab(tabId)` - Get tab object for a specific tab
-5. `initializeTabs(tabNames)` - Initialize all tabs by calling their initialize() method
 
 ### Integration Pattern
 
@@ -164,11 +163,7 @@ Tools using this library should:
 
 1. Define tab objects with lifecycle methods
 2. Create a `tabMap` mapping tab IDs to tab object names
-3. Call `initializeTabs(tabNames)` to initialize all tabs
-4. Call `setupTabs(tabMap, initialTab)` to set up tab switching
-5. Activate the first tab
-6. Set up the global Refresh button to call `refresh()` on active tab
-7. Set up `beforeunload` handler for unsaved changes protection
+3. Call `initializeTabs(tabMap, initialTab)` - This handles everything including Refresh button and beforeunload
 
 ### Code Reference
 

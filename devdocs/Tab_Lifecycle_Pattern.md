@@ -170,24 +170,8 @@ const tabMap = {
 $(document).ready(function() {
     console.log('=== Initializing Tab System ===');
 
-    // Initialize all tabs
-    initializeTabs(['MyTab', 'AnotherTab', 'ThirdTab']);
-
-    // Set up tab click handlers
-    setupTabs(tabMap, 'tab1');
-
-    // Activate first tab
-    MyTab.activate();
-
-    // Handle page unload
-    window.addEventListener('beforeunload', function(e) {
-        const activeTab = getActiveTab();
-        if (activeTab && activeTab.canDeactivate && !activeTab.canDeactivate()) {
-            e.preventDefault();
-            e.returnValue = '';
-            return '';
-        }
-    });
+    // Initialize tab system (single call - handles everything!)
+    initializeTabs(tabMap, 'tab1');
 
     console.log('=== Initialization Complete ===');
 });
@@ -334,18 +318,7 @@ The `canDeactivate()` method is called automatically before switching tabs.
 
 ### Page Unload Protection
 
-The `beforeunload` event handler prevents accidental data loss:
-
-```javascript
-window.addEventListener('beforeunload', function(e) {
-    const activeTab = getActiveTab();
-    if (activeTab && activeTab.canDeactivate && !activeTab.canDeactivate()) {
-        e.preventDefault();
-        e.returnValue = '';
-        return '';
-    }
-});
-```
+The `beforeunload` event handler is automatically hooked by `initializeTabs()`. It calls `canDeactivate()` on the active tab to prevent accidental data loss.
 
 **Browser Behavior:**
 - Modern browsers show a generic confirmation message
@@ -356,14 +329,7 @@ window.addEventListener('beforeunload', function(e) {
 
 ## Refresh Integration
 
-The Refresh button in the header triggers the active tab's `refresh()` method:
-
-```javascript
-$('#refreshBtn').click(function() {
-    const activeTab = getActiveTab();
-    activeTab.refresh();
-});
-```
+The Refresh button is automatically hooked by `initializeTabs()`. It triggers the active tab's `refresh()` method.
 
 Tabs that need refresh functionality should implement the `refresh()` method:
 

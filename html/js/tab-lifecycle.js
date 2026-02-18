@@ -5,8 +5,8 @@
  * Provides reusable tab management functionality for tools that implement
  * a tabbed interface with tab lifecycle management.
  * 
- * Version: 1.0
- * Date: February 6, 2026
+ * Version: 1.2
+ * Date: February 18, 2026
  */
 
 // ============================================================================
@@ -41,22 +41,70 @@ function getTab(tabId) {
 }
 
 /**
- * Set up tab click handlers and initialize the tab system.
+ * Handle refresh button click - calls refresh() on active tab.
+ */
+function refreshTab() {
+    const activeTab = getActiveTab();
+    if (activeTab && activeTab.refresh) {
+        activeTab.refresh();
+    }
+}
+
+/**
+ * Handle beforeunload event - checks for unsaved changes.
+ * @param {Event} e - The beforeunload event
+ */
+function checkBeforeUnload(e) {
+    const activeTab = getActiveTab();
+    if (activeTab && activeTab.canDeactivate && !activeTab.canDeactivate()) {
+        e.preventDefault();
+        e.returnValue = '';
+    }
+}
+
+/**
+ * Initialize the entire tab system.
  * @param {Object} tabMap - Mapping of tab IDs to tab object names
  * @param {string} initialTab - The ID of the initial active tab
  */
-function setupTabs(tabMap, initialTab) {
+function initializeTabs(tabMap, initialTab) {
     // Store the tab map
     _tabMap = tabMap;
     currentActiveTab = initialTab;
+    
+    // Initialize all tabs (extract names from map values)
+    const tabNames = Object.values(tabMap);
+    tabNames.forEach(tabName => {
+        const tab = window[tabName];
+        if (tab && tab.initialize) {
+            tab.initialize();
+        }
+    });
+    console.log('All tabs initialized');
     
     // Bind click handlers to tab buttons
     $('.tab-button').click(function() {
         const targetTab = $(this).data('tab');
         switchToTab(targetTab);
+        $(this).blur();
     });
     
+    // Set up Refresh button (only if it exists)
+    const refreshBtn = $('#refreshBtn');
+    if (refreshBtn.length) {
+        refreshBtn.click(refreshTab);
+    }
+    
+    // Set up beforeunload handler
+    window.addEventListener('beforeunload', checkBeforeUnload);
+    
     console.log('Tab lifecycle initialized with tabs:', Object.keys(_tabMap));
+    
+    // Activate initial tab
+    const initialTabObj = getTab(initialTab);
+    if (initialTabObj) {
+        initialTabObj.activate();
+    }
 }
 
 /**
@@ -102,18 +150,4 @@ function switchToTab(tabId) {
     currentActiveTab = tabId;
     
     console.log(`Switched to tab: ${tabId}`);
-}
-
-/**
- * Initialize all tabs by calling their initialize() method.
- * @param {Array<string>} tabNames - Array of tab object names to initialize
- */
-function initializeTabs(tabNames) {
-    tabNames.forEach(tabName => {
-        const tab = window[tabName];
-        if (tab && tab.initialize) {
-            tab.initialize();
-        }
-    });
-    console.log('All tabs initialized');
 }

@@ -59,14 +59,12 @@ All files are deployed to the C64U device's web server root directory at `/flash
 Every page may define a global `initializeApp` function. This function serves as the main entry point for the page's application logic.
 
 ```javascript
-// In each HTML file (e.g., api_debug.html)
+// In each HTML file (e.g., memory_tool.html)
 
 window.initializeApp = function() {
     // All page-specific initialization code goes here
-    console.log("=== API Debug Tool Initializing ===");
-    initializeTabs(['HexViewer', 'DisassemblyViewer']);
-    setupTabs(tabMap, 'tab0');
-    HexViewer.activate();
+    console.log("=== Memory Tool Initializing ===");
+    initializeTabs(tabMap, 'tab0');
 };
 ```
 
