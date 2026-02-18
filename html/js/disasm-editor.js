@@ -952,6 +952,19 @@ function disasmEditorBackspace() {
     disasmEditorReassemble(prevByteIndex, prevNibble);
 }
 
+/**
+ * Delete - restore original byte under cursor if modified
+ */
+function disasmEditorDelete() {
+    const state = disasmEditorState;
+    const byteIndex = state.cursor.byteIndex;
+
+    if (state.currentData[byteIndex] !== state.originalData[byteIndex]) {
+        state.currentData[byteIndex] = state.originalData[byteIndex];
+        disasmEditorReassemble(state.cursor.byteIndex, state.cursor.nibble);
+    }
+}
+
 // ============================================================================
 // SELECTION
 // ============================================================================
@@ -1576,6 +1589,7 @@ function disasmEditorHandleEditModeKey(e) {
         disasmEditorBackspace();
         return true;
     } else if (key === 'Delete') {
+        disasmEditorDelete();
         return true;
     } else if (/^[0-9A-Fa-f]$/.test(key)) {
         disasmEditorTypeChar(key.toUpperCase());

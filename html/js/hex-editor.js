@@ -465,7 +465,7 @@ function hexEditorHandleEditModeKey(e) {
         hexEditorBackspace();
         return true;
     } else if (key === 'Delete') {
-        // Do nothing per spec
+        hexEditorDelete();
         return true;
     } else if (/^[0-9A-Fa-f]$/.test(key)) {
         hexEditorTypeChar(key.toUpperCase());
@@ -836,6 +836,19 @@ function hexEditorBackspace() {
 
     // Re-render
     hexEditorRender();
+}
+
+/**
+ * Delete - restore original byte under cursor if modified
+ */
+function hexEditorDelete() {
+    const state = hexEditorState;
+    const byteIndex = state.cursor.byteIndex;
+
+    if (state.currentData[byteIndex] !== state.originalData[byteIndex]) {
+        state.currentData[byteIndex] = state.originalData[byteIndex];
+        hexEditorRender();
+    }
 }
 
 // ============================================================================
