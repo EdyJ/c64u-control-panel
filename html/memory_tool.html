@@ -886,9 +886,6 @@
                 // Set up mouse handlers
                 hexEditorSetupMouse();
 
-                // Set up browsing mode keyboard navigation
-                hexEditorSetupBrowsingKeys();
-
                 // Set navigation callback for keyboard navigation
                 hexEditorSetNavigationCallback(() => this.updateAddressDisplay());
 
@@ -1092,6 +1089,10 @@
                 hexEditorNavigateToAddress(currentAddress, () => {
                     this.updateAddressDisplay();
                 });
+            },
+
+            handleKeyDown: function(e) {
+                return hexEditorHandleKey(e);
             }
         };
 
@@ -1124,43 +1125,59 @@
                 $('#disasm-nav-down').click(() => this.navigateDown());
                 $('#disasm-prev-page').click(() => this.navigatePrevPage());
                 $('#disasm-next-page').click(() => this.navigateNextPage());
+            },
 
-                // Keyboard shortcuts
-                $(document).on('keydown', (e) => {
-                    if (!this.isActive()) return;
+            activate: function() {
+                console.log('DisassemblyViewer: activate()');
+                this.refresh();
+            },
 
-                    // Ignore if typing in input field
-                    if ($(e.target).is('input, textarea, select')) {
-                        return;
-                    }
+            canDeactivate: function() {
+                console.log('DisassemblyViewer: canDeactivate() -> true');
+                return true;
+            },
 
-                    switch(e.key.toLowerCase()) {
-                        case 'r':
-                            e.preventDefault();
-                            this.refresh();
-                            break;
-                        case 'arrowup':
-                            e.preventDefault();
-                            this.navigateUp();
-                            break;
-                        case 'arrowdown':
-                            e.preventDefault();
-                            this.navigateDown();
-                            break;
-                        case 'pageup':
-                            e.preventDefault();
-                            this.navigatePrevPage();
-                            break;
-                        case 'pagedown':
-                            e.preventDefault();
-                            this.navigateNextPage();
-                            break;
-                        case 'a':
-                            e.preventDefault();
-                            $('#disasm-address').focus().select();
-                            break;
-                    }
-                });
+            deactivate: function() {
+                console.log('DisassemblyViewer: deactivate()');
+            },
+
+            refresh: function() {
+                console.log('DisassemblyViewer: refresh()');
+                this.navigateToAddress();
+            },
+
+            handleKeyDown: function(e) {
+                // Ignore if typing in input field
+                if ($(e.target).is('input, textarea, select')) {
+                    return false;
+                }
+                
+                // Don't handle if modifier keys pressed
+                if (e.ctrlKey || e.shiftKey || e.altKey) {
+                    return false;
+                }
+
+                switch(e.key.toLowerCase()) {
+                    case 'r':
+                        this.refresh();
+                        return true;
+                    case 'arrowup':
+                        this.navigateUp();
+                        return true;
+                    case 'arrowdown':
+                        this.navigateDown();
+                        return true;
+                    case 'pageup':
+                        this.navigatePrevPage();
+                        return true;
+                    case 'pagedown':
+                        this.navigateNextPage();
+                        return true;
+                    case 'a':
+                        $('#disasm-address').focus().select();
+                        return true;
+                }
+                return false;
             },
 
             activate: function() {

@@ -143,10 +143,14 @@ Provides reusable tab management functionality for tools that implement a tabbed
 Each tab object must implement these five methods:
 
 1. `initialize()` - One-time setup (state initialization)
-2. `activate()` - Prepare for display and interact (event handlers, keyboard, refresh data, focus inputs)
+2. `activate()` - Prepare for display (register keyboard handler, refresh data, focus inputs)
 3. `canDeactivate()` - Check if tab can be left (returns boolean)
-4. `deactivate()` - Clean up before hiding (stop timers, hide tooltips, clean handlers, unhook keyboard)
+4. `deactivate()` - Clean up before hiding (stop timers, hide tooltips, clean handlers)
 5. `refresh()` - Refresh tab data when global Refresh button is clicked (or empty if not needed)
+
+#### Optional Lifecycle Method
+
+6. `handleKeyDown(e)` - Handle keyboard events (return `true` if handled, `false` otherwise)
 
 ### Core Functions
 

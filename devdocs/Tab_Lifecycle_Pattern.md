@@ -35,7 +35,7 @@ Each tab is backed by a **Tab Object** that implements the lifecycle interface. 
 
 ### 2. Lifecycle Methods
 
-Every tab must implement five lifecycle methods:
+Every tab must implement five lifecycle methods, plus one optional method:
 
 | Method | Purpose | When Called | Return Value |
 |--------|---------|-------------|--------------|
@@ -44,6 +44,7 @@ Every tab must implement five lifecycle methods:
 | `canDeactivate()` | Check if tab can be left | Before switching away from tab | Boolean |
 | `deactivate()` | Clean up before hiding | After user confirms leaving | None |
 | `refresh()` | Reload tab data (or empty if not needed) | When Refresh button is clicked | None |
+| `handleKeyDown(e)` (optional) | Handle keyboard events | When user presses a key | Boolean (`true` = handled) |
 
 ### 3. State Isolation
 
@@ -90,6 +91,63 @@ User Clicks Different Tab
         │   User Interacts with New Tab    │
         └─────────────────────────────────┘
 ```
+
+---
+
+## Keyboard Handling
+
+The tab system automatically routes keyboard events to the active tab. Each tab can define an optional `handleKeyDown(e)` method to handle keyboard shortcuts.
+
+### How It Works
+
+1. The tab system listens for `keydown` events on the document
+2. When a key is pressed, it calls the active tab's `handleKeyDown(e)` method (if defined)
+3. If the method returns `true`, the event is prevented (no default browser behavior)
+4. If the method returns `false` or is not defined, the event is passed through
+
+### Benefits
+
+- **Automatic tab switching** - Keyboard handlers automatically switch with the active tab
+- **No cleanup needed** - No need to register/unregister handlers on tab switch
+- **Optional** - Only tabs that need keyboard handling implement the method
+
+### Implementation
+
+```javascript
+var MyTab = {
+    initialize: function() { ... },
+    activate: function() { ... },
+    canDeactivate: function() { ... },
+    deactivate: function() { ... },
+    refresh: function() { ... },
+    
+    // Optional: Handle keyboard events
+    handleKeyDown: function(e) {
+        // Skip if modifier keys pressed (allow browser defaults like Ctrl+C, Ctrl+V)
+        if (e.ctrlKey || e.shiftKey || e.altKey) {
+            return false;
+        }
+        
+        // Handle tab-specific shortcuts
+        switch(e.key) {
+            case 'ArrowUp':
+                // Do something
+                return true; // Event handled
+            case 'e':
+                // Enter edit mode
+                return true;
+        }
+        
+        return false; // Event not handled
+    }
+};
+```
+
+### Best Practices
+
+1. **Always check modifier keys** - Return `false` for Ctrl/Shift/Alt combinations to allow browser defaults
+2. **Return `true` only when handled** - Return `false` for unhandled keys
+3. **Check modal state** - If your tab has modals, disable shortcuts when modal is open
 
 ---
 

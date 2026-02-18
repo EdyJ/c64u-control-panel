@@ -307,9 +307,6 @@ function hexEditorEnterEditMode() {
     hexEditorApplyCursor();
     hexEditorStartCursorBlink();
 
-    // Bind keyboard handler
-    $(document).on('keydown.hexeditor', hexEditorHandleKeyDown);
-
     console.log('HexEditor: Entered edit mode');
 }
 
@@ -340,9 +337,6 @@ function hexEditorExitEditMode(save) {
     $('.mem-header').removeClass('input-disabled');
     $('#refreshBtn').removeClass('input-disabled');
 
-    // Unbind keyboard handler
-    $(document).off('keydown.hexeditor');
-
     // Re-render
     hexEditorRender();
 
@@ -367,71 +361,193 @@ function hexEditorIsModified() {
 // ============================================================================
 
 /**
- * Main keyboard event handler
+ * Main keyboard event handler - routes to edit mode or browse mode based on state.
+ * Returns true if the key was handled, false otherwise.
  * @param {KeyboardEvent} e - Keyboard event
+ * @returns {boolean} True if handled
  */
-function hexEditorHandleKeyDown(e) {
-    if (!hexEditorState.editMode) return;
-    if (hexEditorState.modalOpen) return;  // Disable input when modal is open
+function hexEditorHandleKey(e) {
+    // Ctrl+S (save) - handled everywhere, works in edit mode only, except when modal is open
+    if (e.key === 's' && e.ctrlKey) {
+        if (hexEditorState.editMode && !hexEditorState.modalOpen && hexEditorSaveCallback) {
+            hexEditorSaveCallback();
+        }
+        return true;
+    }
 
+    // Disable all input when modal is open
+    if (hexEditorState.modalOpen) {
+        return false;
+    }
+
+    // Route based on mode
+    if (hexEditorState.editMode) {
+        return hexEditorHandleEditModeKey(e);
+    } else {
+        return hexEditorHandleBrowseModeKey(e);
+    }
+}
+
+/**
+ * Handle keyboard events in edit mode.
+ * Returns true if the key was handled, false otherwise.
+ * @param {KeyboardEvent} e - Keyboard event
+ * @returns {boolean} True if handled
+ */
+function hexEditorHandleEditModeKey(e) {
     const key = e.key;
     const shift = e.shiftKey;
     const ctrl = e.ctrlKey;
 
-    // Handle different keys
+    // Ctrl+C (copy)
     if (ctrl && key === 'c') {
-        e.preventDefault();
         hexEditorCopy();
-    } else if (ctrl && key === 'v') {
-        e.preventDefault();
-        hexEditorPaste();
-    } else if (ctrl && key === 'a') {
-        e.preventDefault();
-        hexEditorSelectAll();
-    } else if (key === 'Escape') {
-        e.preventDefault();
-        hexEditorHandleEscape();
-    } else if (key === 'ArrowLeft') {
-        e.preventDefault();
-        hexEditorMoveCursor(-1, 0, shift);
-    } else if (key === 'ArrowRight') {
-        e.preventDefault();
-        hexEditorMoveCursor(1, 0, shift);
-    } else if (key === 'ArrowUp') {
-        e.preventDefault();
-        hexEditorMoveCursor(0, -1, shift);
-    } else if (key === 'ArrowDown') {
-        e.preventDefault();
-        hexEditorMoveCursor(0, 1, shift);
-    } else if (key === 'Home') {
-        e.preventDefault();
-        hexEditorMoveHome(shift);
-    } else if (key === 'End') {
-        e.preventDefault();
-        hexEditorMoveEnd(shift);
-    } else if (key === 'PageUp') {
-        e.preventDefault();
-        hexEditorMovePage(-8, shift);
-    } else if (key === 'PageDown') {
-        e.preventDefault();
-        hexEditorMovePage(8, shift);
-    } else if (key === 'Tab') {
-        e.preventDefault();
-        hexEditorMoveTab(shift);
-    } else if (key === 'Enter') {
-        e.preventDefault();
-        hexEditorMoveEnter();
-    } else if (key === 'Backspace') {
-        e.preventDefault();
-        hexEditorBackspace();
-    } else if (key === 'Delete') {
-        e.preventDefault();
-        // Do nothing per spec
-    } else if (/^[0-9A-Fa-f]$/.test(key)) {
-        e.preventDefault();
-        hexEditorTypeChar(key.toUpperCase());
+        return true;
     }
+    // Ctrl+V (paste)
+    if (ctrl && key === 'v') {
+        hexEditorPaste();
+        return true;
+    }
+    // Ctrl+A (select all)
+    if (ctrl && key === 'a') {
+        hexEditorSelectAll();
+        return true;
+    }
+
+    // Allow browser defaults for modifier keys (except for Ctrl combos already handled)
+    if (e.ctrlKey || e.shiftKey || e.altKey) {
+        return false;
+    }
+
+    if (key === 'Escape') {
+        hexEditorHandleEscape();
+        return true;
+    } else if (key === 'ArrowLeft') {
+        hexEditorMoveCursor(-1, 0, shift);
+        return true;
+    } else if (key === 'ArrowRight') {
+        hexEditorMoveCursor(1, 0, shift);
+        return true;
+    } else if (key === 'ArrowUp') {
+        hexEditorMoveCursor(0, -1, shift);
+        return true;
+    } else if (key === 'ArrowDown') {
+        hexEditorMoveCursor(0, 1, shift);
+        return true;
+    } else if (key === 'Home') {
+        hexEditorMoveHome(shift);
+        return true;
+    } else if (key === 'End') {
+        hexEditorMoveEnd(shift);
+        return true;
+    } else if (key === 'PageUp') {
+        hexEditorMovePage(-8, shift);
+        return true;
+    } else if (key === 'PageDown') {
+        hexEditorMovePage(8, shift);
+        return true;
+    } else if (key === 'Tab') {
+        hexEditorMoveTab(shift);
+        return true;
+    } else if (key === 'Enter') {
+        hexEditorMoveEnter();
+        return true;
+    } else if (key === 'Backspace') {
+        hexEditorBackspace();
+        return true;
+    } else if (key === 'Delete') {
+        // Do nothing per spec
+        return true;
+    } else if (/^[0-9A-Fa-f]$/.test(key)) {
+        hexEditorTypeChar(key.toUpperCase());
+        return true;
+    }
+
+    return false;
 }
+
+/**
+ * Handle browse mode keyboard navigation.
+ * Returns true if the key was handled, false otherwise.
+ * @param {KeyboardEvent} e - Keyboard event
+ * @returns {boolean} True if handled
+ */
+function hexEditorHandleBrowseModeKey(e) {
+    // Don't handle if focus is in an input field
+    const inInputField = $(e.target).is('input, textarea, select');
+    if (inInputField) {
+        return false;
+    }
+
+    // Don't navigate if API is busy
+    if (isApiBusy()) {
+        // Consume navigation key events but don't navigate
+        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown', 'Home', 'End', 'r', 'R'].includes(e.key)) {
+            return true;
+        }
+        return false;
+    }
+
+    // Allow browser defaults for modifier keys (except for Ctrl combos already handled)
+    if (e.ctrlKey || e.shiftKey || e.altKey) {
+        return false;
+    }
+
+    // E key to enter edit mode
+    if (e.key === 'e' || e.key === 'E') {
+        if (hexEditorEnterEditModeCallback) {
+            hexEditorEnterEditModeCallback();
+        }
+        return true;
+    }
+
+    // A key to focus address input
+    if (e.key === 'a' || e.key === 'A') {
+        const addressInput = $('#hex-address')[0];
+        if (addressInput) {
+            addressInput.focus();
+            addressInput.select();
+        }
+        return true;
+    }
+
+    switch(e.key) {
+        case 'ArrowUp':
+            hexEditorNavigateUp(hexEditorNavigationCallback);
+            return true;
+        case 'ArrowDown':
+            hexEditorNavigateDown(hexEditorNavigationCallback);
+            return true;
+        case 'ArrowLeft':
+            hexEditorNavigateLeft(hexEditorNavigationCallback);
+            return true;
+        case 'ArrowRight':
+            hexEditorNavigateRight(hexEditorNavigationCallback);
+            return true;
+        case 'PageUp':
+            hexEditorNavigatePrevPage(hexEditorNavigationCallback);
+            return true;
+        case 'PageDown':
+            hexEditorNavigateNextPage(hexEditorNavigationCallback);
+            return true;
+        case 'Home':
+            hexEditorNavigateToAddress(0x0000, hexEditorNavigationCallback);
+            return true;
+        case 'End':
+            const lastAddress = 0x10000 - hexEditorState.pageSize;
+            hexEditorNavigateToAddress(lastAddress, hexEditorNavigationCallback);
+            return true;
+        case 'r':
+        case 'R':
+            const currentAddress = hexEditorState.startAddress;
+            hexEditorNavigateToAddress(currentAddress, hexEditorNavigationCallback);
+            return true;
+    }
+
+    return false;
+}
+
 
 /**
  * Move cursor (with optional selection)
@@ -1506,107 +1622,3 @@ function hexEditorSetSaveCallback(callback) {
     hexEditorSaveCallback = callback;
 }
 
-/**
- * Setup keyboard handler for browsing mode navigation
- */
-function hexEditorSetupBrowsingKeys() {
-    $(document).on('keydown.hexeditor-browse', function(e) {
-        // Don't handle if focus is in an input field (except for Ctrl+S)
-        const inInputField = $(e.target).is('input, textarea, select');
-
-        // Ctrl+S to save in edit mode (works everywhere, except when modal is open)
-        if (e.key === 's' && e.ctrlKey && hexEditorState.editMode && !hexEditorState.modalOpen) {
-            e.preventDefault();
-            if (hexEditorSaveCallback) {
-                hexEditorSaveCallback();
-            }
-            return;
-        }
-
-        // Only handle remaining keys in browsing mode (not edit mode)
-        if (hexEditorState.editMode) return;
-
-        // Don't handle navigation keys if focus is in an input field
-        if (inInputField) return;
-
-        // E key to enter edit mode
-        if (e.key === 'e' || e.key === 'E') {
-            e.preventDefault();
-            // Don't enter edit mode if API is busy
-            if (isApiBusy()) {
-                return;
-            }
-            if (hexEditorEnterEditModeCallback) {
-                hexEditorEnterEditModeCallback();
-            }
-            return;
-        }
-
-        // A key to focus address input
-        if (e.key === 'a' || e.key === 'A') {
-            e.preventDefault();
-            const addressInput = $('#hex-address')[0];
-            if (addressInput) {
-                addressInput.focus();
-                addressInput.select();
-            }
-            return;
-        }
-
-        // Don't navigate if API is busy
-        if (isApiBusy()) {
-            // Consume the key event but don't navigate
-            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown', 'Home', 'End', 'r', 'R'].includes(e.key)) {
-                e.preventDefault();
-            }
-            return;
-        }
-
-        switch(e.key) {
-            case 'ArrowUp':
-                e.preventDefault();
-                hexEditorNavigateUp(hexEditorNavigationCallback);
-                break;
-            case 'ArrowDown':
-                e.preventDefault();
-                hexEditorNavigateDown(hexEditorNavigationCallback);
-                break;
-            case 'ArrowLeft':
-                e.preventDefault();
-                hexEditorNavigateLeft(hexEditorNavigationCallback);
-                break;
-            case 'ArrowRight':
-                e.preventDefault();
-                hexEditorNavigateRight(hexEditorNavigationCallback);
-                break;
-            case 'PageUp':
-                e.preventDefault();
-                hexEditorNavigatePrevPage(hexEditorNavigationCallback);
-                break;
-            case 'PageDown':
-                e.preventDefault();
-                hexEditorNavigateNextPage(hexEditorNavigationCallback);
-                break;
-            case 'Home':
-                e.preventDefault();
-                // Navigate to start of memory ($0000)
-                hexEditorNavigateToAddress(0x0000, hexEditorNavigationCallback);
-                break;
-            case 'End':
-                e.preventDefault();
-                // Navigate to end of memory (last valid page)
-                const lastAddress = 0x10000 - hexEditorState.pageSize;
-                hexEditorNavigateToAddress(lastAddress, hexEditorNavigationCallback);
-                break;
-            case 'r':
-            case 'R':
-                e.preventDefault();
-                // Refresh current memory
-                const currentAddress = hexEditorState.startAddress;
-                hexEditorNavigateToAddress(currentAddress, hexEditorNavigationCallback);
-                break;
-        }
-    });
-
-    console.log('HexEditor: Browsing mode keyboard navigation enabled');
-}
