@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate API Debug Tool</title>
+    <link id="app-favicon" rel="icon" href="data:,">
+
+    <!-- Local requests section -->
+
+    <script>
+    // Fonts: objects (url + font metadata)
+    var requiredFonts = [
+      {
+        url: "fonts/C64ProMono.woff2",
+        family: "C64ProMono",
+        weight: "normal",
+        style: "normal",
+        display: "swap",
+        format: "woff2"
+      }
+    ];
+
+    // CSS: objects with url
+    var requiredCSS = [];
+
+    // JS: objects with url
+    var requiredJS = [
+      { url: "js/ui-components.js" },
+      { url: "js/api-client.js" },
+      { url: "js/tab-lifecycle.js" }
+    ];
+
+    // UI selectors to disable during load
+    var contentItems = [
+      ".tab-content",
+      ".tab-bar"
+    ];
+    </script>
+
+    <!-- External requests section -->
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <!-- CommonJS shim for 6502-reasm library -->
+    <script>
+        var module = { exports: {} };
+    </script>
+
+    <!-- Load 6502-reasm library from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/6502-reasm@1.0.0/6502.min.js"></script>
+
+    <!-- Make library globally accessible -->
+    <script>
+        window.reasm6502 = module.exports;
+    </script>
+
+    <!-- Inline CSS Styles section -->
+
+    <style>
+    /* common-inline.css - Shared styles for C64U Web Control Panel */
+
+    :root {
+        /* Colors */
+        --primary: #3498db;
+        --success: #2ecc71;
+        --danger: #e74c3c;
+        --warning: #ff9800;
+        --bg: #1a1c1e;
+        --card-bg: #25282c;
+        --text: #e0e0e0;
+        --text-dim: #a0a0a0;
+        --border: #3a3f44;
+        --input-bg: #2d3136;
+
+        /* Spacing */
+        --spacing-xs: 5px;
+        --spacing-sm: 10px;
+        --spacing-md: 20px;
+        --spacing-lg: 30px;
+
+        /* Border Radius */
+        --radius-sm: 4px;
+        --radius-md: 8px;
+
+        /* Transitions */
+        --transition: all 0.2s ease;
+    }
+
+    /* Base Styles */
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--bg);
+        margin: 0;
+        padding: var(--spacing-md);
+        color: var(--text);
+    }
+
+    .container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    /* Header Components */
+    header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--spacing-md);
+        border-bottom: 2px solid var(--primary);
+        padding-bottom: var(--spacing-sm);
+    }
+
+    h1 {
+        margin: 0;
+        font-size: 24px;
+        color: var(--primary);
+    }
+
+    .back-link {
+        font-size: 12px;
+        color: var(--text-dim);
+        text-decoration: none;
+        margin-top: var(--spacing-xs);
+        display: inline-block;
+    }
+
+    .back-link:hover {
+        color: var(--primary);
+    }
+
+    .header-actions {
+        display: flex;
+        gap: var(--spacing-sm);
+        align-items: center;
+    }
+
+    /* Authentication Box */
+    .auth-box {
+        /* No background or border - just contains the password input */
+    }
+
+    .auth-password-input {
+        width: 120px;
+        border: none;
+        background: transparent;
+        padding: 0;
+        color: var(--text);
+        font-family: monospace;
+    }
+
+    /* Loading Spinner */
+    .spinner {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        border: 4px solid var(--text-dim);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    /* Error/Success Messages */
+    .error-box {
+        display: none;
+        background: var(--danger);
+        color: white;
+        padding: var(--spacing-sm);
+        border-radius: var(--radius-sm);
+        margin-bottom: 15px;
+        font-weight: bold;
+    }
+
+    .success-message {
+        color: var(--success);
+    }
+
+    .error-message {
+        color: var(--danger);
+    }
+
+    /* Tab Components */
+    .tab-bar {
+        display: flex;
+        gap: var(--spacing-xs);
+        margin-bottom: var(--spacing-md);
+        border-bottom: 2px solid var(--border);
+    }
+
+    .tab-button {
+        padding: var(--spacing-sm) var(--spacing-md);
+        background: var(--input-bg);
+        color: var(--text-dim);
+        border: none;
+        border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+        cursor: pointer;
+        font-weight: bold;
+        border: 1px solid var(--border);
+        border-bottom: none;
+        transition: var(--transition);
+    }
+
+    .tab-button:hover {
+        background: var(--card-bg);
+        color: var(--text);
+    }
+
+    .tab-button.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+
+    .tab-content {
+        background: var(--card-bg);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
+        padding: var(--spacing-md);
+        min-height: 400px;
+    }
+
+    .tab-content.content-hidden {
+        visibility: hidden;
+    }
+
+    /* Form Controls */
+    input[type="text"],
+    input[type="password"],
+    select {
+        padding: 8px;
+        background: var(--input-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--text);
+        font-family: monospace;
+    }
+
+    select {
+        cursor: pointer;
+    }
+
+    input:focus,
+    select:focus {
+        outline: none;
+        border-color: var(--primary);
+    }
+
+    input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+    }
+
+    input[type="checkbox"]:focus {
+        outline: none;
+        border-color: var(--primary);
+    }
+
+    label {
+        color: var(--text-dim);
+        font-weight: bold;
+    }
+
+    /* Buttons */
+    button {
+        padding: 8px 16px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        font-weight: bold;
+        transition: var(--transition);
+    }
+
+    button:hover {
+        opacity: 0.8;
+    }
+
+    .btn-primary { background: var(--primary); }
+    .btn-success { background: var(--success); }
+    .btn-danger { background: var(--danger); }
+    .btn-warning { background: var(--warning); }
+
+    /* Control Groups */
+    .control-group {
+        display: flex;
+        gap: var(--spacing-sm);
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .control-group label {
+        color: var(--text-dim);
+        font-weight: bold;
+    }
+
+    .control-group input {
+        width: 100px;
+    }
+
+    /* Info/Status Boxes */
+    .info-box {
+        background: rgba(255, 255, 255, 0.05);
+        padding: var(--spacing-sm);
+        border-radius: var(--radius-sm);
+        margin-bottom: 15px;
+        font-size: 12px;
+        color: var(--text-dim);
+    }
+
+    /* Console/Code Display */
+    .console-display {
+        background: #121416;
+        color: #7fdbff;
+        padding: 15px;
+        border-radius: var(--radius-sm);
+        font-family: monospace;
+        font-size: 13px;
+        white-space: pre;
+        overflow-x: auto;
+        margin-top: 15px;
+        border: 1px solid #333;
+    }
+
+    .code-display {
+        background: var(--input-bg);
+        color: var(--text);
+        padding: 15px;
+        border-radius: var(--radius-sm);
+        font-family: monospace;
+        font-size: 13px;
+        white-space: pre;
+        overflow-x: auto;
+        border: 1px solid var(--border);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        body {
+            padding: var(--spacing-sm);
+        }
+
+        header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--spacing-sm);
+        }
+
+        .header-actions {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .tab-bar {
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            flex-wrap: wrap;
+        }
+    }
+
+    /* Content Disabled State - Used during script loading */
+    .content-disabled {
+        filter: grayscale(100%) brightness(0.8);
+        opacity: 0.6;
+        pointer-events: none;
+    }
+
+    /* Input Disabled State */
+    .input-disabled {
+        opacity: 0.4;
+        pointer-events: none;
+    }
+
+    /* Modal Dialog Styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-dialog {
+        background: var(--card-bg);
+        border: 2px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: var(--spacing-md);
+        min-width: 400px;
+        max-width: 600px;
+    }
+
+    .modal-instructions {
+        color: var(--text-dim);
+        font-size: 14px;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .modal-textarea {
+        width: 100%;
+        height: 100px;
+        background: var(--input-bg);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 8px;
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        resize: vertical;
+        margin-bottom: var(--spacing-md);
+        box-sizing: border-box;
+    }
+
+    .modal-textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+    }
+
+    .modal-buttons {
+        display: flex;
+        gap: var(--spacing-sm);
+        justify-content: flex-end;
+    }
+    </style>
+
+    <!-- Inline JS Scripts section -->
+
+    <script>
+    /* common-inline.js
+     * No Concurrent File Load (sequential): CSS -> Fonts -> JS -> Favicon
+     *
+     * Per-page globals (define BEFORE this runs):
+     *   var requiredFonts = [{ url, family, weight, style, display?, format? }, ...];
+     *   var requiredCSS   = [{ url }, ...];
+     *   var requiredJS    = [{ url }, ...];
+     *   var contentItems  = ['.selector', ...];
+     *
+     * Optional:
+     *   window.initializeApp()
+     */
+
+    (function () {
+      'use strict';
+
+      // ----------------------------
+      // Defaults (if page forgets)
+      // ----------------------------
+      if (!Array.isArray(window.requiredFonts)) window.requiredFonts = [];
+      if (!Array.isArray(window.requiredCSS)) window.requiredCSS = [];
+      if (!Array.isArray(window.requiredJS)) window.requiredJS = [];
+      if (!Array.isArray(window.contentItems)) window.contentItems = [];
+
+      // ----------------------------
+      // UI helpers
+      // ----------------------------
+      function showSpinner() {
+        var spinner = document.getElementById('spinner');
+        if (spinner) spinner.style.display = 'inline-block';
+      }
+
+      function hideSpinner() {
+        var spinner = document.getElementById('spinner');
+        if (spinner) spinner.style.display = 'none';
+      }
+
+      function disableContent() {
+        window.contentItems.forEach(function (selector) {
+          var el = document.querySelector(selector);
+          if (el) el.classList.add('content-disabled');
+        });
+      }
+
+      function enableContent() {
+        window.contentItems.forEach(function (selector) {
+          var el = document.querySelector(selector);
+          if (el) {
+            el.classList.remove('content-disabled');
+            el.classList.remove('content-hidden');
+            }
+        });
+      }
+
+      function showCriticalError(message, fileUrl) {
+        hideSpinner(); // keep content disabled
+
+        var text = '❌ ' + message + (fileUrl ? (' (' + fileUrl + ')') : '') + ' Please reload.';
+
+        var host = document.querySelector('.header-actions') || document.body;
+
+        var existing = document.getElementById('critical-error-inline');
+        if (existing) {
+          existing.textContent = text;
+          return;
+        }
+
+        var span = document.createElement('span');
+        span.id = 'critical-error-inline';
+        span.textContent = text;
+        span.style.cssText =
+          'color:#e74c3c;font-weight:bold;font-size:14px;margin-right:25px;';
+
+        if (host.firstChild) host.insertBefore(span, host.firstChild);
+        else host.appendChild(span);
+      }
+
+      // Optional exports
+      window.showSpinner = showSpinner;
+      window.hideSpinner = hideSpinner;
+      window.disableContent = disableContent;
+      window.enableContent = enableContent;
+      window.showCriticalError = showCriticalError;
+
+      // ----------------------------
+      // Favicon stage (best-effort, last)
+      // ----------------------------
+
+      function ensurePlaceholderFaviconLink() {
+        var link = document.getElementById('app-favicon');
+        if (!link) {
+          link = document.createElement('link');
+          link.id = 'app-favicon';
+          link.rel = 'icon';
+          document.head.appendChild(link);
+        }
+        if (!link.href) link.href = 'data:,';
+        return link;
+      }
+
+      function setFaviconHref(url) {
+        var link = ensurePlaceholderFaviconLink();
+        link.href = url;
+      }
+
+      // Best-effort: if favicon.ico exists next to the HTML file, set it.
+      // Do nothing on any failure.
+      function tryLoadFaviconLast() {
+        // Skip on file:// protocol (CORS blocks fetch)
+        if (window.location.protocol === 'file:') {
+          return Promise.resolve();
+        }
+
+        ensurePlaceholderFaviconLink();
+
+        var url = 'favicon.ico';
+
+        // Use HEAD probe to avoid downloading it; fallback to GET if HEAD fails.
+        return fetch(url, { method: 'HEAD', cache: 'no-store' })
+          .then(function (r) {
+            if (r && r.ok) setFaviconHref(url);
+          })
+          .catch(function () {
+            return fetch(url, { method: 'GET', cache: 'no-store' })
+              .then(function (r) {
+                if (r && r.ok) setFaviconHref(url);
+              })
+              .catch(function () { /* ignore */ });
+          });
+      }
+
+      // ----------------------------
+      // Sequential loaders
+      // ----------------------------
+
+      function loadCSSSequential(list) {
+        if (!list.length) return Promise.resolve();
+
+        var i = 0;
+
+        function next() {
+          if (i >= list.length) return Promise.resolve();
+
+          var item = list[i++];
+          var url = item && item.url;
+
+          if (!url) {
+            return Promise.reject({ stage: 'css', url: null, error: new Error('Invalid CSS spec') });
+          }
+
+          return new Promise(function (resolve, reject) {
+            var link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = url;
+
+            link.onload = function () { resolve(); };
+            link.onerror = function () { reject(new Error('CSS load error')); };
+
+            document.head.appendChild(link);
+          }).then(next).catch(function (e) {
+            return Promise.reject({ stage: 'css', url: url, error: e });
+          });
+        }
+
+        return next();
+      }
+
+      function loadFontsSequential(list) {
+        if (!list.length) return Promise.resolve();
+
+        if (!('FontFace' in window) || !document.fonts) {
+          // Non-fatal: allow fallback fonts
+          return Promise.resolve();
+        }
+
+        var i = 0;
+
+        function next() {
+          if (i >= list.length) return Promise.resolve();
+
+          var f = list[i++];
+          if (!f || !f.url || !f.family) {
+            return Promise.reject({ stage: 'font', url: (f && f.url) || null, error: new Error('Invalid font spec') });
+          }
+
+          var descriptors = {
+            weight: f.weight || 'normal',
+            style: f.style || 'normal'
+          };
+          if (f.display) descriptors.display = f.display;
+
+          var face = new FontFace(
+            f.family,
+            "url('" + f.url + "')" + (f.format ? (" format('" + f.format + "')") : ''),
+            descriptors
+          );
+
+          return face.load().then(function (loaded) {
+            document.fonts.add(loaded);
+            return next();
+          }).catch(function (e) {
+            return Promise.reject({ stage: 'font', url: f.url, error: e });
+          });
+        }
+
+        return next();
+      }
+
+      function loadJSSequential(list) {
+        if (!list.length) return Promise.resolve();
+
+        var i = 0;
+
+        function next() {
+          if (i >= list.length) return Promise.resolve();
+
+          var item = list[i++];
+          var url = item && item.url;
+
+          if (!url) {
+            return Promise.reject({ stage: 'js', url: null, error: new Error('Invalid JS spec') });
+          }
+
+          return new Promise(function (resolve, reject) {
+            var script = document.createElement('script');
+            script.src = url;
+
+            var hadErrorForThisScript = false;
+
+            function onWindowError(event) {
+              if (event && event.filename && event.filename.indexOf(url) !== -1) {
+                hadErrorForThisScript = true;
+              }
+            }
+
+            window.addEventListener('error', onWindowError);
+
+            script.onload = function () {
+              setTimeout(function () {
+                window.removeEventListener('error', onWindowError);
+                if (hadErrorForThisScript) reject(new Error('JS syntax/runtime error'));
+                else resolve();
+              }, 50);
+            };
+
+            script.onerror = function () {
+              window.removeEventListener('error', onWindowError);
+              reject(new Error('JS network error'));
+            };
+
+            document.head.appendChild(script);
+          }).then(next).catch(function (e) {
+            return Promise.reject({ stage: 'js', url: url, error: e });
+          });
+        }
+
+        return next();
+      }
+
+      // ----------------------------
+      // Orchestrator + boot
+      // ----------------------------
+
+      function loadAllSequentially() {
+        // Favicon is last and best-effort: never fails the pipeline.
+        return loadCSSSequential(window.requiredCSS)
+          .then(function () { return loadFontsSequential(window.requiredFonts); })
+          .then(function () { return loadJSSequential(window.requiredJS); })
+          .then(function () { return tryLoadFaviconLast().catch(function () { /* ignore */ }); });
+      }
+
+      function startPageLoad() {
+        showSpinner();
+        disableContent();
+
+        loadAllSequentially()
+          .then(function () {
+            hideSpinner();
+            enableContent();
+
+            if (typeof window.initializeApp === 'function') {
+              window.initializeApp();
+            }
+          })
+          .catch(function (info) {
+            var stage = (info && info.stage) ? info.stage : 'unknown';
+            var url = (info && info.url) ? info.url : null;
+
+            showCriticalError('Failed to load local ' + stage + ' resource.', url);
+            console.error('Critical load failure:', info);
+          });
+      }
+
+      if (window.jQuery && typeof window.jQuery === 'function') {
+        jQuery(document).ready(function () {
+          setTimeout(startPageLoad, 25);
+        });
+      } else {
+        document.addEventListener('DOMContentLoaded', function () {
+          setTimeout(startPageLoad, 25);
+        });
+      }
+    })();
+    </script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div>
+                <h1>Ultimate API Debug Tool</h1>
+                <a href="/" class="back-link">← Back to Control Panel</a>
+            </div>
+            <div class="header-actions">
+                <span id="spinner" class="spinner" style="display:none;"></span>
+                <button id="refreshBtn" class="btn-success">Refresh</button>
+                <div class="auth-box">
+                    <form autocomplete="on">
+                        <input type="text" name="username" value="ultimate-api" autocomplete="username" style="display: none;">
+                        <input type="password" id="apiPassword" name="password" placeholder="API Password" autocomplete="current-password" class="auth-password-input">
+                    </form>
+                </div>
+            </div>
+        </header>
+
+        <!-- Error Box -->
+        <div id="errorBox" class="error-box"></div>
+
+        <!-- Tab Bar -->
+        <div class="tab-bar content-disabled">
+            <button class="tab-button active" data-tab="tab1">Debug Viewer 1</button>
+            <button class="tab-button" data-tab="tab2">Debug Viewer 2</button>
+            <button class="tab-button" data-tab="tab3">Debug Viewer 3</button>
+            <button class="tab-button" data-tab="tab4">Disassembler</button>
+        </div>
+
+        <!-- Debug Viewer 1: Simple Read Test -->
+        <div id="tab1-content" class="tab-content content-hidden">
+            <div class="info-box">
+                <strong>Debug Viewer 1</strong><br>
+                Tests basic memory reading. Reads 256 bytes from address $0400 (screen memory start).
+            </div>
+            <button id="debug1-read" class="btn-primary">Test Read Memory ($0400, 256 bytes)</button>
+            <div id="debug1-display" class="console-display" style="display:none;"></div>
+        </div>
+
+        <!-- Debug Viewer 2: Parameterized Read -->
+        <div id="tab2-content" class="tab-content" style="display:none;">
+            <div class="info-box">
+                <strong>Debug Viewer 2</strong><br>
+                Tests parameterized reading. Enter any address and read 16 bytes.
+            </div>
+            <div class="control-group">
+                <label>Address:</label>
+                <input type="text" id="debug2-address" value="C000" placeholder="C000">
+                <button id="debug2-read" class="btn-primary">Read 16 Bytes</button>
+            </div>
+            <div id="debug2-display" class="console-display" style="display:none;"></div>
+        </div>
+
+        <!-- Debug Viewer 3: Write Test with Confirmation -->
+        <div id="tab3-content" class="tab-content" style="display:none;">
+            <div class="info-box">
+                <strong>Debug Viewer 3</strong><br>
+                Tests memory writing and canDeactivate() protocol. Write a byte and try switching tabs - you'll be prompted to confirm.
+            </div>
+            <div class="control-group">
+                <label>Address:</label>
+                <input type="text" id="debug3-address" value="0400" placeholder="0400">
+                <label>Value:</label>
+                <input type="text" id="debug3-value" value="41" placeholder="41" style="width: 60px;">
+                <button id="debug3-write" class="btn-primary">Write Byte</button>
+            </div>
+            <div id="debug3-status" style="margin-top: 15px; color: var(--text-dim);"></div>
+
+            <div class="control-group" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
+                <div style="margin-bottom: 10px; color: var(--text-dim); font-size: 13px;">
+                    <strong>POST Write Test (>128 bytes)</strong><br>
+                    Tests POST method by writing multiple bytes.
+                </div>
+                <label>Address:</label>
+                <input type="text" id="debug3-post-address" value="D800" placeholder="D800">
+                <label>Value:</label>
+                <input type="text" id="debug3-post-value" value="00" placeholder="00" style="width: 60px;">
+                <label>Count:</label>
+                <input type="text" id="debug3-post-count" value="200" placeholder="200" style="width: 60px;">
+                <button id="debug3-post-write" class="btn-primary">Write Bytes</button>
+            </div>
+            <div id="debug3-post-status" style="margin-top: 15px; color: var(--text-dim);"></div>
+        </div>
+
+        <!-- Debug Viewer 4: 6502 Disassembler -->
+        <div id="tab4-content" class="tab-content" style="display:none;">
+            <div class="info-box">
+                <strong>6502 Disassembler</strong><br>
+                Reads C64 memory and disassembles it to 6502 assembly language.
+            </div>
+            <div class="control-group">
+                <label>Start Address:</label>
+                <input type="text" id="disasm-address" value="C000" placeholder="C000">
+                <label>Bytes to Read:</label>
+                <input type="text" id="disasm-length" value="64" placeholder="64" style="width: 80px;">
+                <button id="disasm-read" class="btn-primary">Disassemble</button>
+                <button id="disasm-read-formatted" class="btn-primary">Disassemble (Formatted)</button>
+            </div>
+            <div id="disasm-display" class="console-display" style="display:none;"></div>
+            <div id="disasm-display-formatted" class="console-display" style="display:none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================================
+        // TAB MANAGEMENT (using tab-lifecycle.js)
+        // ============================================================================
+
+        const tabMap = {
+            'tab1': 'DebugViewer1',
+            'tab2': 'DebugViewer2',
+            'tab3': 'DebugViewer3',
+            'tab4': 'DisassemblerViewer'
+        };
+
+        // ============================================================================
+        // DEBUG VIEWER 1: Simple Read Test
+        // ============================================================================
+
+        var DebugViewer1 = {
+            initialize: function() {
+                console.log('DebugViewer1: initialize()');
+                $('#debug1-read').click(() => this.refresh());
+            },
+
+            activate: function() {
+                console.log('DebugViewer1: activate()');
+            },
+
+            canDeactivate: function() {
+                console.log('DebugViewer1: canDeactivate() -> true');
+                return true;
+            },
+
+            deactivate: function() {
+                console.log('DebugViewer1: deactivate()');
+            },
+
+            refresh: function() {
+                console.log('DebugViewer1: refresh()');
+                const address = 0x0400; // Screen memory
+                const length = 256;
+
+                readMemory(address, length, (data) => {
+                    const bytes = new Uint8Array(data);
+                    let output = 'Memory dump from $0400 (256 bytes):\n\n';
+
+                    for (let i = 0; i < bytes.length; i += 16) {
+                        const addr = (address + i).toString(16).padStart(4, '0').toUpperCase();
+                        output += `$${addr}: `;
+
+                        // Hex bytes
+                        for (let j = 0; j < 16 && i + j < bytes.length; j++) {
+                            output += bytes[i + j].toString(16).padStart(2, '0').toUpperCase() + ' ';
+                        }
+
+                        output += '\n';
+                    }
+
+                    $('#debug1-display').text(output).show();
+                }, (error) => {
+                    $('#debug1-display').text(`Error: ${error}`).show();
+                });
+            }
+        };
+
+        // ============================================================================
+        // DEBUG VIEWER 2: Parameterized Read
+        // ============================================================================
+
+        var DebugViewer2 = {
+            initialize: function() {
+                console.log('DebugViewer2: initialize()');
+                $('#debug2-read').click(() => this.refresh());
+            },
+
+            activate: function() {
+                console.log('DebugViewer2: activate()');
+            },
+
+            canDeactivate: function() {
+                console.log('DebugViewer2: canDeactivate() -> true');
+                return true;
+            },
+
+            deactivate: function() {
+                console.log('DebugViewer2: deactivate()');
+            },
+
+            refresh: function() {
+                console.log('DebugViewer2: refresh()');
+                const addressStr = $('#debug2-address').val().replace(/[^0-9A-Fa-f]/g, '');
+                const address = parseInt(addressStr, 16);
+
+                if (isNaN(address) || address < 0 || address > 0xFFFF) {
+                    showError('Invalid address. Enter hex value (0000-FFFF)');
+                    return;
+                }
+
+                readMemory(address, 16, (data) => {
+                    const bytes = new Uint8Array(data);
+                    const addr = address.toString(16).padStart(4, '0').toUpperCase();
+                    let output = `Memory at $${addr} (16 bytes):\n\n`;
+                    output += `$${addr}: `;
+
+                    for (let i = 0; i < bytes.length; i++) {
+                        output += bytes[i].toString(16).padStart(2, '0').toUpperCase() + ' ';
+                    }
+
+                    $('#debug2-display').text(output).show();
+                }, (error) => {
+                    $('#debug2-display').text(`Error: ${error}`).show();
+                });
+            }
+        };
+
+        // ============================================================================
+        // DEBUG VIEWER 3: Write Test with Confirmation
+        // ============================================================================
+
+        var DebugViewer3 = {
+            hasUnsavedChanges: false,
+
+            initialize: function() {
+                console.log('DebugViewer3: initialize()');
+                $('#debug3-write').click(() => this.writeValue());
+                $('#debug3-post-write').click(() => this.writeMultipleBytes());
+            },
+
+            activate: function() {
+                console.log('DebugViewer3: activate()');
+            },
+
+            canDeactivate: function() {
+                console.log(`DebugViewer3: canDeactivate() -> hasUnsavedChanges=${this.hasUnsavedChanges}`);
+                if (this.hasUnsavedChanges) {
+                    const confirmed = confirm('You have written data. Are you sure you want to leave this tab?');
+                    if (confirmed) {
+                        this.hasUnsavedChanges = false;
+                        return true;
+                    }
+                    return false;
+                }
+                return true;
+            },
+
+            deactivate: function() {
+                console.log('DebugViewer3: deactivate()');
+            },
+
+            refresh: function() {
+                console.log('DebugViewer3: refresh() - not implemented for this viewer');
+            },
+
+            writeValue: function() {
+                const addressStr = $('#debug3-address').val().replace(/[^0-9A-Fa-f]/g, '');
+                const address = parseInt(addressStr, 16);
+
+                const valueStr = $('#debug3-value').val().replace(/[^0-9A-Fa-f]/g, '');
+                const value = parseInt(valueStr, 16);
+
+                if (isNaN(address) || address < 0 || address > 0xFFFF) {
+                    showError('Invalid address. Enter hex value (0000-FFFF)');
+                    return;
+                }
+
+                if (isNaN(value) || value < 0 || value > 0xFF) {
+                    showError('Invalid value. Enter hex byte (00-FF)');
+                    return;
+                }
+
+                writeMemory(address, [value], () => {
+                    const addr = address.toString(16).padStart(4, '0').toUpperCase();
+                    const val = value.toString(16).padStart(2, '0').toUpperCase();
+                    $('#debug3-status').html(`<span style="color: var(--success);">✓ Successfully wrote $${val} to address $${addr}</span>`);
+                    this.hasUnsavedChanges = true;
+                }, (error) => {
+                    $('#debug3-status').html(`<span style="color: var(--danger);">✗ Write failed: ${error}</span>`);
+                });
+            },
+
+            writeMultipleBytes: function() {
+                const addressStr = $('#debug3-post-address').val().replace(/[^0-9A-Fa-f]/g, '');
+                const address = parseInt(addressStr, 16);
+
+                const valueStr = $('#debug3-post-value').val().replace(/[^0-9A-Fa-f]/g, '');
+                const value = parseInt(valueStr, 16);
+
+                const countStr = $('#debug3-post-count').val().replace(/[^0-9]/g, '');
+                const count = parseInt(countStr, 10);
+
+                if (isNaN(address) || address < 0 || address > 0xFFFF) {
+                    showError('Invalid address. Enter hex value (0000-FFFF)');
+                    return;
+                }
+
+                if (isNaN(value) || value < 0 || value > 0xFF) {
+                    showError('Invalid value. Enter hex byte (00-FF)');
+                    return;
+                }
+
+                if (isNaN(count) || count < 1 || count > 65536) {
+                    showError('Invalid count. Enter value (1-65536)');
+                    return;
+                }
+
+                // Create array filled with the value
+                const dataArray = new Array(count).fill(value);
+
+                writeMemory(address, dataArray, () => {
+                    const addr = address.toString(16).padStart(4, '0').toUpperCase();
+                    const val = value.toString(16).padStart(2, '0').toUpperCase();
+                    const method = count > 128 ? 'POST' : 'PUT';
+                    $('#debug3-post-status').html(`<span style="color: var(--success);">✓ Successfully wrote ${count} bytes of $${val} to $${addr} (${method} method)</span>`);
+                    this.hasUnsavedChanges = true;
+                }, (error) => {
+                    $('#debug3-post-status').html(`<span style="color: var(--danger);">✗ Write failed: ${error}</span>`);
+                });
+            }
+        };
+
+        // ============================================================================
+        // DEBUG VIEWER 4: 6502 Disassembler
+        // ============================================================================
+
+        var DisassemblerViewer = {
+            initialize: function() {
+                console.log('DisassemblerViewer: initialize()');
+                $('#disasm-read').click(() => this.disassembleRaw());
+                $('#disasm-read-formatted').click(() => this.disassembleFormatted());
+            },
+
+            activate: function() {
+                console.log('DisassemblerViewer: activate()');
+            },
+
+            canDeactivate: function() {
+                console.log('DisassemblerViewer: canDeactivate() -> true');
+                return true;
+            },
+
+            deactivate: function() {
+                console.log('DisassemblerViewer: deactivate()');
+            },
+
+            refresh: function() {
+                console.log('DisassemblerViewer: refresh() - calling disassembleFormatted()');
+                this.disassembleFormatted();
+            },
+
+            disassembleRaw: function() {
+                console.log('DisassemblerViewer: disassembleRaw()');
+                const addressStr = $('#disasm-address').val().replace(/[^0-9A-Fa-f]/g, '');
+                const address = parseInt(addressStr, 16);
+
+                const lengthStr = $('#disasm-length').val().replace(/[^0-9]/g, '');
+                const length = parseInt(lengthStr, 10);
+
+                if (isNaN(address) || address < 0 || address > 0xFFFF) {
+                    showError('Invalid address. Enter hex value (0000-FFFF)');
+                    return;
+                }
+
+                if (isNaN(length) || length < 1 || length > 4096) {
+                    showError('Invalid length. Enter value (1-4096)');
+                    return;
+                }
+
+                // Check if library is loaded
+                if (typeof window.reasm6502 === 'undefined' || !window.reasm6502.disasm) {
+                    showError('6502-reasm library not loaded');
+                    return;
+                }
+
+                readMemory(address, length, (data) => {
+                    try {
+                        const bytes = Array.from(new Uint8Array(data));
+
+                        // Disassemble using 6502-reasm library
+                        const disasmResult = window.reasm6502.disasm(bytes, address);
+
+                        const addr = address.toString(16).padStart(4, '0').toUpperCase();
+                        let output = `Disassembly from $${addr} (${length} bytes, ${disasmResult.length} instructions):\n\n`;
+                        output += JSON.stringify(disasmResult, null, 2);
+
+                        $('#disasm-display').text(output).show();
+                        $('#disasm-display-formatted').hide();
+                    } catch (error) {
+                        $('#disasm-display').text(`Disassembly error: ${error.message}`).show();
+                        $('#disasm-display-formatted').hide();
+                    }
+                }, (error) => {
+                    $('#disasm-display').text(`Error reading memory: ${error}`).show();
+                    $('#disasm-display-formatted').hide();
+                });
+            },
+
+            disassembleFormatted: function() {
+                console.log('DisassemblerViewer: disassembleFormatted()');
+                const addressStr = $('#disasm-address').val().replace(/[^0-9A-Fa-f]/g, '');
+                const address = parseInt(addressStr, 16);
+
+                const lengthStr = $('#disasm-length').val().replace(/[^0-9]/g, '');
+                const length = parseInt(lengthStr, 10);
+
+                if (isNaN(address) || address < 0 || address > 0xFFFF) {
+                    showError('Invalid address. Enter hex value (0000-FFFF)');
+                    return;
+                }
+
+                if (isNaN(length) || length < 1 || length > 4096) {
+                    showError('Invalid length. Enter value (1-4096)');
+                    return;
+                }
+
+                // Check if library is loaded
+                if (typeof window.reasm6502 === 'undefined' || !window.reasm6502.disasm) {
+                    showError('6502-reasm library not loaded');
+                    return;
+                }
+
+                readMemory(address, length, (data) => {
+                    try {
+                        const bytes = Array.from(new Uint8Array(data));
+
+                        // Disassemble using 6502-reasm library
+                        const disasmResult = window.reasm6502.disasm(bytes, address);
+                        const formatted = window.reasm6502.formatDisasm(disasmResult);
+
+                        const addr = address.toString(16).padStart(4, '0').toUpperCase();
+                        let output = `Disassembly from $${addr} (${length} bytes, ${disasmResult.length} instructions):\n\n`;
+                        output += formatted;
+
+                        $('#disasm-display').hide();
+                        $('#disasm-display-formatted').text(output).show();
+                    } catch (error) {
+                        $('#disasm-display').hide();
+                        $('#disasm-display-formatted').text(`Disassembly error: ${error.message}`).show();
+                    }
+                }, (error) => {
+                    $('#disasm-display').hide();
+                    $('#disasm-display-formatted').text(`Error reading memory: ${error}`).show();
+                });
+            }
+        };
+
+        // ============================================================================
+        // INITIALIZATION
+        // ============================================================================
+
+        window.initializeApp = function() {
+            console.log('=== API Debug Tool Initializing ===');
+
+            // Initialize tab system
+            initializeTabs(tabMap, 'tab1');
+
+            console.log('=== Initialization Complete ===');
+        };
+    </script>
+</body>
+</html>

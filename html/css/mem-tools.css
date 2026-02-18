@@ -1,0 +1,380 @@
+/**
+ * Memory Display & Editor Styles
+ * Styles specific to displaying and editing memory data
+ */
+
+/* Memory Viewer UI Styles (header, sub-header, buttons, navigation) */
+
+.mem-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--card-bg);
+    border-radius: var(--radius-sm);
+    margin-bottom: 10px;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.mem-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.mem-header-left label {
+    font-size: 13px;
+    color: var(--text-dim);
+}
+
+.mem-input-address {
+    width: 50px;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    background: var(--input-bg);
+    color: var(--text);
+    border-radius: var(--radius-sm);
+    font-family: monospace;
+    font-size: 14px;
+}
+
+.mem-select {
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    background: var(--input-bg);
+    color: var(--text);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+}
+
+.mem-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mem-nav-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mem-nav-btn.mem-nav-page {
+    width: auto;
+    padding: 0 12px;
+}
+
+.mem-nav-btn:hover {
+    background: var(--input-bg);
+    border-color: var(--primary);
+}
+
+.mem-subheader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: var(--input-bg);
+    border-radius: var(--radius-sm);
+    margin-bottom: 15px;
+}
+
+.mem-subheader-left {
+    font-family: monospace;
+    font-size: 16px;
+    color: var(--text-dim);
+}
+
+.mem-subheader-right {
+    display: flex;
+    gap: 8px;
+}
+
+/* Hex display and editor styles */
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .mem-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .mem-header-left,
+    .mem-header-right {
+        justify-content: center;
+    }
+}
+
+/* Hex Editor Display Container */
+.hex-display {
+    background: var(--card-bg);
+    border-radius: var(--radius-sm);
+    overflow-x: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    line-height: 1.0;
+}
+
+/* Disable Text Selection in Edit Mode */
+.hex-display.no-select {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* Hex Editor Row Layout */
+.hex-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 2px;
+}
+
+/* Hex Address Column */
+.hex-address {
+    color: var(--primary);
+    min-width: 50px;
+}
+
+/* Hex Bytes Column */
+.hex-bytes {
+    color: var(--success);
+    letter-spacing: 1px;
+}
+
+/* Hex Bytes in Edit Mode (darker background) */
+.hex-bytes.edit-mode {
+    background: #1a1a1a;
+    border-radius: 2px;
+    padding: 2px 4px;
+    margin: -2px -4px;
+}
+
+/* Hex Characters Column (C64 Font) */
+.hex-chars {
+    color: var(--text-dim);
+    font-family: 'C64ProMono', 'Courier New', monospace;
+    font-size: 16px;
+    line-height: 1.0;
+    letter-spacing: 2px;
+}
+
+/* Editable Hex Bytes Mode */
+.hex-bytes.hex-editable {
+    background: rgba(100, 200, 100, 0.08);
+    cursor: text;
+    outline: 1px solid var(--success);
+    outline-offset: -1px;
+    border-radius: 2px;
+    padding: 2px 4px;
+    margin: -2px -4px;
+}
+
+/* Modified Byte (white text) */
+.hex-byte-modified .hex-nibble {
+    color: #ffffff;  /* White text for modified bytes */
+}
+
+.hex-byte-modified.hex-char {
+    color: #ffffff;  /* White text for modified characters */
+}
+
+/* Cursor on Unmodified Byte (green) */
+.hex-nibble-cursor {
+    color: var(--success);  /* Green text (cursor off) */
+    background: transparent;  /* No background (cursor off) */
+}
+
+.hex-nibble-cursor.hex-cursor-visible {
+    color: #0a0c0e;  /* Dark text (cursor on) */
+    background: #39ff14;  /* Bright green background (cursor on) */
+}
+
+/* Cursor on Modified Byte (white) */
+.hex-byte-modified .hex-nibble-cursor {
+    color: #ffffff;  /* White text (cursor off) */
+    background: transparent;  /* No background (cursor off) */
+}
+
+.hex-byte-modified .hex-nibble-cursor.hex-cursor-visible {
+    color: #0a0c0e;  /* Dark text (cursor on) */
+    background: #ffffff;  /* White background (cursor on) */
+}
+
+/* Selection on Unmodified Byte (green text) */
+.hex-nibble-selected {
+    color: var(--success);  /* Green text for unmodified selected bytes */
+    background: rgba(100, 150, 255, 0.4);
+}
+
+/* Selection on Modified Byte (white text with blue background) */
+.hex-byte-modified .hex-nibble-selected {
+    color: #ffffff;  /* White text */
+    background: rgba(100, 150, 255, 0.4);  /* Blue selection background */
+}
+
+/* Cursor within Selection (unmodified byte) */
+.hex-nibble-selected.hex-nibble-cursor {
+    color: #0a0c0e;  /* Dark text */
+    background: #7fdbff;  /* Bright cyan for cursor in selection */
+}
+
+/* Cursor within Selection (modified byte) */
+.hex-byte-modified .hex-nibble-selected.hex-nibble-cursor {
+    color: #0a0c0e;  /* Dark text */
+    background: #ffffff;  /* White background for cursor in modified selection */
+}
+
+/* Character Selection */
+.hex-char-selected {
+    color: var(--text-primary);
+    background: rgba(100, 150, 255, 0.4);
+}
+
+/* Disassembly Viewer Display Container */
+.disasm-display {
+    background: var(--card-bg);
+    border-radius: var(--radius-sm);
+    overflow-x: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    line-height: 1.0;
+}
+
+/* Disassembly Loading Placeholder */
+.disasm-placeholder {
+    color: var(--text-dim);
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    line-height: normal;
+}
+
+/* Disassembly Row Layout */
+.disasm-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 2px;
+}
+
+/* Disassembly Address Column */
+.disasm-col-addr {
+    color: var(--primary);
+    min-width: 50px;
+}
+
+/* Disassembly Hex Bytes Column */
+.disasm-col-bytes {
+    color: var(--success);
+    letter-spacing: 1px;
+    min-width: 95px;
+}
+
+/* Disassembly Instruction Column */
+.disasm-col-instr {
+    color: var(--text-dim);
+    min-width: 120px;
+}
+
+/* Disassembly Jump Target Column */
+.disasm-col-target {
+    color: var(--text-dim);
+    min-width: 100px;
+}
+
+/* Disassembly Edit Mode Styles */
+
+/* Disable text selection in edit mode */
+.disasm-display.no-select {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* Edit mode bytes container */
+.disasm-col-bytes.edit-mode {
+    background: #1a1a1a;
+    border-radius: 2px;
+    padding: 2px 4px;
+    margin: -2px -4px;
+}
+
+/* Disassembly Byte */
+.disasm-byte {
+    display: inline-block;
+}
+
+/* Disassembly Nibble - placeholder class for addressing */
+.disasm-nibble {
+}
+
+/* Modified byte (white text) */
+.disasm-byte-modified .disasm-nibble {
+    color: #ffffff;
+}
+
+/* Cursor on unmodified byte (green) */
+.disasm-nibble-cursor {
+    color: var(--success);
+    background: transparent;
+}
+
+.disasm-nibble-cursor.disasm-cursor-visible {
+    color: #0a0c0e;
+    background: #39ff14;
+}
+
+/* Cursor on modified byte (white) */
+.disasm-byte-modified .disasm-nibble-cursor {
+    color: #ffffff;
+    background: transparent;
+}
+
+.disasm-byte-modified .disasm-nibble-cursor.disasm-cursor-visible {
+    color: #0a0c0e;
+    background: #ffffff;
+}
+
+/* Selection on unmodified byte */
+.disasm-nibble-selected {
+    color: var(--success);
+    background: rgba(100, 150, 255, 0.4);
+}
+
+/* Selection on modified byte */
+.disasm-byte-modified .disasm-nibble-selected {
+    color: #ffffff;
+    background: rgba(100, 150, 255, 0.4);
+}
+
+/* Cursor within selection (unmodified) */
+.disasm-nibble-selected.disasm-nibble-cursor {
+    color: #0a0c0e;
+    background: #7fdbff;
+}
+
+/* Cursor within selection (modified) */
+.disasm-byte-modified .disasm-nibble-selected.disasm-nibble-cursor {
+    color: #0a0c0e;
+    background: #ffffff;
+}
+
+/* Checkbox Label */
+.mem-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    color: var(--text-dim);
+    cursor: pointer;
+}
