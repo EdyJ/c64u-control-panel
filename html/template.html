@@ -240,6 +240,17 @@
         border-color: var(--primary);
     }
 
+    input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+    }
+
+    input[type="checkbox"]:focus {
+        outline: none;
+        border-color: var(--primary);
+    }
+
     label {
         color: var(--text-dim);
         font-weight: bold;
@@ -525,6 +536,11 @@
       // Best-effort: if favicon.ico exists next to the HTML file, set it.
       // Do nothing on any failure.
       function tryLoadFaviconLast() {
+        // Skip on file:// protocol (CORS blocks fetch)
+        if (window.location.protocol === 'file:') {
+          return Promise.resolve();
+        }
+
         ensurePlaceholderFaviconLink();
 
         var url = 'favicon.ico';
