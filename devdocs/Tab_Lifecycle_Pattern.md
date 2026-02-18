@@ -8,16 +8,16 @@
 
 ## Overview
 
-The Tab Lifecycle pattern provides a structured approach to managing tabbed interfaces where each tab represents an independent viewer with its own state, UI, and behavior. The pattern ensures clean transitions between tabs, prevents data loss, and maintains a consistent user experience.
+The Tab Lifecycle pattern provides a structured approach to managing tabbed interfaces where each tab represents an independent tab with its own state, UI, and behavior. The pattern ensures clean transitions between tabs, prevents data loss, and maintains a consistent user experience.
 
 The Tab Lifecycle pattern provides:
 
-✅ **Clean separation** of concerns between viewers  
+✅ **Clean separation** of concerns between tabs  
 ✅ **State management** with unsaved changes protection  
 ✅ **Predictable behavior** through standardized lifecycle methods  
 ✅ **User safety** with confirmation dialogs before data loss  
 ✅ **Easy debugging** with console logging  
-✅ **Extensibility** for adding new viewers  
+✅ **Extensibility** for adding new tabs  
 
 Use this pattern for any complex multi-tab interface in the C64U Control Panel project.
 
@@ -25,9 +25,9 @@ Use this pattern for any complex multi-tab interface in the C64U Control Panel p
 
 ## Core Concepts
 
-### 1. Viewer Object
+### 1. Tab Object
 
-Each tab is backed by a **Viewer Object** that implements the lifecycle interface. A viewer is responsible for:
+Each tab is backed by a **Tab Object** that implements the lifecycle interface. A tab is responsible for:
 - Managing its own UI elements
 - Handling user interactions
 - Maintaining internal state
@@ -35,19 +35,19 @@ Each tab is backed by a **Viewer Object** that implements the lifecycle interfac
 
 ### 2. Lifecycle Methods
 
-Every viewer must implement five lifecycle methods:
+Every tab must implement five lifecycle methods:
 
 | Method | Purpose | When Called | Return Value |
 |--------|---------|-------------|--------------|
 | `initialize()` | Set up event handlers and initial state | Once, during page load | None |
-| `activate()` | Prepare viewer for display | When tab becomes active | None |
-| `canDeactivate()` | Check if viewer can be left | Before switching away from tab | Boolean |
+| `activate()` | Prepare tab for display | When tab becomes active | None |
+| `canDeactivate()` | Check if tab can be left | Before switching away from tab | Boolean |
 | `deactivate()` | Clean up before hiding | After user confirms leaving | None |
-| `refresh()` | Reload viewer data (or empty if not needed) | When Refresh button is clicked | None |
+| `refresh()` | Reload tab data (or empty if not needed) | When Refresh button is clicked | None |
 
 ### 3. State Isolation
 
-Each viewer maintains its own state independently. State is not shared between viewers unless explicitly designed to do so.
+Each tab maintains its own state independently. State is not shared between tabs unless explicitly designed to do so.
 
 ---
 
@@ -58,25 +58,25 @@ Each viewer maintains its own state independently. State is not shared between v
 ```
 Page Load
     ↓
-[All Viewers: initialize()]
+[All Tabs: initialize()]
     ↓
-[First Viewer: activate()]
+[First Tab: activate()]
     ↓
 ┌─────────────────────────────────┐
 │   User Interacts with Tab       │
-│   (Viewer is Active)             │
+│   (Tab is Active)               │
 └─────────────────────────────────┘
     ↓
 User Clicks Different Tab
     ↓
-[Current Viewer: canDeactivate()]
+[Current Tab: canDeactivate()]
     ↓
     ├─→ Returns false → Tab Switch Cancelled
     │                   (Stay on current tab)
     │
     └─→ Returns true
             ↓
-        [Current Viewer: deactivate()]
+        [Current Tab: deactivate()]
             ↓
         Hide Current Tab Content
             ↓
@@ -84,7 +84,7 @@ User Clicks Different Tab
             ↓
         Show New Tab Content
             ↓
-        [New Viewer: activate()]
+        [New Tab: activate()]
             ↓
         ┌─────────────────────────────────┐
         │   User Interacts with New Tab    │
@@ -95,32 +95,32 @@ User Clicks Different Tab
 
 ## Implementation Guide
 
-### Step 1: Define Viewer Objects
+### Step 1: Define Tab Objects
 
-Each viewer is a JavaScript object with lifecycle methods:
+Each tab is a JavaScript object with lifecycle methods:
 
 ```javascript
-var MyViewer = {
+var MyTab = {
     // Internal state
     hasUnsavedChanges: false,
 
     // Lifecycle method 1: Initialize
     initialize: function() {
-        console.log('MyViewer: initialize()');
+        console.log('MyTab: initialize()');
         // Set up event handlers
         $('#my-button').click(() => this.doSomething());
     },
 
     // Lifecycle method 2: Activate
     activate: function() {
-        console.log('MyViewer: activate()');
+        console.log('MyTab: activate()');
         // Refresh data, focus inputs, etc.
         this.refresh();
     },
 
     // Lifecycle method 3: Can Deactivate
     canDeactivate: function() {
-        console.log('MyViewer: canDeactivate()');
+        console.log('MyTab: canDeactivate()');
         if (this.hasUnsavedChanges) {
             const confirmed = confirm('You have unsaved changes. Leave anyway?');
             if (confirmed) {
@@ -134,14 +134,14 @@ var MyViewer = {
 
     // Lifecycle method 4: Deactivate
     deactivate: function() {
-        console.log('MyViewer: deactivate()');
+        console.log('MyTab: deactivate()');
         // Clean up timers, hide tooltips, etc.
     },
 
     // Lifecycle method 5: Refresh
     refresh: function() {
-        console.log('MyViewer: refresh()');
-        // Load/refresh viewer data
+        console.log('MyTab: refresh()');
+        // Load/refresh tab data
     },
 
     // Custom methods
@@ -152,15 +152,15 @@ var MyViewer = {
 };
 ```
 
-### Step 2: Create Viewer Map
+### Step 2: Create Tab Map
 
-Map tab IDs to viewer object names:
+Map tab IDs to tab object names:
 
 ```javascript
-const viewerMap = {
-    'tab1': 'MyViewer',
-    'tab2': 'AnotherViewer',
-    'tab3': 'ThirdViewer'
+const tabMap = {
+    'tab1': 'MyTab',
+    'tab2': 'AnotherTab',
+    'tab3': 'ThirdTab'
 };
 ```
 
@@ -170,21 +170,19 @@ const viewerMap = {
 $(document).ready(function() {
     console.log('=== Initializing Tab System ===');
 
-    // Initialize all viewers
-    MyViewer.initialize();
-    AnotherViewer.initialize();
-    ThirdViewer.initialize();
+    // Initialize all tabs
+    initializeTabs(['MyTab', 'AnotherTab', 'ThirdTab']);
 
     // Set up tab click handlers
-    setupTabs();
+    setupTabs(tabMap, 'tab1');
 
     // Activate first tab
-    MyViewer.activate();
+    MyTab.activate();
 
     // Handle page unload
     window.addEventListener('beforeunload', function(e) {
-        const activeViewer = getActiveViewer();
-        if (activeViewer && activeViewer.canDeactivate && !activeViewer.canDeactivate()) {
+        const activeTab = getActiveTab();
+        if (activeTab && activeTab.canDeactivate && !activeTab.canDeactivate()) {
             e.preventDefault();
             e.returnValue = '';
             return '';
@@ -214,7 +212,7 @@ $(document).ready(function() {
 **Example:**
 ```javascript
 initialize: function() {
-    console.log('HexViewer: initialize()');
+    console.log('HexTab: initialize()');
     this.currentAddress = 0x0400;
     this.bytesPerRow = 16;
 }
@@ -224,7 +222,7 @@ initialize: function() {
 
 ### activate()
 
-**Purpose:** Prepare the viewer for display when its tab becomes active.
+**Purpose:** Prepare the tab for display when its tab becomes active.
 
 **Responsibilities:**
 - Bind event handlers (UI elements, shortcuts)
@@ -236,7 +234,7 @@ initialize: function() {
 
 **Best Practices:**
 - Use arrow functions for event handlers to preserve `this` context
-- Call `refresh()` if the viewer displays dynamic data
+- Call `refresh()` if the tab displays dynamic data
 - Set focus to the primary input field for better UX
 - Check if data needs updating before making API calls
 
@@ -258,7 +256,7 @@ activate: function() {
 
 ### canDeactivate()
 
-**Purpose:** Determine if the viewer can be left (tab switch or page unload).
+**Purpose:** Determine if the tab can be left (tab switch or page unload).
 
 **Responsibilities:**
 - Check for unsaved changes
@@ -293,7 +291,7 @@ canDeactivate: function() {
 
 ### deactivate()
 
-**Purpose:** Clean up before the viewer is hidden.
+**Purpose:** Clean up before the tab is hidden.
 
 **Responsibilities:**
 - Unbind event handlers (UI elements, shortcuts)
@@ -340,8 +338,8 @@ The `beforeunload` event handler prevents accidental data loss:
 
 ```javascript
 window.addEventListener('beforeunload', function(e) {
-    const activeViewer = getActiveViewer();
-    if (activeViewer && activeViewer.canDeactivate && !activeViewer.canDeactivate()) {
+    const activeTab = getActiveTab();
+    if (activeTab && activeTab.canDeactivate && !activeTab.canDeactivate()) {
         e.preventDefault();
         e.returnValue = '';
         return '';
@@ -358,31 +356,31 @@ window.addEventListener('beforeunload', function(e) {
 
 ## Refresh Integration
 
-The Refresh button in the header triggers the active viewer's `refresh()` method:
+The Refresh button in the header triggers the active tab's `refresh()` method:
 
 ```javascript
 $('#refreshBtn').click(function() {
-    const activeViewer = getActiveViewer();
-    activeViewer.refresh();
+    const activeTab = getActiveTab();
+    activeTab.refresh();
 });
 ```
 
-Viewers that need refresh functionality should implement the `refresh()` method:
+Tabs that need refresh functionality should implement the `refresh()` method:
 
 ```javascript
 refresh: function() {
-    console.log('MyViewer: refresh()');
+    console.log('MyTab: refresh()');
     // Reload data from API
     // Update UI
 }
 ```
 
-Viewers without meaningful refresh functionality should provide an empty implementation:
+Tabs without meaningful refresh functionality should provide an empty implementation:
 
 ```javascript
 refresh: function() {
-    console.log('MyViewer: refresh() - not implemented');
-    // No refresh needed for this viewer
+    console.log('MyTab: refresh() - not implemented');
+    // No refresh needed for this tab
 }
 ```
 
@@ -402,7 +400,7 @@ Always log lifecycle method calls for debugging:
 
 ```javascript
 initialize: function() {
-    console.log('MyViewer: initialize()');
+    console.log('MyTab: initialize()');
     // ...
 }
 ```

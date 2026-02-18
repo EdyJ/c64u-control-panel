@@ -3,7 +3,7 @@
  * Tab Lifecycle Management Library
  * 
  * Provides reusable tab management functionality for tools that implement
- * a tabbed interface with viewer lifecycle management.
+ * a tabbed interface with tab lifecycle management.
  * 
  * Version: 1.0
  * Date: February 6, 2026
@@ -14,40 +14,40 @@
 // ============================================================================
 
 let currentActiveTab = null;
-let _tabViewerMap = {};
+let _tabMap = {};
 
 // ============================================================================
 // CORE FUNCTIONS
 // ============================================================================
 
 /**
- * Get the currently active viewer object.
- * @returns {Object} The active viewer object
+ * Get the currently active tab object.
+ * @returns {Object} The active tab object
  */
-function getActiveViewer() {
+function getActiveTab() {
     if (!currentActiveTab) return null;
-    const viewerName = _tabViewerMap[currentActiveTab];
-    return window[viewerName];
+    const tabName = _tabMap[currentActiveTab];
+    return window[tabName];
 }
 
 /**
- * Get viewer object for a specific tab.
+ * Get tab object for a specific tab.
  * @param {string} tabId - The tab ID
- * @returns {Object} The viewer object for the specified tab
+ * @returns {Object} The tab object for the specified tab
  */
-function getViewerByTab(tabId) {
-    const viewerName = _tabViewerMap[tabId];
-    return window[viewerName];
+function getTab(tabId) {
+    const tabName = _tabMap[tabId];
+    return window[tabName];
 }
 
 /**
  * Set up tab click handlers and initialize the tab system.
- * @param {Object} tabToViewerMap - Mapping of tab IDs to viewer names
+ * @param {Object} tabMap - Mapping of tab IDs to tab object names
  * @param {string} initialTab - The ID of the initial active tab
  */
-function setupTabs(tabToViewerMap, initialTab) {
-    // Store the viewer map
-    _tabViewerMap = tabToViewerMap;
+function setupTabs(tabMap, initialTab) {
+    // Store the tab map
+    _tabMap = tabMap;
     currentActiveTab = initialTab;
     
     // Bind click handlers to tab buttons
@@ -56,7 +56,7 @@ function setupTabs(tabToViewerMap, initialTab) {
         switchToTab(targetTab);
     });
     
-    console.log('Tab lifecycle initialized with tabs:', Object.keys(_tabViewerMap));
+    console.log('Tab lifecycle initialized with tabs:', Object.keys(_tabMap));
 }
 
 /**
@@ -69,33 +69,33 @@ function switchToTab(tabId) {
         return; // Already on this tab
     }
     
-    const currentViewer = getActiveViewer();
+    const currentTab = getActiveTab();
     
     // Check if we can leave current tab
-    if (currentViewer && !currentViewer.canDeactivate()) {
-        console.log('Tab switch cancelled by viewer');
+    if (currentTab && !currentTab.canDeactivate()) {
+        console.log('Tab switch cancelled by tab');
         return; // Cancel switch
     }
     
-    // Deactivate current viewer
-    if (currentViewer) {
-        currentViewer.deactivate();
+    // Deactivate current tab
+    if (currentTab) {
+        currentTab.deactivate();
     }
     
-    // Hide all viewer contents
+    // Hide all tab contents
     $('.tab-content').hide();
     
     // Update tab styling
     $('.tab-button').removeClass('active');
     $(`.tab-button[data-tab="${tabId}"]`).addClass('active');
     
-    // Show new viewer content
+    // Show new tab content
     $(`#${tabId}-content`).show();
     
-    // Activate new viewer
-    const newViewer = getViewerByTab(tabId);
-    if (newViewer) {
-        newViewer.activate();
+    // Activate new tab
+    const newTab = getTab(tabId);
+    if (newTab) {
+        newTab.activate();
     }
     
     // Update current tab tracking
@@ -105,15 +105,15 @@ function switchToTab(tabId) {
 }
 
 /**
- * Initialize all viewers by calling their initialize() method.
- * @param {Array<string>} viewerNames - Array of viewer object names to initialize
+ * Initialize all tabs by calling their initialize() method.
+ * @param {Array<string>} tabNames - Array of tab object names to initialize
  */
-function initializeViewers(viewerNames) {
-    viewerNames.forEach(viewerName => {
-        const viewer = window[viewerName];
-        if (viewer && viewer.initialize) {
-            viewer.initialize();
+function initializeTabs(tabNames) {
+    tabNames.forEach(tabName => {
+        const tab = window[tabName];
+        if (tab && tab.initialize) {
+            tab.initialize();
         }
     });
-    console.log('All viewers initialized');
+    console.log('All tabs initialized');
 }

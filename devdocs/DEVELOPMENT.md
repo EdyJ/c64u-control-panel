@@ -64,8 +64,9 @@ Every page may define a global `initializeApp` function. This function serves as
 window.initializeApp = function() {
     // All page-specific initialization code goes here
     console.log("=== API Debug Tool Initializing ===");
-    setupViewers();
-    setupTabs(tabToViewerMap, initialTab);
+    initializeTabs(['HexViewer', 'DisassemblyViewer']);
+    setupTabs(tabMap, 'tab0');
+    HexViewer.activate();
 };
 ```
 

@@ -260,7 +260,7 @@
         // TAB MANAGEMENT (using tab-lifecycle.js)
         // ============================================================================
         
-        const viewerMap = {
+        const tabMap = {
             'tab1': 'DebugViewer1',
             'tab2': 'DebugViewer2',
             'tab3': 'DebugViewer3',
@@ -606,27 +606,27 @@
         window.initializeApp = function() {
             console.log('=== API Debug Tool Initializing ===');
             
-            // Initialize all viewers
-            initializeViewers(['DebugViewer1', 'DebugViewer2', 'DebugViewer3', 'DisassemblerViewer']);
+            // Initialize all tabs
+            initializeTabs(['DebugViewer1', 'DebugViewer2', 'DebugViewer3', 'DisassemblerViewer']);
             
             // Set up tab system
-            setupTabs(viewerMap, 'tab1');
+            setupTabs(tabMap, 'tab1');
             
             // Activate first tab
             DebugViewer1.activate();
             
             // Set up Refresh button
             $('#refreshBtn').click(function() {
-                const activeViewer = getActiveViewer();
-                if (activeViewer && activeViewer.refresh) {
-                    activeViewer.refresh();
+                const activeTab = getActiveTab();
+                if (activeTab && activeTab.refresh) {
+                    activeTab.refresh();
                 }
             });
             
             // Handle page unload - check for unsaved changes
             window.addEventListener('beforeunload', function(e) {
-                const activeViewer = getActiveViewer();
-                if (activeViewer && activeViewer.canDeactivate && !activeViewer.canDeactivate()) {
+                const activeTab = getActiveTab();
+                if (activeTab && activeTab.canDeactivate && !activeTab.canDeactivate()) {
                     e.preventDefault();
                     e.returnValue = '';
                     return '';

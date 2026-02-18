@@ -128,46 +128,46 @@ Provides reusable tab management functionality for tools that implement a tabbed
 ### Scope
 
 - Tab switching logic
-- Viewer lifecycle management (initialize, activate, canDeactivate, deactivate, refresh)
+- Tab lifecycle management (initialize, activate, canDeactivate, deactivate, refresh)
 - Current tab tracking
 - Event handler setup
 
 ### Design Principles
 
 - **Reusable across tools** - Different tools can use this library with minimal configuration
-- **Viewer-agnostic** - Works with any viewer objects that implement the lifecycle interface
-- **Simple integration** - Tools provide a viewer map and call setup functions
+- **Tab-agnostic** - Works with any tab objects that implement the lifecycle interface
+- **Simple integration** - Tools provide a tab map and call setup functions
 
 ### Required Lifecycle Methods
 
-Each viewer object must implement these five methods:
+Each tab object must implement these five methods:
 
-1. `initialize()` - One-time setup (event handlers, state initialization)
-2. `activate()` - Prepare for display (refresh data, focus inputs)
-3. `canDeactivate()` - Check if viewer can be left (returns boolean)
-4. `deactivate()` - Clean up before hiding (stop timers, hide tooltips)
-5. `refresh()` - Refresh viewer data when global Refresh button is clicked (or empty if not needed)
+1. `initialize()` - One-time setup (state initialization)
+2. `activate()` - Prepare for display and interact (event handlers, keyboard, refresh data, focus inputs)
+3. `canDeactivate()` - Check if tab can be left (returns boolean)
+4. `deactivate()` - Clean up before hiding (stop timers, hide tooltips, clean handlers, unhook keyboard)
+5. `refresh()` - Refresh tab data when global Refresh button is clicked (or empty if not needed)
 
 ### Core Functions
 
 The library provides:
 
-1. `setupTabs(tabToViewerMap, initialTab)` - Bind click handlers to tab buttons and initialize tab system
+1. `setupTabs(tabMap, initialTab)` - Bind click handlers to tab buttons and initialize tab system
 2. `switchToTab(tabId)` - Switch to a specific tab (with canDeactivate check)
-3. `getActiveViewer()` - Get the currently active viewer object
-4. `getViewerByTab(tabId)` - Get viewer object for a specific tab
-5. `initializeViewers(viewerNames)` - Initialize all viewers by calling their initialize() method
+3. `getActiveTab()` - Get the currently active tab object
+4. `getTab(tabId)` - Get tab object for a specific tab
+5. `initializeTabs(tabNames)` - Initialize all tabs by calling their initialize() method
 
 ### Integration Pattern
 
 Tools using this library should:
 
-1. Define viewer objects with lifecycle methods
-2. Create a `viewerMap` mapping tab IDs to viewer names
-3. Call `initializeViewers(viewerNames)` to initialize all viewers
-4. Call `setupTabs(viewerMap, initialTab)` to set up tab switching
-5. Activate the first viewer
-6. Set up the global Refresh button to call `refresh()` on active viewer
+1. Define tab objects with lifecycle methods
+2. Create a `tabMap` mapping tab IDs to tab object names
+3. Call `initializeTabs(tabNames)` to initialize all tabs
+4. Call `setupTabs(tabMap, initialTab)` to set up tab switching
+5. Activate the first tab
+6. Set up the global Refresh button to call `refresh()` on active tab
 7. Set up `beforeunload` handler for unsaved changes protection
 
 ### Code Reference
@@ -194,7 +194,7 @@ See **Tab_Lifecycle_Pattern.md** for complete implementation examples and flow d
 - Respect the `canDeactivate()` return value
 - Always call lifecycle methods in the correct order
 - Don't skip lifecycle methods
-- All viewers must implement all five lifecycle methods (use empty function if not needed)
+- All tabs must implement all five lifecycle methods (use empty function if not needed)
 
 ---
 
