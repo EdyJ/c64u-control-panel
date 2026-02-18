@@ -39,6 +39,9 @@ function showError(message) {
 
     $errorBox.text(message);
 
+    // Add click handler to hide on click (one-time)
+    $errorBox.one('click', hideError);
+
     if ($errorBox.is(':visible')) {
         return;
     }
