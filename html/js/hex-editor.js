@@ -419,7 +419,7 @@ function hexEditorHandleEditModeKey(e) {
     }
 
     // Allow browser defaults for modifier keys (except for Ctrl combos already handled)
-    if (e.ctrlKey || e.shiftKey || e.altKey) {
+    if (e.ctrlKey || e.altKey) {
         return false;
     }
 
