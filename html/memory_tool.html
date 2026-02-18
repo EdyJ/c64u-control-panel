@@ -869,7 +869,8 @@
                 </div>
                 <div class="mem-subheader-right">
                     <button class="btn-primary" id="disasm-edit-btn" style="display:inline-block;">Edit</button>
-                    <button class="btn-success" id="disasm-save-btn" style="display:none;">Save</button>
+                    <button class="btn-primary" id="disasm-paste-asm-btn" style="display:none;">Paste Asm</button>
+                    <button class="btn-success" id="disasm-save-btn" style="display:none; margin-left: 8px;">Save</button>
                     <button class="btn-danger" id="disasm-cancel-btn" style="display:none;">Cancel</button>
                 </div>
             </div>
@@ -1132,7 +1133,7 @@
                     }
                     disasmEditorEnterEditMode();
                     $('#disasm-edit-btn').hide();
-                    $('#disasm-save-btn, #disasm-cancel-btn').show();
+                    $('#disasm-paste-asm-btn, #disasm-save-btn, #disasm-cancel-btn').show();
                     this.updateAddressDisplay();
                 };
 
@@ -1150,6 +1151,9 @@
                 };
 
                 handleButtonClick('disasm-edit-btn', enterEditMode);
+                handleButtonClick('disasm-paste-asm-btn', () => {
+                    disasmEditorPasteAsm();
+                });
                 handleButtonClick('disasm-save-btn', saveChanges);
                 handleButtonClick('disasm-cancel-btn', () => {
                     if (disasmEditorIsModified()) {
@@ -1164,7 +1168,7 @@
                 disasmEditorSetEnterEditModeCallback(enterEditMode);
                 disasmEditorSetSaveCallback(saveChanges);
                 disasmEditorSetExitEditModeCallback((save) => {
-                    $('#disasm-save-btn, #disasm-cancel-btn').hide();
+                    $('#disasm-paste-asm-btn, #disasm-save-btn, #disasm-cancel-btn').hide();
                     $('#disasm-edit-btn').show();
                     this.updateAddressDisplay();
                 });

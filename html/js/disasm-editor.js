@@ -238,7 +238,7 @@ function disasmEditorRenderDisassemblyEditMode(instructions, bytes, startAddress
 
         const instrBytes = instr.bytes || [];
         let bytesHtml = '';
-        
+
         for (let j = 0; j < instrBytes.length; j++) {
             const byteVal = instrBytes[j];
             if (byteVal !== undefined && byteIndex < currentData.length) {
@@ -261,7 +261,7 @@ function disasmEditorRenderDisassemblyEditMode(instructions, bytes, startAddress
                 bytesHtml += '   ';
             }
         }
-        
+
         bytesHtml = bytesHtml.padEnd(27, ' ');
         const col2 = `<span class="disasm-col-bytes">${bytesHtml}</span>`;
 
@@ -287,10 +287,10 @@ function disasmEditorRenderDisassemblyFromData() {
     const bytes = Array.from(state.currentData);
     const disasmResult = window.reasm6502.disasm(bytes, state.startAddress);
     const mapData = disasmEditorBuildInstructionMap(disasmResult);
-    
+
     state.instructionBoundaries = mapData.boundaries;
     state.byteToInstrMap = mapData.byteToInstrMap;
-    
+
     disasmEditorRenderDisassemblyEditMode(disasmResult, bytes, state.startAddress);
 
     $('.disasm-col-bytes').addClass('edit-mode');
@@ -1146,78 +1146,71 @@ function disasmEditorPaste() {
 function disasmEditorShowPasteDialog(callback) {
     disasmEditorState.modalOpen = true;
 
-    const overlay = document.createElement('div');
-    overlay.className = 'modal-overlay';
+    showInputDialog({
+        title: 'Paste hex data below',
+        placeholder: '41 42 43 or 414243',
+        submitText: 'Paste',
+        onSubmit: (text) => { callback(text); },
+        onCancel: () => { disasmEditorState.modalOpen = false; }
+    });
+}
 
-    const dialog = document.createElement('div');
-    dialog.className = 'modal-dialog';
+/**
+ * Paste assembly code from clipboard
+ */
+function disasmEditorPasteAsm() {
+    function processAsm(text) {
+        try {
+            if (typeof window.reasm6502 === 'undefined' || !window.reasm6502.reasm) {
+                showError('6502-reasm library not loaded');
+                return;
+            }
 
-    const instructions = document.createElement('div');
-    instructions.className = 'modal-instructions';
-    instructions.textContent = 'Paste hex data below';
+            const bytes = window.reasm6502.reasm(text.toUpperCase());
+            if (!bytes || bytes.length === 0) {
+                showError('Failed to assemble code');
+                return;
+            }
 
-    const textarea = document.createElement('textarea');
-    textarea.className = 'modal-textarea';
-    textarea.placeholder = '41 42 43 or 414243';
+            const state = disasmEditorState;
+            const startByte = state.cursor.byteIndex;
+            const maxBytes = state.currentData.length - startByte;
+            const bytesToPaste = bytes.slice(0, maxBytes);
 
-    const buttons = document.createElement('div');
-    buttons.className = 'modal-buttons';
+            for (let i = 0; i < bytesToPaste.length; i++) {
+                state.currentData[startByte + i] = bytesToPaste[i];
+            }
 
-    const cancelBtn = document.createElement('button');
-    cancelBtn.textContent = 'Cancel';
-
-    const pasteBtn = document.createElement('button');
-    pasteBtn.textContent = 'Paste';
-
-    buttons.appendChild(cancelBtn);
-    buttons.appendChild(pasteBtn);
-    dialog.appendChild(instructions);
-    dialog.appendChild(textarea);
-    dialog.appendChild(buttons);
-    overlay.appendChild(dialog);
-    document.body.appendChild(overlay);
-
-    setTimeout(() => textarea.focus(), 100);
-
-    function closeDialog() {
-        document.body.removeChild(overlay);
-        disasmEditorState.modalOpen = false;
+            disasmEditorReassemble(state.cursor.byteIndex, state.cursor.nibble);
+            console.log('DisasmEditor: Pasted', bytesToPaste.length, 'bytes from assembly');
+        } catch (e) {
+            showError('Assembly error: ' + e.message);
+        }
     }
 
-    pasteBtn.onclick = function() {
-        const text = textarea.value.trim();
-        if (text) {
-            callback(text);
-        }
-        closeDialog();
-    };
+    if (navigator.clipboard && navigator.clipboard.readText) {
+        navigator.clipboard.readText().then(processAsm).catch(() => {
+            disasmEditorShowPasteAsmDialog(processAsm);
+        });
+    } else {
+        disasmEditorShowPasteAsmDialog(processAsm);
+    }
+}
 
-    cancelBtn.onclick = closeDialog;
+/**
+ * Show manual paste assembly dialog
+ * @param {Function} callback - Function to call with assembly text
+ */
+function disasmEditorShowPasteAsmDialog(callback) {
+    disasmEditorState.modalOpen = true;
 
-    overlay.onkeydown = function(e) {
-        if (e.key === 'Escape') {
-            closeDialog();
-            e.preventDefault();
-            e.stopPropagation();
-            return;
-        }
-        if (e.key === 'v' && e.ctrlKey) {
-            e.stopPropagation();
-            return;
-        }
-    };
-
-    textarea.onkeydown = function(e) {
-        if (e.key === 'Enter' && !e.ctrlKey && !e.shiftKey) {
-            pasteBtn.click();
-            e.preventDefault();
-            e.stopPropagation();
-            return;
-        }
-        if (e.key === 'v' && e.ctrlKey) {
-            e.stopPropagation();
-        }
-    };
+    showInputDialog({
+        title: 'Paste assembly code below',
+        placeholder: 'LDA #$00\nSTA $0400\nRTS',
+        submitText: 'Paste',
+        onSubmit: (text) => { callback(text); },
+        onCancel: () => { disasmEditorState.modalOpen = false; }
+    });
 }
 
 /**
@@ -1531,6 +1524,10 @@ function disasmEditorHandleEditModeKey(e) {
     }
     if (ctrl && key === 'v') {
         disasmEditorPaste();
+        return true;
+    }
+    if (shift && ctrl && key.toLowerCase() === 'v') {
+        disasmEditorPasteAsm();
         return true;
     }
     if (ctrl && key === 'a') {

@@ -36,13 +36,13 @@ function showSpinner(show) {
  */
 function showError(message) {
     const $errorBox = $('#errorBox');
-    
+
     $errorBox.text(message);
-    
+
     if ($errorBox.is(':visible')) {
         return;
     }
-    
+
     $errorBox.fadeIn();
 }
 
@@ -190,4 +190,88 @@ function handleButtonClick(buttonId, callback) {
     });
 
     return $(buttonId);
+}
+
+// ============================================================================
+// MODAL DIALOGS
+// ============================================================================
+
+/**
+ * Show a modal dialog for text input.
+ * @param {Object} options - Dialog options
+ * @param {string} options.title - Dialog title/instructions
+ * @param {string} options.placeholder - Textarea placeholder text
+ * @param {string} options.submitText - Submit button text
+ * @param {function} options.onSubmit - Called when user submits (receives text)
+ * @param {function} options.onCancel - Called when user cancels
+ * @returns {Object} { close: function } - Can be used to close dialog programmatically
+ */
+function showInputDialog(options) {
+    const { title, placeholder, submitText, onSubmit, onCancel } = options;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+
+    const dialog = document.createElement('div');
+    dialog.className = 'modal-dialog';
+
+    const instructions = document.createElement('div');
+    instructions.className = 'modal-instructions';
+    instructions.textContent = title;
+
+    const textarea = document.createElement('textarea');
+    textarea.className = 'modal-textarea';
+    textarea.placeholder = placeholder;
+
+    const buttons = document.createElement('div');
+    buttons.className = 'modal-buttons';
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Cancel';
+
+    const submitBtn = document.createElement('button');
+    submitBtn.textContent = submitText;
+
+    buttons.appendChild(cancelBtn);
+    buttons.appendChild(submitBtn);
+    dialog.appendChild(instructions);
+    dialog.appendChild(textarea);
+    dialog.appendChild(buttons);
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+
+    setTimeout(() => textarea.focus(), 100);
+
+    function closeDialog() {
+        document.body.removeChild(overlay);
+        if (onCancel) onCancel();
+    }
+
+    submitBtn.onclick = function() {
+        const text = textarea.value.trim();
+        if (text && onSubmit) {
+            onSubmit(text);
+        }
+        closeDialog();
+    };
+
+    cancelBtn.onclick = closeDialog;
+
+    overlay.onkeydown = function(e) {
+        if (e.key === 'Escape') {
+            closeDialog();
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    };
+
+    textarea.onkeydown = function(e) {
+        if (e.key === 'Enter' && !e.ctrlKey && !e.shiftKey) {
+            submitBtn.click();
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    };
+
+    return { close: closeDialog };
 }

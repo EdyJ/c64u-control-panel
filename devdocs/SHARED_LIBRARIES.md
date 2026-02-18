@@ -113,6 +113,19 @@ Provides reusable UI utility functions for common operations. These functions ma
 1. `validateRange(value, min, max)` - Validate numeric range
 2. `validateHexString(str, length)` - Validate hex string of specific length
 
+#### Modal Dialogs
+
+1. `showInputDialog(options)` - Show a modal dialog for text input
+   - **Options object:**
+     - `title` (string): Dialog title/instructions
+     - `placeholder` (string): Textarea placeholder
+     - `submitText` (string): Submit button text
+     - `onSubmit(text)` (function): Called when user submits
+     - `onCancel()` (function): Called when user cancels
+   - **Returns:** `{ close: function }` - Can be used to close dialog programmatically
+   - Creates an overlay with a textarea and handles ESC/Enter keys
+   - Used by hex-editor and disasm-editor for paste dialogs
+
 ### Design Principles
 
 - **Simple functions** - No modules, namespaces, or classes

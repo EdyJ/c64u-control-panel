@@ -1057,102 +1057,15 @@ function hexEditorPaste() {
  * @param {Function} callback - Function to call with pasted text
  */
 function hexEditorShowPasteDialog(callback) {
-    // Set modal flag to disable hex editor input
     hexEditorState.modalOpen = true;
 
-    // Create overlay
-    const overlay = document.createElement('div');
-    overlay.className = 'modal-overlay';
-
-    // Create dialog
-    const dialog = document.createElement('div');
-    dialog.className = 'modal-dialog';
-
-    // Instructions (no title, simplified)
-    const instructions = document.createElement('div');
-    instructions.className = 'modal-instructions';
-    instructions.textContent = 'Paste hex data below';
-
-    // Input textarea
-    const textarea = document.createElement('textarea');
-    textarea.className = 'modal-textarea';
-    textarea.placeholder = '41 42 43 or 414243';
-
-    // Buttons container
-    const buttons = document.createElement('div');
-    buttons.className = 'modal-buttons';
-
-    // Cancel button
-    const cancelBtn = document.createElement('button');
-    cancelBtn.textContent = 'Cancel';
-
-    // Paste button
-    const pasteBtn = document.createElement('button');
-    pasteBtn.textContent = 'Paste';
-
-    // Assemble dialog
-    buttons.appendChild(cancelBtn);
-    buttons.appendChild(pasteBtn);
-    dialog.appendChild(instructions);
-    dialog.appendChild(textarea);
-    dialog.appendChild(buttons);
-    overlay.appendChild(dialog);
-    document.body.appendChild(overlay);
-
-    // Focus textarea
-    setTimeout(() => textarea.focus(), 100);
-
-    // Helper to close dialog
-    function closeDialog() {
-        document.body.removeChild(overlay);
-        hexEditorState.modalOpen = false;  // Re-enable hex editor input
-    }
-
-    // Event handlers
-    pasteBtn.onclick = function() {
-        const text = textarea.value.trim();
-        if (text) {
-            callback(text);
-        }
-        closeDialog();
-    };
-
-    cancelBtn.onclick = function() {
-        closeDialog();
-    };
-
-    // Overlay keydown - only handle ESC and Ctrl+V prevention
-    overlay.onkeydown = function(e) {
-        // ESC to cancel
-        if (e.key === 'Escape') {
-            closeDialog();
-            e.preventDefault();
-            e.stopPropagation();
-            return;
-        }
-
-        // Prevent Ctrl+V from opening another dialog
-        if (e.key === 'v' && e.ctrlKey) {
-            e.stopPropagation();
-            return;
-        }
-    };
-
-    // Textarea keydown - Enter to paste
-    textarea.onkeydown = function(e) {
-        // Enter (without Ctrl) to paste
-        if (e.key === 'Enter' && !e.ctrlKey && !e.shiftKey) {
-            pasteBtn.click();
-            e.preventDefault();
-            e.stopPropagation();
-            return;
-        }
-
-        // Prevent Ctrl+V from opening another dialog
-        if (e.key === 'v' && e.ctrlKey) {
-            e.stopPropagation();
-        }
-    };
+    showInputDialog({
+        title: 'Paste hex data below',
+        placeholder: '41 42 43 or 414243',
+        submitText: 'Paste',
+        onSubmit: (text) => { callback(text); },
+        onCancel: () => { hexEditorState.modalOpen = false; }
+    });
 }
 
 /**
