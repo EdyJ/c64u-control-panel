@@ -935,10 +935,8 @@
                     // Save changes using hex-editor.js function
                     hexEditorSaveChanges(
                         () => {
-                            // Success: exit edit mode and reload memory
+                            // Success: exit edit mode (callback handles UI)
                             hexEditorExitEditMode(true);
-                            $('#hex-save-btn, #hex-cancel-btn').hide();
-                            $('#hex-edit-btn').show();
 
                             // Reload memory to show saved state
                             const currentAddress = hexEditorState.startAddress;
@@ -959,6 +957,11 @@
                 // Set keyboard shortcut callbacks
                 hexEditorSetEnterEditModeCallback(enterEditMode);
                 hexEditorSetSaveCallback(saveChanges);
+                hexEditorSetExitEditModeCallback((save) => {
+                    $('#hex-save-btn, #hex-cancel-btn').hide();
+                    $('#hex-edit-btn').show();
+                    this.updateAddressDisplay();
+                });
 
                 handleButtonClick('hex-cancel-btn', () => {
                     // Check if there are unsaved changes
@@ -968,10 +971,7 @@
                         }
                     }
 
-                    hexEditorExitEditMode(false); // save = false (cancel)
-                    $('#hex-save-btn, #hex-cancel-btn').hide();
-                    $('#hex-edit-btn').show();
-                    this.updateAddressDisplay();
+                    hexEditorExitEditMode(false); // save = false (cancel) - callback handles UI
                 });
             },
 
@@ -1083,6 +1083,9 @@
 
             deactivate: function() {
                 console.log('HexViewer: deactivate()');
+                // Force exit edit mode when switching tabs (discard any changes)
+                // Callback will handle UI updates
+                hexEditorExitEditMode(false);
             },
 
             refresh: function() {
@@ -1136,9 +1139,8 @@
                 const saveChanges = () => {
                     disasmEditorSaveChanges(
                         () => {
+                            // Success: exit edit mode (callback handles UI)
                             disasmEditorExitEditMode(true);
-                            $('#disasm-save-btn, #disasm-cancel-btn').hide();
-                            $('#disasm-edit-btn').show();
                             this.refresh();
                         },
                         (errorMsg) => {
@@ -1155,15 +1157,17 @@
                             return;
                         }
                     }
-                    disasmEditorExitEditMode(false);
-                    $('#disasm-save-btn, #disasm-cancel-btn').hide();
-                    $('#disasm-edit-btn').show();
-                    this.updateAddressDisplay();
+                    disasmEditorExitEditMode(false); // callback handles UI
                 });
 
                 // Keyboard shortcuts
                 disasmEditorSetEnterEditModeCallback(enterEditMode);
                 disasmEditorSetSaveCallback(saveChanges);
+                disasmEditorSetExitEditModeCallback((save) => {
+                    $('#disasm-save-btn, #disasm-cancel-btn').hide();
+                    $('#disasm-edit-btn').show();
+                    this.updateAddressDisplay();
+                });
             },
 
             setupNavigation: function() {
@@ -1246,6 +1250,9 @@
 
             deactivate: function() {
                 console.log('DisassemblyViewer: deactivate()');
+                // Force exit edit mode when switching tabs (discard any changes)
+                // Callback will handle UI updates
+                disasmEditorExitEditMode(false);
             },
 
             refresh: function() {

@@ -344,6 +344,11 @@ function hexEditorExitEditMode(save) {
     hexEditorRender();
 
     console.log('HexEditor: Exited edit mode, save=' + save);
+
+    // Call UI callback if set
+    if (hexEditorExitEditModeCallback) {
+        hexEditorExitEditModeCallback(save);
+    }
 }
 
 /**
@@ -750,10 +755,7 @@ function hexEditorHandleEscape() {
         }
 
         hexEditorExitEditMode(false);  // false = cancel (don't save)
-
-        // Trigger UI update (hide Save/Cancel, show Edit button)
-        $('#hex-save-btn, #hex-cancel-btn').hide();
-        $('#hex-edit-btn').show();
+        // UI callback will handle button updates
     }
 }
 
@@ -1607,5 +1609,15 @@ let hexEditorSaveCallback = null;
 
 function hexEditorSetSaveCallback(callback) {
     hexEditorSaveCallback = callback;
+}
+
+/**
+ * Callback for exiting edit mode (set from UI)
+ * @param {boolean} save - True if changes were saved, false if discarded
+ */
+let hexEditorExitEditModeCallback = null;
+
+function hexEditorSetExitEditModeCallback(callback) {
+    hexEditorExitEditModeCallback = callback;
 }
 

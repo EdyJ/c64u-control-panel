@@ -550,6 +550,11 @@ function disasmEditorExitEditMode(save) {
     disasmEditorLoadAndDisassemble();
 
     console.log('DisasmEditor: Exited edit mode, save=' + save);
+
+    // Call UI callback if set
+    if (disasmEditorExitEditModeCallback) {
+        disasmEditorExitEditModeCallback(save);
+    }
 }
 
 /**
@@ -873,9 +878,7 @@ function disasmEditorHandleEscape() {
         }
 
         disasmEditorExitEditMode(false);
-
-        $('#disasm-save-btn, #disasm-cancel-btn').hide();
-        $('#disasm-edit-btn').show();
+        // UI callback will handle button updates
     }
 }
 
@@ -1478,6 +1481,12 @@ function disasmEditorSetEnterEditModeCallback(callback) {
 
 function disasmEditorSetSaveCallback(callback) {
     disasmEditorSaveCallback = callback;
+}
+
+let disasmEditorExitEditModeCallback = null;
+
+function disasmEditorSetExitEditModeCallback(callback) {
+    disasmEditorExitEditModeCallback = callback;
 }
 
 /**
