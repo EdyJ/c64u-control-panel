@@ -289,3 +289,13 @@
     color: var(--text-dim);
     min-width: 100px;
 }
+
+/* Checkbox Label */
+.mem-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    color: var(--text-dim);
+    cursor: pointer;
+}

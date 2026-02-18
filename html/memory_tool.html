@@ -257,6 +257,17 @@
         border-color: var(--primary);
     }
 
+    input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+    }
+
+    input[type="checkbox"]:focus {
+        outline: none;
+        border-color: var(--primary);
+    }
+
     label {
         color: var(--text-dim);
         font-weight: bold;
@@ -831,6 +842,11 @@
                         <option value="64" selected>64</option>
                         <option value="128">128</option>
                     </select>
+
+                    <label class="mem-checkbox-label">
+                        <input type="checkbox" id="disasm-show-all">
+                        All opcodes
+                    </label>
                 </div>
 
                 <div class="mem-header-right">
@@ -1144,6 +1160,11 @@
                 $('#disasm-next-page').click(() => {
                     if (isApiBusy()) return;
                     disasmEditorNavigateNextPage(() => this.updateAddressDisplay());
+                });
+
+                $('#disasm-show-all').on('change', (e) => {
+                    disasmEditorSetShowAllOpcodes(e.target.checked);
+                    disasmEditorLoadAndDisassemble(() => this.updateAddressDisplay());
                 });
             },
 

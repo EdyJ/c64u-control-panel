@@ -18,8 +18,27 @@ let disasmEditorState = {
     container: null,
     startAddress: 0xC000,
     currentLength: 64,
-    libraryLoaded: false
+    libraryLoaded: false,
+    showAllOpcodes: false
 };
+
+// ============================================================================
+// OFFICIAL OPCODES
+// ============================================================================
+
+const OFFICIAL_OPCODES = new Set([
+    'ADC','AND','ASL','BCC','BCS','BEQ','BIT','BMI','BNE','BPL',
+    'BRK','BVC','BVS','CLC','CLD','CLI','CLV','CMP','CPX','CPY',
+    'DEC','DEX','DEY','EOR','INC','INX','INY','JMP','JSR','LDA',
+    'LDX','LDY','LSR','NOP','ORA','PHA','PHP','PLA','PLP','ROL',
+    'ROR','RTI','RTS','SBC','SEC','SED','SEI','STA','STX','STY',
+    'TAX','TAY','TSX','TXA','TXS','TYA'
+]);
+
+function isOfficialOpcode(mnemonic) {
+    const op = mnemonic.split(' ')[0];
+    return OFFICIAL_OPCODES.has(op);
+}
 
 // ============================================================================
 // INITIALIZATION
@@ -57,6 +76,15 @@ function disasmEditorSetAddress(startAddress, length) {
 function disasmEditorSetLength(length) {
     disasmEditorState.currentLength = length;
     console.log('DisasmEditor: Length set to', length);
+}
+
+/**
+ * Set whether to show all opcodes (including undocumented)
+ * @param {boolean} showAll - True to show all opcodes, false for official only
+ */
+function disasmEditorSetShowAllOpcodes(showAll) {
+    disasmEditorState.showAllOpcodes = showAll;
+    console.log('DisasmEditor: Show all opcodes:', showAll);
 }
 
 // ============================================================================
@@ -143,7 +171,10 @@ function disasmEditorRenderDisassembly(instructions, bytes, startAddress) {
         bytesHex = bytesHex.padEnd(9, ' ');
         const col2 = `<span class="disasm-col-bytes">${bytesHex}</span>`;
 
-        const assembly = instr.assembly || '???';
+        let assembly = instr.assembly || '???';
+        if (!disasmEditorState.showAllOpcodes && assembly !== '???' && !isOfficialOpcode(assembly)) {
+            assembly = '???';
+        }
         const col3 = `<span class="disasm-col-instr">${assembly}</span>`;
 
         const col4 = disasmEditorGetJumpTarget(instr, bytes, startAddress);
