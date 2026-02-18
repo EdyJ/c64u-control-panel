@@ -1095,8 +1095,8 @@
 
             updateAddressDisplay: function() {
                 const range = hexEditorGetAddressRange();
-                const startHex = range.startAddress.toString(16).toUpperCase().padStart(4, '0');
-                const endHex = range.endAddress.toString(16).toUpperCase().padStart(4, '0');
+                const startHex = formatHexWord(range.startAddress);
+                const endHex = formatHexWord(range.endAddress);
 
                 // Update address input to match current address
                 $('#hex-address').val(startHex);
@@ -1389,8 +1389,8 @@
 
             updateAddressDisplay: function() {
                 const range = screenViewerGetAddressRange();
-                const startHex = range.startAddress.toString(16).toUpperCase().padStart(4, '0');
-                const endHex = range.endAddress.toString(16).toUpperCase().padStart(4, '0');
+                const startHex = formatHexWord(range.startAddress);
+                const endHex = formatHexWord(range.endAddress);
 
                 $('#screen-address').val(startHex);
 
