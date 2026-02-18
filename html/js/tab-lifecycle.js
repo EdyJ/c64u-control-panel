@@ -106,7 +106,10 @@ function initializeTabs(tabMap, initialTab) {
     // Set up Refresh button (only if it exists)
     const refreshBtn = $('#refreshBtn');
     if (refreshBtn.length) {
-        refreshBtn.click(refreshTab);
+        refreshBtn.click(function() {
+            refreshTab();
+            $(this).blur();
+        });
     }
 
     // Set up beforeunload handler

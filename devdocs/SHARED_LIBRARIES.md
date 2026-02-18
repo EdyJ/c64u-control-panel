@@ -1,6 +1,6 @@
 # Shared JavaScript Libraries Specification
 
-**Version:** 2.1
+**Version:** 2.2
 **Date:** February 18, 2026  
 **Purpose:** This document defines the specification for the three shared JavaScript libraries used across the C64U Web Control Panel project.
 
@@ -95,6 +95,11 @@ Provides reusable UI utility functions for common operations. These functions ma
 
 1. `setupHexInput(inputId)` - Configure input to accept only hex characters
 2. `handleEnterKey(inputId, callback)` - Execute callback when Enter is pressed
+
+#### Input Handling
+
+1. `handleInputChange(inputId, callback)` - Handle input/select/checkbox change with automatic blur, callback receives value
+2. `handleButtonClick(buttonId, callback)` - Handle button click with automatic blur
 
 #### Data Formatting
 

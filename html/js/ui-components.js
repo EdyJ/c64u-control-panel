@@ -148,3 +148,46 @@ function formatHexByte(value) {
 function formatHexWord(value) {
     return (value & 0xFFFF).toString(16).padStart(4, '0').toUpperCase();
 }
+
+// ============================================================================
+// INPUT HANDLING
+// ============================================================================
+
+/**
+ * Handle input/select/checkbox change with automatic blur.
+ * @param {string} inputId - Input ID (with or without #)
+ * @param {function} callback - Function to call on change, receives value
+ * @returns {jQuery} jQuery object for chaining
+ */
+function handleInputChange(inputId, callback) {
+    if (inputId.charAt(0) !== '#') {
+        inputId = '#' + inputId;
+    }
+
+    $(inputId).on('change', function() {
+        const value = this.type === 'checkbox' ? this.checked : this.value;
+        callback(value);
+        $(this).blur();
+    });
+
+    return $(inputId);
+}
+
+/**
+ * Handle button click with automatic blur.
+ * @param {string} buttonId - Button ID (with or without #)
+ * @param {function} callback - Function to call on click
+ * @returns {jQuery} jQuery object for chaining
+ */
+function handleButtonClick(buttonId, callback) {
+    if (buttonId.charAt(0) !== '#') {
+        buttonId = '#' + buttonId;
+    }
+
+    $(buttonId).on('click', function() {
+        callback();
+        $(this).blur();
+    });
+
+    return $(buttonId);
+}

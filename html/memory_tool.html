@@ -948,14 +948,14 @@
                     );
                 };
 
-                $('#hex-edit-btn').click(enterEditMode);
-                $('#hex-save-btn').click(saveChanges);
+                handleButtonClick('hex-edit-btn', enterEditMode);
+                handleButtonClick('hex-save-btn', saveChanges);
 
                 // Set keyboard shortcut callbacks
                 hexEditorSetEnterEditModeCallback(enterEditMode);
                 hexEditorSetSaveCallback(saveChanges);
 
-                $('#hex-cancel-btn').click(() => {
+                handleButtonClick('hex-cancel-btn', () => {
                     // Check if there are unsaved changes
                     if (hexEditorIsModified()) {
                         if (!confirm('Discard all changes?')) {
@@ -994,8 +994,8 @@
                 });
 
                 // Page size selector - reload data with new page size
-                $('#hex-pagesize').on('change', () => {
-                    const pageSize = parseInt($('#hex-pagesize').val());
+                handleInputChange('hex-pagesize', (value) => {
+                    const pageSize = parseInt(value);
                     hexEditorSetPageSize(pageSize);
 
                     // Validate current address with new page size
@@ -1008,8 +1008,8 @@
                 });
 
                 // Charset selector - update character display
-                $('#hex-charset').on('change', () => {
-                    const puaBase = parseInt($('#hex-charset').val());
+                handleInputChange('hex-charset', (value) => {
+                    const puaBase = parseInt(value);
                     hexEditorSetCharsetPuaBase(puaBase);
 
                     // Re-render display to show new charset
@@ -1017,32 +1017,32 @@
                 });
 
                 // Navigation buttons
-                $('#mem-nav-up').click(() => {
+                handleButtonClick('mem-nav-up', () => {
                     if (isApiBusy()) return;
                     hexEditorNavigateUp(() => this.updateAddressDisplay());
                 });
 
-                $('#mem-nav-down').click(() => {
+                handleButtonClick('mem-nav-down', () => {
                     if (isApiBusy()) return;
                     hexEditorNavigateDown(() => this.updateAddressDisplay());
                 });
 
-                $('#mem-nav-left').click(() => {
+                handleButtonClick('mem-nav-left', () => {
                     if (isApiBusy()) return;
                     hexEditorNavigateLeft(() => this.updateAddressDisplay());
                 });
 
-                $('#mem-nav-right').click(() => {
+                handleButtonClick('mem-nav-right', () => {
                     if (isApiBusy()) return;
                     hexEditorNavigateRight(() => this.updateAddressDisplay());
                 });
 
-                $('#hex-prev-page').click(() => {
+                handleButtonClick('hex-prev-page', () => {
                     if (isApiBusy()) return;
                     hexEditorNavigatePrevPage(() => this.updateAddressDisplay());
                 });
 
-                $('#hex-next-page').click(() => {
+                handleButtonClick('hex-next-page', () => {
                     if (isApiBusy()) return;
                     hexEditorNavigateNextPage(() => this.updateAddressDisplay());
                 });
@@ -1137,8 +1137,8 @@
                     }
                 });
 
-                $('#disasm-length').on('change', () => {
-                    const length = parseInt($('#disasm-length').val());
+                handleInputChange('disasm-length', (value) => {
+                    const length = parseInt(value);
                     disasmEditorSetLength(length);
 
                     const currentAddress = validateMemoryAddress(disasmEditorState.startAddress, length);
@@ -1147,28 +1147,28 @@
                     });
                 });
 
-                $('#disasm-nav-up').click(() => {
+                handleButtonClick('disasm-nav-up', () => {
                     if (isApiBusy()) return;
                     disasmEditorNavigateUp(() => this.updateAddressDisplay());
                 });
 
-                $('#disasm-nav-down').click(() => {
+                handleButtonClick('disasm-nav-down', () => {
                     if (isApiBusy()) return;
                     disasmEditorNavigateDown(() => this.updateAddressDisplay());
                 });
 
-                $('#disasm-prev-page').click(() => {
+                handleButtonClick('disasm-prev-page', () => {
                     if (isApiBusy()) return;
                     disasmEditorNavigatePrevPage(() => this.updateAddressDisplay());
                 });
 
-                $('#disasm-next-page').click(() => {
+                handleButtonClick('disasm-next-page', () => {
                     if (isApiBusy()) return;
                     disasmEditorNavigateNextPage(() => this.updateAddressDisplay());
                 });
 
-                $('#disasm-show-all').on('change', (e) => {
-                    disasmEditorSetShowAllOpcodes(e.target.checked);
+                handleInputChange('disasm-show-all', (checked) => {
+                    disasmEditorSetShowAllOpcodes(checked);
                     disasmEditorLoadAndDisassemble(() => this.updateAddressDisplay());
                 });
             },
