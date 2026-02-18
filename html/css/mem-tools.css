@@ -185,6 +185,10 @@
     color: #ffffff;  /* White text for modified bytes */
 }
 
+.hex-byte-modified.hex-char {
+    color: #ffffff;  /* White text for modified characters */
+}
+
 /* Cursor on Unmodified Byte (green) */
 .hex-nibble-cursor {
     color: var(--success);  /* Green text (cursor off) */

@@ -182,11 +182,14 @@ function hexEditorRenderByte(byteIndex) {
  */
 function hexEditorRenderChar(byteIndex) {
     const byte = hexEditorState.currentData[byteIndex];
-    // Use C64 font with PUA base + byte value
     const codepoint = hexEditorState.charsetPuaBase + byte;
     const char = String.fromCodePoint(codepoint);
 
-    return `<span class="hex-char" data-byte="${byteIndex}">${char}</span>`;
+    const isModified = hexEditorState.editMode &&
+                       hexEditorState.currentData[byteIndex] !== hexEditorState.originalData[byteIndex];
+    const modifiedClass = isModified ? ' hex-byte-modified' : '';
+
+    return `<span class="hex-char${modifiedClass}" data-byte="${byteIndex}">${char}</span>`;
 }
 
 // ============================================================================
