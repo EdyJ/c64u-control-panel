@@ -264,7 +264,7 @@
 .disasm-col-bytes {
     color: var(--success);
     letter-spacing: 1px;
-    min-width: 80px;
+    min-width: 95px;
 }
 
 /* Disassembly Instruction Column */

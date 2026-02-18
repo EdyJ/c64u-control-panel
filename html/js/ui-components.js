@@ -35,7 +35,15 @@ function showSpinner(show) {
  * @param {string} message - The error message to display
  */
 function showError(message) {
-    $('#errorBox').text(message).fadeIn();
+    const $errorBox = $('#errorBox');
+    
+    $errorBox.text(message);
+    
+    if ($errorBox.is(':visible')) {
+        return;
+    }
+    
+    $errorBox.fadeIn();
 }
 
 /**
