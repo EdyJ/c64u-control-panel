@@ -314,11 +314,8 @@
     display: inline-block;
 }
 
-/* Disassembly Nibble */
+/* Disassembly Nibble - placeholder class for addressing */
 .disasm-nibble {
-    display: inline-block;
-    width: 10px;
-    text-align: center;
 }
 
 /* Modified byte (white text) */
