@@ -188,3 +188,29 @@ function writeMemory(address, dataArray, callback, errorCallback) {
         });
     }
 }
+
+// ============================================================================
+// ADDRESS VALIDATION
+// ============================================================================
+
+/**
+ * Validate and fix address to be within memory boundaries (0x0000-0xFFFF).
+ * @param {number} address - Address to validate
+ * @param {number} pageSize - Optional page size for boundary checking
+ * @returns {number} Valid address within boundaries
+ */
+function validateMemoryAddress(address, pageSize) {
+    if (address < 0) {
+        address = 0;
+    }
+
+    if (pageSize !== undefined && address + pageSize > 0x10000) {
+        address = 0x10000 - pageSize;
+    }
+
+    if (address > 0xFFFF) {
+        address = 0xFFFF;
+    }
+
+    return address;
+}

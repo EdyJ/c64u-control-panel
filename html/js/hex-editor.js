@@ -130,7 +130,7 @@ function hexEditorRenderRow(row) {
     const address = hexEditorState.startAddress + startIndex;
 
     // Address column
-    const addressHex = address.toString(16).toUpperCase().padStart(4, '0');
+    const addressHex = formatHexWord(address);
 
     // Hex bytes column
     const bytesHtml = [];
@@ -937,7 +937,7 @@ function hexEditorCopy() {
     }
 
     // Format as space-separated uppercase hex
-    const hexString = bytes.map(b => b.toString(16).toUpperCase().padStart(2, '0')).join(' ');
+    const hexString = bytes.map(b => formatHexByte(b)).join(' ');
 
     // Copy to clipboard (with fallback for non-secure contexts)
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -1425,7 +1425,7 @@ function hexEditorSaveChanges(callback, errorCallback) {
         dataToWrite.push(hexEditorState.currentData[byteIndex]);
     }
 
-    console.log(`HexEditor: Writing ${length} bytes from $${startAddress.toString(16).toUpperCase()} to $${endAddress.toString(16).toUpperCase()}`);
+    console.log(`HexEditor: Writing ${length} bytes from $${formatHexWord(startAddress)} to $${formatHexWord(endAddress)}`);
 
     // Write to C64 memory
     writeMemory(startAddress, dataToWrite,
@@ -1466,23 +1466,7 @@ function hexEditorValidateAddress(address, pageSize) {
     if (pageSize === undefined) {
         pageSize = hexEditorState.pageSize;
     }
-
-    // Clamp address to valid range
-    if (address < 0) {
-        address = 0;
-    }
-
-    // Check if address + pageSize exceeds memory limit
-    if (address + pageSize > 0x10000) {
-        address = 0x10000 - pageSize;
-    }
-
-    // Ensure address doesn't exceed 0xFFFF
-    if (address > 0xFFFF) {
-        address = 0xFFFF;
-    }
-
-    return address;
+    return validateMemoryAddress(address, pageSize);
 }
 
 /**
@@ -1500,7 +1484,7 @@ function hexEditorSetPageSize(pageSize) {
  */
 function hexEditorSetCharsetPuaBase(puaBase) {
     hexEditorState.charsetPuaBase = puaBase;
-    console.log('HexEditor: Charset PUA base set to', puaBase.toString(16).toUpperCase());
+    console.log('HexEditor: Charset PUA base set to', formatHexWord(puaBase));
 }
 
 /**

@@ -1,7 +1,7 @@
 # Shared JavaScript Libraries Specification
 
-**Version:** 2.0
-**Date:** February 17, 2026  
+**Version:** 2.1
+**Date:** February 18, 2026  
 **Purpose:** This document defines the specification for the three shared JavaScript libraries used across the C64U Web Control Panel project.
 
 ---
@@ -38,20 +38,21 @@ Provides all methods that interface with the C64U REST API. This is the **only**
 The library provides these primary functions:
 
 1. `parseApiError(jqXHR)` - Robust error parser that handles JSON errors array
-2. `readMemory(address, length, callback, errorCallback)` - Read memory operation
-3. `writeMemory(address, dataArray, callback, errorCallback)` - Write memory operation (handles both PUT and POST)
-4. `getConfigCategories(callback, errorCallback)` - Get list of all config categories
-5. `getConfigCategory(category, callback, errorCallback)` - Get all items in a category
-6. `getConfigItem(category, item, callback, errorCallback)` - Get specific config item
-7. `setConfigItem(category, item, value, callback, errorCallback)` - Set config item value
-8. `mountDisk(drive, path, callback, errorCallback)` - Mount disk image to drive
-9. `unmountDisk(drive, callback, errorCallback)` - Unmount disk from drive
-10. `getDriveStatus(drive, callback, errorCallback)` - Get current drive status
-11. `enableStream(streamName, ip, callback, errorCallback)` - Enable a data stream
-12. `disableStream(streamName, callback, errorCallback)` - Disable a data stream
-13. `getStreamStatus(callback, errorCallback)` - Get status of all streams
-14. `isApiBusy()` - Check if an API call is currently in progress (returns boolean)
-15. `setApiBusy(busy)` - Internal function to set the busy state
+2. `validateMemoryAddress(address, pageSize)` - Validate and clamp address within memory boundaries (0x0000-0xFFFF)
+3. `readMemory(address, length, callback, errorCallback)` - Read memory operation
+4. `writeMemory(address, dataArray, callback, errorCallback)` - Write memory operation (handles both PUT and POST)
+5. `getConfigCategories(callback, errorCallback)` - Get list of all config categories
+6. `getConfigCategory(category, callback, errorCallback)` - Get all items in a category
+7. `getConfigItem(category, item, callback, errorCallback)` - Get specific config item
+8. `setConfigItem(category, item, value, callback, errorCallback)` - Set config item value
+9. `mountDisk(drive, path, callback, errorCallback)` - Mount disk image to drive
+10. `unmountDisk(drive, callback, errorCallback)` - Unmount disk from drive
+11. `getDriveStatus(drive, callback, errorCallback)` - Get current drive status
+12. `enableStream(streamName, ip, callback, errorCallback)` - Enable a data stream
+13. `disableStream(streamName, callback, errorCallback)` - Disable a data stream
+14. `getStreamStatus(callback, errorCallback)` - Get status of all streams
+15. `isApiBusy()` - Check if an API call is currently in progress (returns boolean)
+16. `setApiBusy(busy)` - Internal function to set the busy state
 
 ### Design Principles
 
@@ -99,7 +100,8 @@ Provides reusable UI utility functions for common operations. These functions ma
 
 1. `formatHexByte(value)` - Format byte as 2-digit hex (e.g., "0F")
 2. `formatHexWord(value)` - Format word as 4-digit hex (e.g., "C000")
-3. `formatByteArray(bytes)` - Format array of bytes as hex string
+3. `parseAddressInput(inputId, pageSize)` - Parse and validate address from input field, returns address or null
+4. `formatByteArray(bytes)` - Format array of bytes as hex string
 
 #### Form Validation
 
