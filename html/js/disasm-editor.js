@@ -132,12 +132,13 @@ function disasmEditorRenderDisassembly(instructions, bytes, startAddress) {
         const addr = instr.address;
         const addrHex = formatHexWord(addr);
 
-        const col1 = `<span class="disasm-col-addr">$${addrHex}</span>`;
+        const col1 = `<span class="disasm-col-addr">${addrHex}:</span>`;
 
         const instrBytes = instr.bytes || [];
         let bytesHex = '';
         for (let j = 0; j < instrBytes.length; j++) {
-            bytesHex += formatHexByte(instrBytes[j]) + ' ';
+            const byteVal = instrBytes[j];
+            bytesHex += (byteVal === undefined ? 'XX' : formatHexByte(byteVal)) + ' ';
         }
         bytesHex = bytesHex.padEnd(9, ' ');
         const col2 = `<span class="disasm-col-bytes">${bytesHex}</span>`;
