@@ -7,6 +7,7 @@ A comprehensive web-based control panel and toolset for the Commodore 64 Ultimat
 - **Floppy Drives Tool** - Manage virtual floppy drives, mount disk images, and perform drive operations
 - **Disk Flip Tool** - Quick disk image flipping for multi-disk games
 - **Data Streams Tool** - Configure and control data streaming to external devices
+- **Memory Browser Tool** - Display and edit the memory in hex, char, assembler and screen formats
 
 ## Setup Instructions
 
@@ -46,6 +47,7 @@ Quick navigation buttons to access specialized tools:
 - **Floppy Drives Tool** - Virtual drive control
 - **Disk Flip Tool** - Multi-disk image management
 - **Streams Tool** - Data streaming configuration
+- **Memory Browser Tool** - Memory browser and editor
 
 ### Sections
 
@@ -130,6 +132,24 @@ For each stream, configure:
 This section shows the streaming settings currently configured in the C64U. These may be modified in the Configuration Tool under the "Data Streams" category.
 
 Any empty Target IP fields in the Stream sections are automatically populated with these settings when the page loads or the Refresh button is clicked. Both Target IP and Port values are saved to the browser's local storage.
+
+## Memory Browser Tool
+
+A comprehensive memory browser and editor for viewing and modifying C64 memory in multiple formats.
+
+### Viewers
+
+- **Hex Viewer** - Browse and edit memory in hexadecimal format with ASCII/PETSCII character display. Navigate by address, page, or arrow keys. Supports multiple page sizes (128-1024 bytes) and character sets. **Edit mode** allows direct byte modification with hex input, paste dialog, and save to C64 memory.
+
+- **Disassembly** - View 6502 machine code disassembled into assembly language mnemonics. Navigate through memory and see instruction targets for branches, jumps, and subroutine calls. **Edit mode** supports modifying individual bytes or pasting complete 6502 assembly code.
+
+- **Screen** - View and edit screen memory ($0400-$07E7) showing character codes and colors in a visual grid. Useful for designing screen layouts and editing program screens.
+
+### Keyboard Shortcuts
+
+Detailed keyboard shortcuts are documented in:
+- [Hex Viewer - Keyboard Shortcuts](docs/Hex%20Viewer%20-%20Keyboard%20Shortcuts.md)
+- [Disassembler Viewer - Keyboard Shortcuts](docs/Disassembler%20Viewer%20-%20Keyboard%20Shortcuts.md)
 
 ## Development
 
