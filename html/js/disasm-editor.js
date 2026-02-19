@@ -17,7 +17,7 @@
 let disasmEditorState = {
     container: null,
     startAddress: 0xC000,
-    currentLength: 64,
+    currentLength: 48,
     libraryLoaded: false,
     showAllOpcodes: false,
 

@@ -847,7 +847,8 @@
                     <label>Length:</label>
                     <select id="disasm-length" class="mem-select">
                         <option value="32">32</option>
-                        <option value="64" selected>64</option>
+                        <option value="48" selected>48</option>
+                        <option value="64">64</option>
                         <option value="128">128</option>
                     </select>
 
@@ -1160,7 +1161,7 @@
                 console.log('DisassemblyViewer: initialize()');
 
                 const initialAddress = parseInt($('#disasm-address').val(), 16) || 0xC000;
-                const initialLength = parseInt($('#disasm-length').val()) || 64;
+                const initialLength = parseInt($('#disasm-length').val()) || 48;
                 disasmEditorInit($('#disasm-display'), initialAddress, initialLength);
 
                 disasmEditorSetNavigationCallback(() => this.updateAddressDisplay());
