@@ -20,11 +20,11 @@ All files are deployed to the C64U device's web server root directory at `/flash
 ├── disk_flip.html          # Disk flip utility
 ├── (other tool files)
 ├── css/
-│   ├── common-inline.css   # Shared styles and CSS variables, copied to html files as inline css
+│   ├── common-inline.css   # Shared styles and CSS variables, copied to html files and kept in sync as inline css
 │   ├── mem-tool.css        # Memory display and editing styles
 │   └── (other CSS files)
 └── js/
-    ├── common-inline.js    # Page loader, copied to html files as inline script
+    ├── common-inline.js    # Page loader, copied to html files and kept in sync as inline script
     ├── api-client.js       # API wrapper functions (memory, config, drives, etc.)
     ├── ui-components.js    # UI utility functions (spinner, errors, formatting)
     ├── tab-lifecycle.js    # Tab management and lifecycle implementation
@@ -46,7 +46,7 @@ All files are deployed to the C64U device's web server root directory at `/flash
    - See **PAGE_TEMPLATE.md** for detailed instructions on customizing the template
 
 2. **Alternative: Duplicate an existing tool:**
-   - Copy an existing HTML file and modify its content
+   - Copy an existing HTML page and modify its content
    - This works well if your tool is similar to an existing one
 
 ## Common code patterns
