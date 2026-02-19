@@ -1186,7 +1186,7 @@
                     disasmEditorSaveChanges(
                         () => {
                             // Success: exit edit mode (callback handles UI)
-                            disasmEditorExitEditMode(true);
+                            disasmEditorExitEditMode(true, false);
                             this.refresh();
                         },
                         (errorMsg) => {
@@ -1206,7 +1206,7 @@
                             return;
                         }
                     }
-                    disasmEditorExitEditMode(false); // callback handles UI
+                    disasmEditorExitEditMode(false, false); // callback handles UI
                 });
 
                 // Keyboard shortcuts
@@ -1300,8 +1300,8 @@
             deactivate: function() {
                 console.log('DisassemblyViewer: deactivate()');
                 // Force exit edit mode when switching tabs (discard any changes)
-                // Callback will handle UI updates
-                disasmEditorExitEditMode(false);
+                // Skip reload to avoid API call during tab switch
+                disasmEditorExitEditMode(false, true);
             },
 
             refresh: function() {
