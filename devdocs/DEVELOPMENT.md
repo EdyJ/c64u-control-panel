@@ -20,11 +20,11 @@ All files are deployed to the C64U device's web server root directory at `/flash
 ├── disk_flip.html          # Disk flip utility
 ├── (other tool files)
 ├── css/
-│   ├── common-inline.css   # Shared styles and CSS variables, copied to html files and kept in sync as inline css
+│   ├── common-inline.css   # Shared styles and CSS variables, embedded into html files and kept in sync manually
 │   ├── mem-tool.css        # Memory display and editing styles
 │   └── (other CSS files)
 └── js/
-    ├── common-inline.js    # Page loader, copied to html files and kept in sync as inline script
+    ├── common-inline.js    # Page loader, embedded into html files and kept in sync manually
     ├── api-client.js       # API wrapper functions (memory, config, drives, etc.)
     ├── ui-components.js    # UI utility functions (spinner, errors, formatting)
     ├── tab-lifecycle.js    # Tab management and lifecycle implementation
@@ -38,6 +38,7 @@ All files are deployed to the C64U device's web server root directory at `/flash
 - JavaScript libraries are in the `/js/` subdirectory
 - Font files are in the `/fonts/` subdirectory
 - All tools link back to the root folder (`/`) via the header back link
+- common-inline.css and common-inline.js are actually inlined into each HTML file, so each one has its own copy of the file embedded in <STYLE> and <SCRIPT> tags, respectively. Any changes in these files or in the embedded copies must be manually synced the original and all copies.
 
 ## How to add new tools
 
@@ -52,7 +53,7 @@ All files are deployed to the C64U device's web server root directory at `/flash
 ## Common code patterns
 
 - Use the shared JS libraries instead of calling REST API directly.
-- Use the common CSS styles for the html input controls, so they share the same look & feel.
+- Use the embedded CSS styles for the html components and input controls, so they share the same look & feel.
 
 ### The `initializeApp` Function
 
@@ -110,7 +111,7 @@ Note: REST API calls will fail in local testing (no C64U device available).
 
 ### No concurrent request
 
-Handling concurrent requests produces intermittent file truncation and missing chunks. The page loader implemented in 'common-inline.js', which is copied as an inline script to html files, ensures that the local files used by the page (fonts, css, js, favicon) are loaded sequentially. Refer to **PAGE_TEMPLATE.md** for details.
+Handling concurrent requests produces intermittent file truncation and missing chunks. The page loader implemented in 'common-inline.js', which is actually inlined into each html file (each one has its own copy embedded), ensures that the local files used by the page (fonts, css, js, favicon) are loaded sequentially. Refer to **PAGE_TEMPLATE.md** for details.
 
 ### Query Strings Not Supported
 

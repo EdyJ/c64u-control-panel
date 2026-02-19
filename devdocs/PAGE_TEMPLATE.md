@@ -6,13 +6,12 @@ Protocol and template files to create simple web pages that don't cause concurre
 
 - Local font, css and js files can only be loaded sequentially via the inline loader code. No `<link>` / `<script src>` declarations in the head section of the html page.
 - No `@font-face`, `@import`, or `url('...')` elements in css files.
-- The inline styles and scripts must be maintained in separate files:
-    - `common-inline.css`
-    - `common-inline.js`
 
-    When creating a new html file or updating an existing one, the content of these files are copied to the html file as inline styles / functions in the corresponding blocks.
+- common-inline.css and common-inline.js are actually inlined into each HTML file, so each one has its own copy of the file embedded in <STYLE> and <SCRIPT> tags, respectively. Any changes in these files or in the embedded copies must be manually synced the original and all copies.
 
-    When the inline css or js code changes in any html file, it must also be changed in the corresponding -inline file and all other html files using this protocol.
+    - When creating a new html file or updating an existing one, the content of these files are copied to the html file as inline styles / functions in the corresponding blocks.
+
+    - When the inline css or js code changes in any html file, it must also be changed in the corresponding inline file and all other html files using this protocol.
 
 - Loaded fonts may be referenced with the `font-family` only, example:
 
@@ -57,8 +56,8 @@ The template file (`/flash/html/template.html`) contains:
 | **HEAD** | Meta tags, title, favicon, resource declarations |
 | **Local Requests** | JavaScript variables defining required fonts, CSS, JS files |
 | **External Requests** | jQuery and other CDN scripts |
-| **Inline CSS** | All styles from `common-inline.css` |
-| **Inline JS** | Page loader from `common-inline.js` |
+| **Inline CSS** | All styles copied from `common-inline.css` |
+| **Inline JS** | Page loader copied from `common-inline.js` |
 | **BODY** | Header, error box, tab bar, content area |
 | **Tool Script** | Placeholder for tool-specific JavaScript |
 
@@ -130,11 +129,11 @@ Note: the 6502-reasm library uses a CommonJS shim loader to make it globally acc
 
 ### Inline CSS Styles section
 
-`<style>` block with the content of `common-inline.css`, so essential css styles are available inline.
+`<style>` block with a copy of `common-inline.css` inlined, so essential css styles are always available.
 
 ### Inline JS Scripts section
 
-`<script>` block with the content of `common-inline.js` , the inline page loader and helper functions:
+`<script>` block with a copy of `common-inline.js` inlined, an embedded page loader and helper functions.
 
 ## BODY
 
