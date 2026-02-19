@@ -10,16 +10,7 @@
 
     <script>
     // Fonts: objects (url + font metadata)
-    var requiredFonts = [
-      {
-        url: "fonts/C64ProMono.woff2",
-        family: "C64ProMono",
-        weight: "normal",
-        style: "normal",
-        display: "swap",
-        format: "woff2"
-      }
-    ];
+    var requiredFonts = [];
 
     // CSS: objects with url
     var requiredCSS = [];
@@ -32,6 +23,7 @@
 
     // UI selectors to disable during load
     var contentItems = [
+      ".card",
       ".foldable-content"
     ];
     </script>
@@ -587,7 +579,14 @@
     /* Machine Control Button Grid */
     .machine-control-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        align-items: start;
+    }
+
+    .mc-pair {
+        display: flex;
+        flex-direction: column;
         gap: 10px;
     }
 
@@ -1066,14 +1065,19 @@
         <!-- Machine Control Card -->
         <div class="card" style="margin-bottom: 20px;">
             <div class="card-title">Machine Control</div>
-            <div class="card-subtitle">Direct control over the machine state</div>
             <div class="machine-control-grid">
-                <button class="btn-success" id="btn-menu" title="Simulate Menu button press to enter or exit the Ultimate menu system">☰ Menu</button>
-                <button class="btn-primary" id="btn-pause" title="Pause the CPU by pulling the DMA line low at a safe moment">⏸ Pause</button>
-                <button class="btn-primary" id="btn-resume" title="Resume the machine from a paused state by releasing the DMA line">▶ Resume</button>
-                <button class="btn-warning" id="btn-reset" title="Send a reset signal to the machine without changing the current configuration">↺ Reset</button>
-                <button class="btn-warning" id="btn-reboot" title="Restart the machine, re-initializing the cartridge configuration and then sending a reset signal">🔄 Reboot</button>
-                <button class="btn-danger" id="btn-poweroff" title="Power off the machine (U64 only)">⏻ Power Off</button>
+                <div class="mc-pair">
+                    <button class="btn-success" id="btn-menu" title="Simulate Menu button press to enter or exit the Ultimate menu system">Menu</button>
+                    <button class="btn-danger" id="btn-poweroff" title="Power off the machine (U64 only)">Power Off</button>
+                </div>
+                <div class="mc-pair">
+                    <button class="btn-primary" id="btn-pause" title="Pause the CPU by pulling the DMA line low at a safe moment">Pause</button>
+                    <button class="btn-primary" id="btn-resume" title="Resume the machine from a paused state by releasing the DMA line">Resume</button>
+                </div>
+                <div class="mc-pair">
+                    <button class="btn-warning" id="btn-reset" title="Send a reset signal to the machine without changing the current configuration">Reset</button>
+                    <button class="btn-warning" id="btn-reboot" title="Restart the machine, re-initializing the cartridge configuration and then sending a reset signal">Reboot</button>
+                </div>
             </div>
         </div>
 
@@ -1291,7 +1295,7 @@
                 handleMachineControl(machineReboot, 'btn-reboot');
             });
             $('#btn-poweroff').click(function() {
-                if (confirm('Are you sure you want to power off the machine?')) {
+                if (confirm('Really power off the C64 Ultimate?')) {
                     handleMachineControl(machinePowerOff, 'btn-poweroff');
                 }
             });
