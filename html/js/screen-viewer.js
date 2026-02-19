@@ -28,7 +28,10 @@ let screenViewerState = {
     screenData: null,
     colorData: null,
     backgroundColor: C64_COLOR_PALETTE[14],
-    borderColor: C64_COLOR_PALETTE[14]
+    borderColor: C64_COLOR_PALETTE[14],
+    autoRefreshEnabled: false,
+    autoRefreshInterval: 250,
+    autoRefreshTimer: null
 };
 
 // ============================================================================
@@ -91,7 +94,7 @@ function screenViewerRender() {
         for (let col = 0; col < SCREEN_WIDTH; col++) {
             const index = row * SCREEN_WIDTH + col;
             const char = screenViewerGetCharAt(index);
-            const color = screenViewerState.colorData 
+            const color = screenViewerState.colorData
                 ? getC64Color(screenViewerState.colorData[index])
                 : C64_COLOR_PALETTE[14]; // Default light blue
 
@@ -131,6 +134,12 @@ function screenViewerGetCharAt(index) {
  */
 function screenViewerNavigateToAddress(address, callback) {
     address = screenViewerValidateAddress(address);
+
+    if (screenViewerState.autoRefreshEnabled && isApiBusy()) {
+        screenViewerState.address = address;
+        if (callback) callback();
+        return;
+    }
 
     // Read screen memory (1000 bytes)
     readMemory(address, SCREEN_SIZE,
@@ -230,8 +239,7 @@ function screenViewerNavigateLeft(callback) {
 }
 
 /**
- * NavigateAddress, callback);
- right (next byte, +1)
+ * Navigate right (next byte, +1)
  * @param {Function} callback - Callback function
  */
 function screenViewerNavigateRight(callback) {
@@ -258,6 +266,69 @@ function screenViewerNavigateNextPage(callback) {
 }
 
 // ============================================================================
+// AUTO-REFRESH
+// ============================================================================
+
+/**
+ * Start auto-refresh loop if enabled
+ */
+function screenViewerStartAutoRefresh() {
+    if (screenViewerState.autoRefreshEnabled && !screenViewerState.autoRefreshTimer) {
+        screenViewerState.autoRefreshTimer = setTimeout(
+            screenViewerDoAutoRefresh,
+            screenViewerState.autoRefreshInterval
+        );
+    }
+}
+
+/**
+ * Stop auto-refresh loop
+ */
+function screenViewerStopAutoRefresh() {
+    if (screenViewerState.autoRefreshTimer) {
+        clearTimeout(screenViewerState.autoRefreshTimer);
+        screenViewerState.autoRefreshTimer = null;
+    }
+}
+
+/**
+ * Perform auto-refresh and schedule next refresh (non-strict)
+ */
+function screenViewerDoAutoRefresh() {
+    // Clear timer reference since we're about to run
+    screenViewerState.autoRefreshTimer = null;
+
+    // Only continue if still enabled
+    if (!screenViewerState.autoRefreshEnabled) {
+        return;
+    }
+
+    screenViewerNavigateToAddress(screenViewerState.address, () => {
+        // Schedule next refresh after completion (non-strict)
+        if (screenViewerState.autoRefreshEnabled) {
+            screenViewerState.autoRefreshTimer = setTimeout(
+                screenViewerDoAutoRefresh,
+                screenViewerState.autoRefreshInterval
+            );
+        }
+    });
+}
+
+/**
+ * Toggle auto-refresh on/off
+ * @param {boolean} enabled - Whether to enable auto-refresh
+ */
+function screenViewerSetAutoRefresh(enabled) {
+    screenViewerState.autoRefreshEnabled = enabled;
+
+    if (enabled) {
+        screenViewerStartAutoRefresh();
+    } else {
+        screenViewerStopAutoRefresh();
+    }
+}
+
+// ============================================================================
 // KEYBOARD HANDLING
 // ============================================================================
 
@@ -274,7 +345,7 @@ function screenViewerHandleKey(e) {
     }
 
     // Don't navigate if API is busy
-    if (isApiBusy()) {
+    if (!screenViewerState.autoRefreshEnabled && isApiBusy()) {
         if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'PageUp', 'PageDown', 'r', 'R'].includes(e.key)) {
             return true;
         }

@@ -899,6 +899,11 @@
                         <option value="0xE000">PETSCII 1</option>
                         <option value="0xE100">PETSCII 2</option>
                     </select>
+
+                    <label class="mem-checkbox-label">
+                        <input type="checkbox" id="screen-auto-refresh">
+                        Auto-refresh
+                    </label>
                 </div>
 
                 <div class="mem-header-right">
@@ -1385,6 +1390,10 @@
                     if (isApiBusy()) return;
                     screenViewerNavigateNextPage(() => this.updateAddressDisplay());
                 });
+
+                handleInputChange('screen-auto-refresh', (checked) => {
+                    screenViewerSetAutoRefresh(checked);
+                });
             },
 
             updateAddressDisplay: function() {
@@ -1401,7 +1410,11 @@
 
             activate: function() {
                 console.log('ScreenViewer: activate()');
-                this.refresh();
+                this.refresh(() => {
+                    if ($('#screen-auto-refresh').prop('checked')) {
+                        screenViewerSetAutoRefresh(true);
+                    }
+                });
             },
 
             canDeactivate: function() {
@@ -1411,9 +1424,10 @@
 
             deactivate: function() {
                 console.log('ScreenViewer: deactivate()');
+                screenViewerSetAutoRefresh(false);
             },
 
-            refresh: function() {
+            refresh: function(callback) {
                 console.log('ScreenViewer: refresh()');
                 if (isApiBusy()) {
                     return;
@@ -1421,6 +1435,7 @@
                 const currentAddress = screenViewerState.address;
                 screenViewerNavigateToAddress(currentAddress, () => {
                     this.updateAddressDisplay();
+                    if (callback) callback();
                 });
             },
 
