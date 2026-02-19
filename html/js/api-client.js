@@ -261,3 +261,222 @@ function translateByteToChar(byte, charsetPuaBase) {
     const codepoint = charsetPuaBase + byte;
     return String.fromCodePoint(codepoint);
 }
+
+// ============================================================================
+// SYSTEM INFORMATION
+// ============================================================================
+
+/**
+ * Get system information from the C64U device.
+ * @param {function} callback - Success callback, receives combined info object
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function getSystemInfo(callback, errorCallback) {
+    const password = $('#apiPassword').val();
+    const result = {
+        version: null,
+        info: null
+    };
+
+    $.ajax({
+        url: '/v1/version',
+        method: 'GET',
+        headers: { "X-Password": password },
+        success: function(data) {
+            result.version = data;
+            if (result.info) {
+                const combined = {
+                    version: result.version.version,
+                    product: result.info.product,
+                    firmware_version: result.info.firmware_version,
+                    fpga_version: result.info.fpga_version,
+                    core_version: result.info.core_version,
+                    hostname: result.info.hostname,
+                    unique_id: result.info.unique_id
+                };
+                if (callback) callback(combined);
+            }
+        },
+        error: function(jqXHR) {
+            if (errorCallback) errorCallback(parseApiError(jqXHR));
+        }
+    });
+
+    $.ajax({
+        url: '/v1/info',
+        method: 'GET',
+        headers: { "X-Password": password },
+        success: function(data) {
+            result.info = data;
+            if (result.version) {
+                const combined = {
+                    version: result.version.version,
+                    product: result.info.product,
+                    firmware_version: result.info.firmware_version,
+                    fpga_version: result.info.fpga_version,
+                    core_version: result.info.core_version,
+                    hostname: result.info.hostname,
+                    unique_id: result.info.unique_id
+                };
+                if (callback) callback(combined);
+            }
+        },
+        error: function(jqXHR) {
+            if (errorCallback) errorCallback(parseApiError(jqXHR));
+        }
+    });
+}
+
+// ============================================================================
+// MACHINE CONTROL
+// ============================================================================
+
+/**
+ * Simulate Menu button press.
+ * @param {function} callback - Success callback
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function machineMenuButton(callback, errorCallback) {
+    const password = $('#apiPassword').val();
+
+    $.ajax({
+        url: '/v1/machine:menu_button',
+        method: 'PUT',
+        headers: { "X-Password": password },
+        success: function(data) {
+            if (data.errors && data.errors.length > 0) {
+                if (errorCallback) errorCallback(data.errors.join('; '));
+            } else {
+                if (callback) callback(data);
+            }
+        },
+        error: function(jqXHR) {
+            if (errorCallback) errorCallback(parseApiError(jqXHR));
+        }
+    });
+}
+
+/**
+ * Pause the machine.
+ * @param {function} callback - Success callback
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function machinePause(callback, errorCallback) {
+    const password = $('#apiPassword').val();
+
+    $.ajax({
+        url: '/v1/machine:pause',
+        method: 'PUT',
+        headers: { "X-Password": password },
+        success: function(data) {
+            if (data.errors && data.errors.length > 0) {
+                if (errorCallback) errorCallback(data.errors.join('; '));
+            } else {
+                if (callback) callback(data);
+            }
+        },
+        error: function(jqXHR) {
+            if (errorCallback) errorCallback(parseApiError(jqXHR));
+        }
+    });
+}
+
+/**
+ * Resume the machine.
+ * @param {function} callback - Success callback
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function machineResume(callback, errorCallback) {
+    const password = $('#apiPassword').val();
+
+    $.ajax({
+        url: '/v1/machine:resume',
+        method: 'PUT',
+        headers: { "X-Password": password },
+        success: function(data) {
+            if (data.errors && data.errors.length > 0) {
+                if (errorCallback) errorCallback(data.errors.join('; '));
+            } else {
+                if (callback) callback(data);
+            }
+        },
+        error: function(jqXHR) {
+            if (errorCallback) errorCallback(parseApiError(jqXHR));
+        }
+    });
+}
+
+/**
+ * Reset the machine.
+ * @param {function} callback - Success callback
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function machineReset(callback, errorCallback) {
+    const password = $('#apiPassword').val();
+
+    $.ajax({
+        url: '/v1/machine:reset',
+        method: 'PUT',
+        headers: { "X-Password": password },
+        success: function(data) {
+            if (data.errors && data.errors.length > 0) {
+                if (errorCallback) errorCallback(data.errors.join('; '));
+            } else {
+                if (callback) callback(data);
+            }
+        },
+        error: function(jqXHR) {
+            if (errorCallback) errorCallback(parseApiError(jqXHR));
+        }
+    });
+}
+
+/**
+ * Reboot the machine.
+ * @param {function} callback - Success callback
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function machineReboot(callback, errorCallback) {
+    const password = $('#apiPassword').val();
+
+    $.ajax({
+        url: '/v1/machine:reboot',
+        method: 'PUT',
+        headers: { "X-Password": password },
+        success: function(data) {
+            if (data.errors && data.errors.length > 0) {
+                if (errorCallback) errorCallback(data.errors.join('; '));
+            } else {
+                if (callback) callback(data);
+            }
+        },
+        error: function(jqXHR) {
+            if (errorCallback) errorCallback(parseApiError(jqXHR));
+        }
+    });
+}
+
+/**
+ * Power off the machine (U64 only).
+ * @param {function} callback - Success callback
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function machinePowerOff(callback, errorCallback) {
+    const password = $('#apiPassword').val();
+
+    $.ajax({
+        url: '/v1/machine:poweroff',
+        method: 'PUT',
+        headers: { "X-Password": password },
+        success: function(data) {
+            if (data.errors && data.errors.length > 0) {
+                if (errorCallback) errorCallback(data.errors.join('; '));
+            } else {
+                if (callback) callback(data);
+            }
+        },
+        error: function(jqXHR) {
+            if (errorCallback) errorCallback(parseApiError(jqXHR));
+        }
+    });
+}
