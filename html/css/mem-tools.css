@@ -378,3 +378,79 @@
     color: var(--text-dim);
     cursor: pointer;
 }
+
+/* Screen Viewer Display Container */
+.screen-display {
+    cursor: default;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background: var(--card-bg);
+    border-radius: var(--radius-sm);
+    transform-origin: center top;
+    transition: transform 0.2s ease;
+}
+
+@media (max-width: 800px) {
+    .screen-display {
+        transform: scale(0.9);
+    }
+}
+
+@media (max-width: 730px) {
+    .screen-display {
+        transform: scale(0.8);
+    }
+}
+
+@media (max-width: 660px) {
+    .screen-display {
+        transform: scale(0.7);
+    }
+}
+
+@media (max-width: 585px) {
+    .screen-display {
+        transform: scale(0.5);
+    }
+}
+
+@media (max-width: 510px) {
+    .screen-display {
+        transform: scale(0.5);
+    }
+}
+
+/* Screen border (representing C64 screen border) */
+.screen-border {
+    border: 40px solid var(--border);
+}
+
+/* Screen grid container */
+.screen-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+/* Screen row (40 characters) */
+.screen-row {
+    display: flex;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+}
+
+/* Screen character cell */
+.screen-char {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    font-family: 'C64ProMono', 'Courier New', monospace;
+    font-size: 16px;
+    line-height: 1.0;
+    text-align: center;
+    letter-spacing: 2px;
+    box-sizing: content-box;
+}

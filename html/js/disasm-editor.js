@@ -17,7 +17,7 @@
 let disasmEditorState = {
     container: null,
     startAddress: 0xC000,
-    currentLength: 64,
+    currentLength: 48,
     libraryLoaded: false,
     showAllOpcodes: false,
 
@@ -527,8 +527,9 @@ function disasmEditorEnterEditMode() {
 /**
  * Exit edit mode
  * @param {boolean} save - True to keep changes, false to discard
+ * @param {boolean} skipReload - True to skip API call (for tab switches)
  */
-function disasmEditorExitEditMode(save) {
+function disasmEditorExitEditMode(save, skipReload) {
     const state = disasmEditorState;
 
     if (!save) {
@@ -547,9 +548,11 @@ function disasmEditorExitEditMode(save) {
     $('.mem-header').removeClass('input-disabled');
     $('#refreshBtn').removeClass('input-disabled');
 
-    disasmEditorLoadAndDisassemble();
+    if (!skipReload) {
+        disasmEditorLoadAndDisassemble();
+    }
 
-    console.log('DisasmEditor: Exited edit mode, save=' + save);
+    console.log('DisasmEditor: Exited edit mode, save=' + save + ', skipReload=' + skipReload);
 
     // Call UI callback if set
     if (disasmEditorExitEditModeCallback) {
@@ -877,7 +880,7 @@ function disasmEditorHandleEscape() {
             }
         }
 
-        disasmEditorExitEditMode(false);
+        disasmEditorExitEditMode(false, false);
         // UI callback will handle button updates
     }
 }

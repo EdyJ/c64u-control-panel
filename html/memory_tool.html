@@ -33,7 +33,8 @@
       { url: "js/api-client.js" },
       { url: "js/tab-lifecycle.js" },
       { url: "js/hex-editor.js" },
-      { url: "js/disasm-editor.js" }
+      { url: "js/disasm-editor.js" },
+      { url: "js/screen-viewer.js" }
     ];
 
     // UI selectors to disable during load
@@ -779,6 +780,7 @@
         <div class="tab-bar content-disabled">
             <button class="tab-button active" data-tab="tab0">Hex Viewer</button>
             <button class="tab-button" data-tab="tab1">Disassembly</button>
+            <button class="tab-button" data-tab="tab2">Screen</button>
         </div>
 
         <!-- Hex Viewer: Memory Browser -->
@@ -845,7 +847,8 @@
                     <label>Length:</label>
                     <select id="disasm-length" class="mem-select">
                         <option value="32">32</option>
-                        <option value="64" selected>64</option>
+                        <option value="48" selected>48</option>
+                        <option value="64">64</option>
                         <option value="128">128</option>
                     </select>
 
@@ -881,6 +884,51 @@
                 <!-- Disassembly data will be generated here -->
             </div>
         </div>
+
+        <!-- Screen Viewer: C64 Screen Display -->
+        <div id="tab2-content" class="tab-content" style="display:none;">
+            <!-- Screen Viewer Header -->
+            <div class="mem-header">
+                <div class="mem-header-left">
+                    <label>Address:</label>
+                    <input type="text" id="screen-address" value="0400" placeholder="0400" class="mem-input-address">
+
+                    <label>Charset:</label>
+                    <select id="screen-charset" class="mem-select">
+                        <option value="0xEE00" selected>Screen 1</option>
+                        <option value="0xEF00">Screen 2</option>
+                        <option value="0xE000">PETSCII 1</option>
+                        <option value="0xE100">PETSCII 2</option>
+                    </select>
+
+                    <label class="mem-checkbox-label">
+                        <input type="checkbox" id="screen-auto-refresh">
+                        Auto-refresh
+                    </label>
+                </div>
+
+                <div class="mem-header-right">
+                    <button class="mem-nav-btn" id="screen-nav-up" title="Up">▲</button>
+                    <button class="mem-nav-btn" id="screen-nav-down" title="Down">▼</button>
+                    <button class="mem-nav-btn" id="screen-nav-left" title="Left">◄</button>
+                    <button class="mem-nav-btn" id="screen-nav-right" title="Right">►</button>
+                    <button class="mem-nav-btn mem-nav-page" id="screen-prev-page">Prev Page</button>
+                    <button class="mem-nav-btn mem-nav-page" id="screen-next-page">Next Page</button>
+                </div>
+            </div>
+
+            <!-- Screen Viewer Sub-header -->
+            <div class="mem-subheader">
+                <div class="mem-subheader-left">
+                    <span id="screen-current-address">$0400 (1024) - $07D3 (2015)</span>
+                </div>
+            </div>
+
+            <!-- Screen Viewer Display -->
+            <div class="screen-display" id="screen-display">
+                <!-- Screen grid will be generated here -->
+            </div>
+        </div>
     </div>
 
     <script>
@@ -890,7 +938,8 @@
 
         const tabMap = {
             'tab0': 'HexViewer',
-            'tab1': 'DisassemblyViewer'
+            'tab1': 'DisassemblyViewer',
+            'tab2': 'ScreenViewer'
         };
 
         // ============================================================================
@@ -1052,8 +1101,8 @@
 
             updateAddressDisplay: function() {
                 const range = hexEditorGetAddressRange();
-                const startHex = range.startAddress.toString(16).toUpperCase().padStart(4, '0');
-                const endHex = range.endAddress.toString(16).toUpperCase().padStart(4, '0');
+                const startHex = formatHexWord(range.startAddress);
+                const endHex = formatHexWord(range.endAddress);
 
                 // Update address input to match current address
                 $('#hex-address').val(startHex);
@@ -1112,7 +1161,7 @@
                 console.log('DisassemblyViewer: initialize()');
 
                 const initialAddress = parseInt($('#disasm-address').val(), 16) || 0xC000;
-                const initialLength = parseInt($('#disasm-length').val()) || 64;
+                const initialLength = parseInt($('#disasm-length').val()) || 48;
                 disasmEditorInit($('#disasm-display'), initialAddress, initialLength);
 
                 disasmEditorSetNavigationCallback(() => this.updateAddressDisplay());
@@ -1137,7 +1186,7 @@
                     disasmEditorSaveChanges(
                         () => {
                             // Success: exit edit mode (callback handles UI)
-                            disasmEditorExitEditMode(true);
+                            disasmEditorExitEditMode(true, false);
                             this.refresh();
                         },
                         (errorMsg) => {
@@ -1157,7 +1206,7 @@
                             return;
                         }
                     }
-                    disasmEditorExitEditMode(false); // callback handles UI
+                    disasmEditorExitEditMode(false, false); // callback handles UI
                 });
 
                 // Keyboard shortcuts
@@ -1251,8 +1300,8 @@
             deactivate: function() {
                 console.log('DisassemblyViewer: deactivate()');
                 // Force exit edit mode when switching tabs (discard any changes)
-                // Callback will handle UI updates
-                disasmEditorExitEditMode(false);
+                // Skip reload to avoid API call during tab switch
+                disasmEditorExitEditMode(false, true);
             },
 
             refresh: function() {
@@ -1268,6 +1317,131 @@
 
             handleKeyDown: function(e) {
                 return disasmEditorHandleKey(e);
+            }
+        };
+
+        // ============================================================================
+        // SCREEN VIEWER: C64 Screen Display
+        // ============================================================================
+
+        var ScreenViewer = {
+            initialize: function() {
+                console.log('ScreenViewer: initialize()');
+
+                screenViewerInit($('#screen-display'));
+
+                screenViewerSetNavigationCallback(() => this.updateAddressDisplay());
+
+                this.setupNavigation();
+            },
+
+            setupNavigation: function() {
+                $('#screen-address').on('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+
+                        if (isApiBusy()) {
+                            return;
+                        }
+
+                        const address = parseAddressInput('screen-address');
+
+                        if (address === null) {
+                            alert('Invalid address. Please enter a hex value between 0000 and FFFF.');
+                            return;
+                        }
+
+                        screenViewerNavigateToAddress(address, () => {
+                            this.updateAddressDisplay();
+                        });
+                    }
+                });
+
+                handleInputChange('screen-charset', (value) => {
+                    const puaBase = parseInt(value);
+                    screenViewerSetCharsetPuaBase(puaBase);
+                });
+
+                handleButtonClick('screen-nav-up', () => {
+                    if (isApiBusy()) return;
+                    screenViewerNavigateUp(() => this.updateAddressDisplay());
+                });
+
+                handleButtonClick('screen-nav-down', () => {
+                    if (isApiBusy()) return;
+                    screenViewerNavigateDown(() => this.updateAddressDisplay());
+                });
+
+                handleButtonClick('screen-nav-left', () => {
+                    if (isApiBusy()) return;
+                    screenViewerNavigateLeft(() => this.updateAddressDisplay());
+                });
+
+                handleButtonClick('screen-nav-right', () => {
+                    if (isApiBusy()) return;
+                    screenViewerNavigateRight(() => this.updateAddressDisplay());
+                });
+
+                handleButtonClick('screen-prev-page', () => {
+                    if (isApiBusy()) return;
+                    screenViewerNavigatePrevPage(() => this.updateAddressDisplay());
+                });
+
+                handleButtonClick('screen-next-page', () => {
+                    if (isApiBusy()) return;
+                    screenViewerNavigateNextPage(() => this.updateAddressDisplay());
+                });
+
+                handleInputChange('screen-auto-refresh', (checked) => {
+                    screenViewerSetAutoRefresh(checked);
+                });
+            },
+
+            updateAddressDisplay: function() {
+                const range = screenViewerGetAddressRange();
+                const startHex = formatHexWord(range.startAddress);
+                const endHex = formatHexWord(range.endAddress);
+
+                $('#screen-address').val(startHex);
+
+                $('#screen-current-address').text(
+                    `$${startHex} (${range.startAddress}) - $${endHex} (${range.endAddress})`
+                );
+            },
+
+            activate: function() {
+                console.log('ScreenViewer: activate()');
+                this.refresh(() => {
+                    if ($('#screen-auto-refresh').prop('checked')) {
+                        screenViewerSetAutoRefresh(true);
+                    }
+                });
+            },
+
+            canDeactivate: function() {
+                console.log('ScreenViewer: canDeactivate()');
+                return true;
+            },
+
+            deactivate: function() {
+                console.log('ScreenViewer: deactivate()');
+                screenViewerSetAutoRefresh(false);
+            },
+
+            refresh: function(callback) {
+                console.log('ScreenViewer: refresh()');
+                if (isApiBusy()) {
+                    return;
+                }
+                const currentAddress = screenViewerState.address;
+                screenViewerNavigateToAddress(currentAddress, () => {
+                    this.updateAddressDisplay();
+                    if (callback) callback();
+                });
+            },
+
+            handleKeyDown: function(e) {
+                return screenViewerHandleKey(e);
             }
         };
 

@@ -214,3 +214,50 @@ function validateMemoryAddress(address, pageSize) {
 
     return address;
 }
+
+// ============================================================================
+// C64 CHARACTER AND COLOR UTILITIES
+// ============================================================================
+
+/**
+ * C64 Color Palette - 16 colors indexed by C64 color code (0-15)
+ */
+const C64_COLOR_PALETTE = [
+    '#000000', // 0: black
+    '#FFFFFF', // 1: white
+    '#68372B', // 2: red
+    '#70A4B2', // 3: cyan
+    '#6F3D86', // 4: purple
+    '#588D43', // 5: green
+    '#352879', // 6: blue
+    '#B8C76F', // 7: yellow
+    '#6F4F25', // 8: orange
+    '#433900', // 9: brown
+    '#9A6759', // 10: light red
+    '#444444', // 11: dark grey
+    '#6C6C6C', // 12: grey
+    '#9AD284', // 13: light green
+    '#6C5EB5', // 14: light blue
+    '#959595'  // 15: light grey
+];
+
+/**
+ * Get the hex color string for a C64 color index (0-15)
+ * @param {number} colorIndex - C64 color code (0-15), uses lower 4 bits
+ * @returns {string} Hex color string (e.g., '#FFFFFF')
+ */
+function getC64Color(colorIndex) {
+    const index = colorIndex & 0x0F; // Lower 4 bits
+    return C64_COLOR_PALETTE[index] || C64_COLOR_PALETTE[0];
+}
+
+/**
+ * Translate a memory byte to a C64 character using the specified charset PUA base.
+ * @param {number} byte - Memory byte value (0-255)
+ * @param {number} charsetPuaBase - PUA base address for the charset (e.g., 0xEE00)
+ * @returns {string} Character string rendered using the C64 font
+ */
+function translateByteToChar(byte, charsetPuaBase) {
+    const codepoint = charsetPuaBase + byte;
+    return String.fromCodePoint(codepoint);
+}
