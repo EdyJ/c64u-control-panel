@@ -257,6 +257,67 @@
         font-weight: bold;
     }
 
+    /* Form Row Layout */
+    .form-row {
+        display: flex;
+        gap: var(--spacing-sm);
+        align-items: flex-end;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .form-field {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+
+    .form-field label {
+        font-size: 12px;
+        color: var(--text-dim);
+        margin-bottom: 4px;
+    }
+
+    .form-field-small {
+        flex-grow: 0;
+        width: 80px;
+    }
+
+    /* File Input (hidden) */
+    input[type="file"] {
+        display: none;
+    }
+
+    /* File Selected Label */
+    .file-selected {
+        color: var(--text-dim);
+        font-size: 13px;
+        font-style: italic;
+    }
+
+    /* Drag Hint */
+    .drag-hint {
+        color: var(--text-dim);
+        font-size: 12px;
+        font-style: italic;
+        text-align: center;
+        padding: 10px;
+        border: 1px dashed var(--border);
+        border-radius: var(--radius-sm);
+    }
+
+    /* Form Separator */
+    .form-separator {
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        margin: 15px 0;
+    }
+
+    /* Secondary Button */
+    .btn-secondary {
+        background: var(--input-bg);
+        color: var(--text);
+        border: 1px solid var(--border);
+    }
+
     /* Buttons */
     button {
         padding: 8px 16px;
@@ -354,6 +415,10 @@
 
         .control-group {
             flex-wrap: wrap;
+        }
+
+        .grid-50-50 {
+            grid-template-columns: 1fr;
         }
     }
 

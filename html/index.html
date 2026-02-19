@@ -245,6 +245,67 @@
         font-weight: bold;
     }
 
+    /* Form Row Layout */
+    .form-row {
+        display: flex;
+        gap: var(--spacing-sm);
+        align-items: flex-end;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .form-field {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+
+    .form-field label {
+        font-size: 12px;
+        color: var(--text-dim);
+        margin-bottom: 4px;
+    }
+
+    .form-field-small {
+        flex-grow: 0;
+        width: 80px;
+    }
+
+    /* File Input (hidden) */
+    input[type="file"] {
+        display: none;
+    }
+
+    /* File Selected Label */
+    .file-selected {
+        color: var(--text-dim);
+        font-size: 13px;
+        font-style: italic;
+    }
+
+    /* Drag Hint */
+    .drag-hint {
+        color: var(--text-dim);
+        font-size: 12px;
+        font-style: italic;
+        text-align: center;
+        padding: 10px;
+        border: 1px dashed var(--border);
+        border-radius: var(--radius-sm);
+    }
+
+    /* Form Separator */
+    .form-separator {
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        margin: 15px 0;
+    }
+
+    /* Secondary Button */
+    .btn-secondary {
+        background: var(--input-bg);
+        color: var(--text);
+        border: 1px solid var(--border);
+    }
+
     /* Buttons */
     button {
         padding: 8px 16px;
@@ -342,6 +403,10 @@
 
         .control-group {
             flex-wrap: wrap;
+        }
+
+        .grid-50-50 {
+            grid-template-columns: 1fr !important;
         }
     }
 
@@ -1064,152 +1129,58 @@
             </div>
         </div>
 
-        <!-- Machine Control Card -->
-        <div class="card" style="margin-bottom: 20px;">
-            <div class="card-title">Machine Control</div>
-            <div class="machine-control-grid">
-                <div class="mc-pair">
-                    <button class="btn-success" id="btn-menu" title="Simulate Menu button press to enter or exit the Ultimate menu system">Menu</button>
-                    <button class="btn-danger" id="btn-poweroff" title="Power off the machine (U64 only)">Power Off</button>
-                </div>
-                <div class="mc-pair">
-                    <button class="btn-primary" id="btn-pause" title="Pause the CPU by pulling the DMA line low at a safe moment">Pause</button>
-                    <button class="btn-primary" id="btn-resume" title="Resume the machine from a paused state by releasing the DMA line">Resume</button>
-                </div>
-                <div class="mc-pair">
-                    <button class="btn-warning" id="btn-reset" title="Send a reset signal to the machine without changing the current configuration">Reset</button>
-                    <button class="btn-warning" id="btn-reboot" title="Restart the machine, re-initializing the cartridge configuration and then sending a reset signal">Reboot</button>
+        <!-- Two-column layout: Machine Control + Music/Program Runner -->
+        <div class="grid-50-50">
+            <!-- Machine Control Card -->
+            <div class="card">
+                <div class="card-title">Machine Control</div>
+                <div class="card-subtitle">Direct control over the machine state</div>
+                <div class="machine-control-grid">
+                    <div class="mc-pair">
+                        <button class="btn-success" id="btn-menu" title="Simulate Menu button press to enter or exit the Ultimate menu system">Menu</button>
+                        <button class="btn-danger" id="btn-poweroff" title="Power off the machine (U64 only)">Power Off</button>
+                    </div>
+                    <div class="mc-pair">
+                        <button class="btn-primary" id="btn-pause" title="Pause the CPU by pulling the DMA line low at a safe moment">Pause</button>
+                        <button class="btn-primary" id="btn-resume" title="Resume the machine from a paused state by releasing the DMA line">Resume</button>
+                    </div>
+                    <div class="mc-pair">
+                        <button class="btn-warning" id="btn-reset" title="Send a reset signal to the machine without changing the current configuration">Reset</button>
+                        <button class="btn-warning" id="btn-reboot" title="Restart the machine, re-initializing the cartridge configuration and then sending a reset signal">Reboot</button>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Music Runners (SID, MOD) - Foldable -->
-        <div class="foldable">
-            <div class="foldable-header">
-                <span>Music Runners (SID, MOD)</span>
-                <span class="arrow">▼</span>
-            </div>
-            <div class="foldable-content">
-                <div class="description">Load and play music files (SID and MOD formats).</div>
-
-                <!-- SID Play -->
-                <div class="api-call" data-verb="PUT" data-url="/v1/runners:sidplay">
-                    <div class="api-header"><span class="verb PUT">PUT</span><span class="path">:sidplay</span></div>
-                    <div class="params-grid">
-                        <div class="param-field" style="grid-column: span 2;"><label>File Path</label><input type="text" name="file" placeholder="/usb0/music/test.sid" required></div>
-                        <div class="param-field"><label>Song Number (Optional)</label><input type="text" name="songnr" placeholder="1"></div>
+            <!-- Music / Program Runner Card -->
+            <div class="card">
+                <div class="card-title">Music / Program Runner</div>
+                <div class="card-subtitle">SID, MOD, PRG, CRT</div>
+                
+                <!-- Row 1: File Path + Song Number + Button -->
+                <div class="form-row">
+                    <div class="form-field">
+                        <label>C64U File Path</label>
+                        <input type="text" placeholder="/usb0/music/test.sid">
                     </div>
-                    <button class="exec-btn">Play SID</button>
-                    <div class="result-box"></div>
-                </div>
-                <div class="api-call" data-verb="POST" data-url="/v1/runners:sidplay">
-                    <div class="api-header"><span class="verb POST">POST</span><span class="path">:sidplay (Upload)</span></div>
-                    <div class="params-grid">
-                        <div class="param-field" style="grid-column: span 2;"><label>Select SID File</label><input type="file" name="_file" required></div>
+                    <div class="form-field form-field-small">
+                        <label>Song Number (optional)</label>
+                        <input type="text" placeholder="1">
                     </div>
-                    <button class="exec-btn">Upload & Play SID</button>
-                    <div class="result-box"></div>
+                    <button class="btn-primary">Play / Run</button>
                 </div>
-
-                <!-- MOD Play -->
-                <div class="api-call" data-verb="PUT" data-url="/v1/runners:modplay">
-                    <div class="api-header"><span class="verb PUT">PUT</span><span class="path">:modplay</span></div>
-                    <div class="params-grid">
-                        <div class="param-field" style="grid-column: span 2;"><label>File Path</label><input type="text" name="file" placeholder="/usb0/music/test.mod" required></div>
+                
+                <!-- Row 2: File Chooser -->
+                <div class="form-separator"></div>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label>Upload File</label>
+                        <button class="btn-secondary">Choose File</button>
                     </div>
-                    <button class="exec-btn">Play MOD</button>
-                    <div class="result-box"></div>
+                    <span class="file-selected">No file selected</span>
                 </div>
-                <div class="api-call" data-verb="POST" data-url="/v1/runners:modplay">
-                    <div class="api-header"><span class="verb POST">POST</span><span class="path">:modplay (Upload)</span></div>
-                    <div class="params-grid">
-                        <div class="param-field" style="grid-column: span 2;"><label>Select MOD File</label><input type="file" name="_file" required></div>
-                    </div>
-                    <button class="exec-btn">Upload & Play MOD</button>
-                    <div class="result-box"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Program Runners (PRG, CRT) - Foldable -->
-        <div class="foldable">
-            <div class="foldable-header">
-                <span>Program Runners (PRG, CRT)</span>
-                <span class="arrow">▼</span>
-            </div>
-            <div class="foldable-content">
-                <div class="description">Load and execute programs and cartridges (PRG and CRT formats).</div>
-
-                <!-- PRG Load/Run -->
-                <div class="api-call" data-verb="PUT" data-url="/v1/runners:run_prg">
-                    <div class="api-header"><span class="verb PUT">PUT</span><span class="path">:run_prg</span></div>
-                    <div class="params-grid">
-                        <div class="param-field" style="grid-column: span 2;"><label>File Path</label><input type="text" name="file" placeholder="/usb0/games/test.prg" required></div>
-                    </div>
-                    <button class="exec-btn">Run PRG</button>
-                    <div class="result-box"></div>
-                </div>
-                <div class="api-call" data-verb="POST" data-url="/v1/runners:run_prg">
-                    <div class="api-header"><span class="verb POST">POST</span><span class="path">:run_prg (Upload)</span></div>
-                    <div class="params-grid">
-                        <div class="param-field" style="grid-column: span 2;"><label>Select PRG File</label><input type="file" name="_file" required></div>
-                    </div>
-                    <button class="exec-btn">Upload & Run PRG</button>
-                    <div class="result-box"></div>
-                </div>
-
-                <!-- CRT Run -->
-                <div class="api-call" data-verb="PUT" data-url="/v1/runners:run_crt">
-                    <div class="api-header"><span class="verb PUT">PUT</span><span class="path">:run_crt</span></div>
-                    <div class="params-grid">
-                        <div class="param-field" style="grid-column: span 2;"><label>File Path</label><input type="text" name="file" placeholder="/usb0/carts/test.crt" required></div>
-                    </div>
-                    <button class="exec-btn">Run Cartridge</button>
-                    <div class="result-box"></div>
-                </div>
-                <div class="api-call" data-verb="POST" data-url="/v1/runners:run_crt">
-                    <div class="api-header"><span class="verb POST">POST</span><span class="path">:run_crt (Upload)</span></div>
-                    <div class="params-grid">
-                        <div class="param-field" style="grid-column: span 2;"><label>Select CRT File</label><input type="file" name="_file" required></div>
-                    </div>
-                    <button class="exec-btn">Upload & Run CRT</button>
-                    <div class="result-box"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- File Utilities - Foldable -->
-        <div class="foldable">
-            <div class="foldable-header">
-                <span>File Utilities</span>
-                <span class="arrow">▼</span>
-            </div>
-            <div class="foldable-content">
-                <div class="description">File operations and disk image management.</div>
-
-                <!-- File Info -->
-                <div class="api-call" data-verb="GET" data-url-template="/v1/files/{path}:info">
-                    <div class="api-header"><span class="verb GET">GET</span><span class="path">:info</span></div>
-                    <div class="description">Get information about a file (size, type, etc.).</div>
-                    <div class="params-grid">
-                        <div class="param-field" style="grid-column: span 2;"><label>File Path</label><input type="text" name="_path_info" placeholder="/usb0/somefile.d64" required></div>
-                    </div>
-                    <button class="exec-btn">Get File Info</button>
-                    <div class="result-box"></div>
-                </div>
-
-                <!-- Create D64 -->
-                <div class="api-call" data-verb="PUT" data-url-template="/v1/files/{path}:create_d64">
-                    <div class="api-header"><span class="verb PUT">PUT</span><span class="path">:create_d64</span></div>
-                    <div class="description">Create a new blank D64 disk image.</div>
-                    <div class="params-grid">
-                        <div class="param-field" style="grid-column: span 2;"><label>New Image Path</label><input type="text" name="_path_d64" placeholder="/usb0/new_disk.d64" required></div>
-                        <div class="param-field"><label>Tracks</label><select name="tracks"><option value="35">35</option><option value="40">40</option></select></div>
-                        <div class="param-field"><label>Disk Name (optional)</label><input type="text" name="diskname" placeholder="MY DISK"></div>
-                    </div>
-                    <button class="exec-btn">Create D64</button>
-                    <div class="result-box"></div>
-                </div>
+                
+                <!-- Row 3: Drag & Drop -->
+                <div class="drag-hint">...or drag a file here</div>
             </div>
         </div>
     </div>
