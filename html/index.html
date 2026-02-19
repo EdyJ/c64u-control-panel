@@ -747,18 +747,20 @@
 
       function disableContent() {
         window.contentItems.forEach(function (selector) {
-          var el = document.querySelector(selector);
-          if (el) el.classList.add('content-disabled');
+          var elements = document.querySelectorAll(selector);
+          elements.forEach(function(el) {
+            el.classList.add('content-disabled');
+          });
         });
       }
 
       function enableContent() {
         window.contentItems.forEach(function (selector) {
-          var el = document.querySelector(selector);
-          if (el) {
+          var elements = document.querySelectorAll(selector);
+          elements.forEach(function(el) {
             el.classList.remove('content-disabled');
             el.classList.remove('content-hidden');
-            }
+          });
         });
       }
 
