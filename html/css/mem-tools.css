@@ -381,12 +381,45 @@
 
 /* Screen Viewer Display Container */
 .screen-display {
+    cursor: default;
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 20px;
     background: var(--card-bg);
     border-radius: var(--radius-sm);
+    transform-origin: center top;
+    transition: transform 0.2s ease;
+}
+
+@media (max-width: 800px) {
+    .screen-display {
+        transform: scale(0.9);
+    }
+}
+
+@media (max-width: 730px) {
+    .screen-display {
+        transform: scale(0.8);
+    }
+}
+
+@media (max-width: 660px) {
+    .screen-display {
+        transform: scale(0.7);
+    }
+}
+
+@media (max-width: 585px) {
+    .screen-display {
+        transform: scale(0.5);
+    }
+}
+
+@media (max-width: 510px) {
+    .screen-display {
+        transform: scale(0.5);
+    }
 }
 
 /* Screen border (representing C64 screen border) */
