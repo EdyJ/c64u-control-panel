@@ -480,3 +480,300 @@ function machinePowerOff(callback, errorCallback) {
         }
     });
 }
+
+// ============================================================================
+// MUSIC / PROGRAM RUNNERS
+// ============================================================================
+
+/**
+ * Play a SID file from C64U file path.
+ * @param {string} path - File path on C64U
+ * @param {number|string} songNr - Song number (optional)
+ * @param {function} callback - Success callback
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function runSidPlay(path, songNr, callback, errorCallback) {
+    const password = $('#apiPassword').val();
+    
+    showSpinner(true);
+
+    const params = { file: path };
+    if (songNr) params.songnr = songNr;
+
+    $.ajax({
+        url: '/v1/runners:sidplay',
+        method: 'PUT',
+        headers: { "X-Password": password },
+        data: params,
+        success: function(data) {
+            showSpinner(false);
+            if (data.errors && data.errors.length > 0) {
+                if (errorCallback) errorCallback(data.errors.join('; '));
+            } else {
+                if (callback) callback(data);
+            }
+        },
+        error: function(jqXHR) {
+            showSpinner(false);
+            const errorMsg = parseApiError(jqXHR);
+            showError(errorMsg);
+            if (errorCallback) errorCallback(errorMsg);
+        }
+    });
+}
+
+/**
+ * Upload and play a SID file.
+ * @param {ArrayBuffer} fileData - File content as ArrayBuffer
+ * @param {string} filename - Original filename
+ * @param {number|string} songNr - Song number (optional)
+ * @param {function} callback - Success callback
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function runSidPlayUpload(fileData, filename, songNr, callback, errorCallback) {
+    const password = $('#apiPassword').val();
+    
+    showSpinner(true);
+
+    $.ajax({
+        url: '/v1/runners:sidplay',
+        method: 'POST',
+        contentType: 'application/octet-stream',
+        processData: false,
+        data: fileData,
+        headers: { 
+            "X-Password": password,
+            "Content-Disposition": `attachment; filename="${filename}"`
+        },
+        success: function(data) {
+            showSpinner(false);
+            if (data.errors && data.errors.length > 0) {
+                if (errorCallback) errorCallback(data.errors.join('; '));
+            } else {
+                if (callback) callback(data);
+            }
+        },
+        error: function(jqXHR) {
+            showSpinner(false);
+            const errorMsg = parseApiError(jqXHR);
+            showError(errorMsg);
+            if (errorCallback) errorCallback(errorMsg);
+        }
+    });
+}
+
+/**
+ * Play a MOD file from C64U file path.
+ * @param {string} path - File path on C64U
+ * @param {function} callback - Success callback
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function runModPlay(path, callback, errorCallback) {
+    const password = $('#apiPassword').val();
+    
+    showSpinner(true);
+
+    $.ajax({
+        url: '/v1/runners:modplay',
+        method: 'PUT',
+        headers: { "X-Password": password },
+        data: { file: path },
+        success: function(data) {
+            showSpinner(false);
+            if (data.errors && data.errors.length > 0) {
+                if (errorCallback) errorCallback(data.errors.join('; '));
+            } else {
+                if (callback) callback(data);
+            }
+        },
+        error: function(jqXHR) {
+            showSpinner(false);
+            const errorMsg = parseApiError(jqXHR);
+            showError(errorMsg);
+            if (errorCallback) errorCallback(errorMsg);
+        }
+    });
+}
+
+/**
+ * Upload and play a MOD file.
+ * @param {ArrayBuffer} fileData - File content as ArrayBuffer
+ * @param {string} filename - Original filename
+ * @param {function} callback - Success callback
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function runModPlayUpload(fileData, filename, callback, errorCallback) {
+    const password = $('#apiPassword').val();
+    
+    showSpinner(true);
+
+    $.ajax({
+        url: '/v1/runners:modplay',
+        method: 'POST',
+        contentType: 'application/octet-stream',
+        processData: false,
+        data: fileData,
+        headers: { 
+            "X-Password": password,
+            "Content-Disposition": `attachment; filename="${filename}"`
+        },
+        success: function(data) {
+            showSpinner(false);
+            if (data.errors && data.errors.length > 0) {
+                if (errorCallback) errorCallback(data.errors.join('; '));
+            } else {
+                if (callback) callback(data);
+            }
+        },
+        error: function(jqXHR) {
+            showSpinner(false);
+            const errorMsg = parseApiError(jqXHR);
+            showError(errorMsg);
+            if (errorCallback) errorCallback(errorMsg);
+        }
+    });
+}
+
+/**
+ * Run a PRG file from C64U file path.
+ * @param {string} path - File path on C64U
+ * @param {function} callback - Success callback
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function runPrg(path, callback, errorCallback) {
+    const password = $('#apiPassword').val();
+    
+    showSpinner(true);
+
+    $.ajax({
+        url: '/v1/runners:run_prg',
+        method: 'PUT',
+        headers: { "X-Password": password },
+        data: { file: path },
+        success: function(data) {
+            showSpinner(false);
+            if (data.errors && data.errors.length > 0) {
+                if (errorCallback) errorCallback(data.errors.join('; '));
+            } else {
+                if (callback) callback(data);
+            }
+        },
+        error: function(jqXHR) {
+            showSpinner(false);
+            const errorMsg = parseApiError(jqXHR);
+            showError(errorMsg);
+            if (errorCallback) errorCallback(errorMsg);
+        }
+    });
+}
+
+/**
+ * Upload and run a PRG file.
+ * @param {ArrayBuffer} fileData - File content as ArrayBuffer
+ * @param {string} filename - Original filename
+ * @param {function} callback - Success callback
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function runPrgUpload(fileData, filename, callback, errorCallback) {
+    const password = $('#apiPassword').val();
+    
+    showSpinner(true);
+
+    $.ajax({
+        url: '/v1/runners:run_prg',
+        method: 'POST',
+        contentType: 'application/octet-stream',
+        processData: false,
+        data: fileData,
+        headers: { 
+            "X-Password": password,
+            "Content-Disposition": `attachment; filename="${filename}"`
+        },
+        success: function(data) {
+            showSpinner(false);
+            if (data.errors && data.errors.length > 0) {
+                if (errorCallback) errorCallback(data.errors.join('; '));
+            } else {
+                if (callback) callback(data);
+            }
+        },
+        error: function(jqXHR) {
+            showSpinner(false);
+            const errorMsg = parseApiError(jqXHR);
+            showError(errorMsg);
+            if (errorCallback) errorCallback(errorMsg);
+        }
+    });
+}
+
+/**
+ * Run a CRT cartridge from C64U file path.
+ * @param {string} path - File path on C64U
+ * @param {function} callback - Success callback
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function runCrt(path, callback, errorCallback) {
+    const password = $('#apiPassword').val();
+    
+    showSpinner(true);
+
+    $.ajax({
+        url: '/v1/runners:run_crt',
+        method: 'PUT',
+        headers: { "X-Password": password },
+        data: { file: path },
+        success: function(data) {
+            showSpinner(false);
+            if (data.errors && data.errors.length > 0) {
+                if (errorCallback) errorCallback(data.errors.join('; '));
+            } else {
+                if (callback) callback(data);
+            }
+        },
+        error: function(jqXHR) {
+            showSpinner(false);
+            const errorMsg = parseApiError(jqXHR);
+            showError(errorMsg);
+            if (errorCallback) errorCallback(errorMsg);
+        }
+    });
+}
+
+/**
+ * Upload and run a CRT cartridge.
+ * @param {ArrayBuffer} fileData - File content as ArrayBuffer
+ * @param {string} filename - Original filename
+ * @param {function} callback - Success callback
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function runCrtUpload(fileData, filename, callback, errorCallback) {
+    const password = $('#apiPassword').val();
+    
+    showSpinner(true);
+
+    $.ajax({
+        url: '/v1/runners:run_crt',
+        method: 'POST',
+        contentType: 'application/octet-stream',
+        processData: false,
+        data: fileData,
+        headers: { 
+            "X-Password": password,
+            "Content-Disposition": `attachment; filename="${filename}"`
+        },
+        success: function(data) {
+            showSpinner(false);
+            if (data.errors && data.errors.length > 0) {
+                if (errorCallback) errorCallback(data.errors.join('; '));
+            } else {
+                if (callback) callback(data);
+            }
+        },
+        error: function(jqXHR) {
+            showSpinner(false);
+            const errorMsg = parseApiError(jqXHR);
+            showError(errorMsg);
+            if (errorCallback) errorCallback(errorMsg);
+        }
+    });
+}

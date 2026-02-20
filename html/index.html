@@ -299,11 +299,37 @@
         margin: 15px 0;
     }
 
+    /* Card Error Message */
+    .card-error {
+        display: none;
+        background: var(--danger);
+        color: white;
+        padding: var(--spacing-sm);
+        border-radius: var(--radius-sm);
+        margin-top: 15px;
+        font-weight: bold;
+        font-size: 13px;
+        cursor: pointer;
+    }
+
     /* Secondary Button */
     .btn-secondary {
         background: var(--input-bg);
         color: var(--text);
         border: 1px solid var(--border);
+    }
+
+    /* Flex Utility Classes */
+    .form-field-fixed {
+        flex-grow: 0;
+    }
+
+    .btn-inline {
+        width: fit-content;
+    }
+
+    .flex-fill {
+        flex-grow: 1;
     }
 
     /* Buttons */
@@ -1152,35 +1178,41 @@
             </div>
 
             <!-- Music / Program Runner Card -->
-            <div class="card">
+            <div class="card" id="runnerCard">
                 <div class="card-title">Music / Program Runner</div>
                 <div class="card-subtitle">SID, MOD, PRG, CRT</div>
-                
+
+                <!-- Hidden file input -->
+                <input type="file" id="runnerFileInput" accept=".sid,.mod,.prg,.crt" style="display: none;">
+
                 <!-- Row 1: File Path + Song Number + Button -->
                 <div class="form-row">
                     <div class="form-field">
                         <label>C64U File Path</label>
-                        <input type="text" placeholder="/usb0/music/test.sid">
+                        <input type="text" id="runnerFilePath" placeholder="/usb0/music/test.sid">
                     </div>
                     <div class="form-field form-field-small">
                         <label>Song Number (optional)</label>
-                        <input type="text" placeholder="1">
+                        <input type="text" id="runnerSongNumber" placeholder="1">
                     </div>
-                    <button class="btn-primary">Play / Run</button>
+                    <button class="btn-primary" id="btnPlayRun">Play / Run</button>
                 </div>
-                
+
                 <!-- Row 2: File Chooser -->
                 <div class="form-separator"></div>
                 <div class="form-row">
-                    <div class="form-field">
+                    <div class="form-field form-field-fixed">
                         <label>Upload File</label>
-                        <button class="btn-secondary">Choose File</button>
+                        <button class="btn-secondary btn-inline" id="btnChooseFile">Choose File</button>
                     </div>
-                    <span class="file-selected">No file selected</span>
+                    <span class="file-selected flex-fill" id="fileSelected">No file selected</span>
                 </div>
-                
+
                 <!-- Row 3: Drag & Drop -->
                 <div class="drag-hint">...or drag a file here</div>
+
+                <!-- Card Error -->
+                <div class="card-error" id="runnerError"></div>
             </div>
         </div>
     </div>
@@ -1198,6 +1230,9 @@
 
             // Setup event listeners
             setupEventListeners();
+
+            // Setup runner events
+            setupRunnerEvents();
 
             console.log('=== Initialization Complete ===');
         };
@@ -1425,6 +1460,219 @@
             setTimeout(function() {
                 $errorBox.fadeOut();
             }, 5000);
+        }
+
+        // ============================================================================
+        // MUSIC / PROGRAM RUNNER
+        // ============================================================================
+
+        var currentRunnerFile = null;
+
+        function showRunnerError(message) {
+            const $error = $('#runnerError');
+            $error.text(message).show();
+        }
+
+        function hideRunnerError() {
+            const $error = $('#runnerError');
+            $error.hide().text('');
+        }
+
+        function getExtension(filename) {
+            const lastDot = filename.lastIndexOf('.');
+            if (lastDot === -1) return '';
+            return filename.substring(lastDot).toLowerCase();
+        }
+
+        function runFileFromPath(path) {
+            const ext = getExtension(path);
+            const songNr = $('#runnerSongNumber').val();
+
+            switch (ext) {
+                case '.sid':
+                    runSidPlay(path, songNr,
+                        function() { hideRunnerError(); },
+                        function() { /* error handled in API */ }
+                    );
+                    break;
+                case '.mod':
+                    runModPlay(path,
+                        function() { hideRunnerError(); },
+                        function() { /* error handled in API */ }
+                    );
+                    break;
+                case '.prg':
+                    runPrg(path,
+                        function() { hideRunnerError(); },
+                        function() { /* error handled in API */ }
+                    );
+                    break;
+                case '.crt':
+                    runCrt(path,
+                        function() { hideRunnerError(); },
+                        function() { /* error handled in API */ }
+                    );
+                    break;
+                default:
+                    showRunnerError('Unsupported file type: ' + ext);
+            }
+        }
+
+        function runFileUpload(file) {
+            const ext = getExtension(file.name);
+            const songNr = $('#runnerSongNumber').val();
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const fileData = e.target.result;
+                const filename = file.name;
+
+                switch (ext) {
+                    case '.sid':
+                        runSidPlayUpload(fileData, filename, songNr,
+                            function() { hideRunnerError(); },
+                            function() { /* error handled in API */ }
+                        );
+                        break;
+                    case '.mod':
+                        runModPlayUpload(fileData, filename,
+                            function() { hideRunnerError(); },
+                            function() { /* error handled in API */ }
+                        );
+                        break;
+                    case '.prg':
+                        runPrgUpload(fileData, filename,
+                            function() { hideRunnerError(); },
+                            function() { /* error handled in API */ }
+                        );
+                        break;
+                    case '.crt':
+                        runCrtUpload(fileData, filename,
+                            function() { hideRunnerError(); },
+                            function() { /* error handled in API */ }
+                        );
+                        break;
+                    default:
+                        showRunnerError('Unsupported file type: ' + ext);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function setupRunnerEvents() {
+            // Play/Run button click
+            $('#btnPlayRun').click(function() {
+                const path = $('#runnerFilePath').val();
+                if (!path) {
+                    showRunnerError('Please enter a file path');
+                    return;
+                }
+                runFileFromPath(path);
+            });
+
+            // Choose File button click
+            $('#btnChooseFile').click(function() {
+                $('#runnerFileInput').click();
+            });
+
+            // File input change
+            $('#runnerFileInput').change(function(e) {
+                const file = this.files[0];
+                if (file) {
+                    $('#fileSelected').text(file.name);
+                    currentRunnerFile = file;
+                    runFileUpload(file);
+                }
+            });
+
+            // Card error click to hide
+            $('#runnerError').click(function() {
+                $(this).hide();
+            });
+
+            // Drag and drop
+            const $card = $('#runnerCard');
+
+            $card.on('dragover', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+
+            $card.on('dragenter', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+
+            $card.on('drop', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const files = e.originalEvent.dataTransfer.files;
+                if (files && files.length > 0) {
+                    const file = files[0];
+                    $('#fileSelected').text(file.name);
+                    currentRunnerFile = file;
+                    runFileUpload(file);
+                }
+            });
+        }
+
+        function setupRunnerEvents() {
+            // Play/Run button click
+            $('#btnPlayRun').click(function() {
+                const path = $('#runnerFilePath').val();
+                if (!path) {
+                    showRunnerError('Please enter a file path');
+                    return;
+                }
+                runFileFromPath(path);
+            });
+
+            // Choose File button click
+            $('#btnChooseFile').click(function() {
+                $('#runnerFileInput').click();
+            });
+
+            // File input change
+            $('#runnerFileInput').change(function(e) {
+                const file = this.files[0];
+                if (file) {
+                    $('#fileSelected').text(file.name);
+                    currentRunnerFile = file;
+                    runFileUpload(file);
+                }
+            });
+
+            // Card error click to hide
+            $('#runnerError').click(function() {
+                $(this).hide();
+            });
+
+            // Drag and drop
+            const $card = $('#runnerCard');
+
+            $card.on('dragover', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+
+            $card.on('dragenter', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+
+            $card.on('drop', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const files = e.originalEvent.dataTransfer.files;
+                if (files && files.length > 0) {
+                    const file = files[0];
+                    $('#fileSelected').text(file.name);
+                    currentRunnerFile = file;
+                    runFileUpload(file);
+                }
+            });
         }
     </script>
 </body>

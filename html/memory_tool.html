@@ -329,11 +329,37 @@
         margin: 15px 0;
     }
 
+    /* Card Error Message */
+    .card-error {
+        display: none;
+        background: var(--danger);
+        color: white;
+        padding: var(--spacing-sm);
+        border-radius: var(--radius-sm);
+        margin-top: 15px;
+        font-weight: bold;
+        font-size: 13px;
+        cursor: pointer;
+    }
+
     /* Secondary Button */
     .btn-secondary {
         background: var(--input-bg);
         color: var(--text);
         border: 1px solid var(--border);
+    }
+
+    /* Flex Utility Classes */
+    .form-field-fixed {
+        flex-grow: 0;
+    }
+
+    .btn-inline {
+        width: fit-content;
+    }
+
+    .flex-fill {
+        flex-grow: 1;
     }
 
     /* Buttons */
