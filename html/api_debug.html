@@ -324,8 +324,7 @@
     /* Card Error Message */
     .card-error {
         display: none;
-        background: var(--danger);
-        color: white;
+        color: var(--danger);
         padding: var(--spacing-sm);
         border-radius: var(--radius-sm);
         margin-top: 15px;
@@ -533,6 +532,11 @@
         border: 1px solid var(--border);
         padding: 15px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+
+    .card.dragging {
+        border: 2px dashed var(--primary);
+        background: rgba(52, 152, 219, 0.1);
     }
 
     .card-title {

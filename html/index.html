@@ -302,8 +302,7 @@
     /* Card Error Message */
     .card-error {
         display: none;
-        background: var(--danger);
-        color: white;
+        color: var(--danger);
         padding: var(--spacing-sm);
         border-radius: var(--radius-sm);
         margin-top: 15px;
@@ -511,6 +510,11 @@
         border: 1px solid var(--border);
         padding: 15px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+
+    .card.dragging {
+        outline: 2px dashed var(--primary);
+        background: rgba(52, 152, 219, 0.1);
     }
 
     .card-title {
@@ -1203,7 +1207,7 @@
                 <div class="form-row">
                     <div class="form-field form-field-fixed">
                         <label>Upload File</label>
-                        <button class="btn-secondary btn-inline" id="btnChooseFile">Choose File</button>
+                        <button class="btn-primary btn-inline" id="btnChooseFile">Choose File</button>
                     </div>
                     <span class="file-selected flex-fill" id="fileSelected">No file selected</span>
                 </div>
@@ -1470,7 +1474,7 @@
 
         function showRunnerError(message) {
             const $error = $('#runnerError');
-            $error.text(message).show();
+            $error.text('✖ ' + message).show();
         }
 
         function hideRunnerError() {
@@ -1592,78 +1596,34 @@
 
             // Drag and drop
             const $card = $('#runnerCard');
+            let dragTimeout;
 
             $card.on('dragover', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
+                $(this).addClass('dragging');
+                clearTimeout(dragTimeout);
             });
 
             $card.on('dragenter', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
+                clearTimeout(dragTimeout);
+            });
+
+            $card.on('dragleave', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dragTimeout = setTimeout(() => {
+                    $(this).removeClass('dragging');
+                }, 50);
             });
 
             $card.on('drop', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-
-                const files = e.originalEvent.dataTransfer.files;
-                if (files && files.length > 0) {
-                    const file = files[0];
-                    $('#fileSelected').text(file.name);
-                    currentRunnerFile = file;
-                    runFileUpload(file);
-                }
-            });
-        }
-
-        function setupRunnerEvents() {
-            // Play/Run button click
-            $('#btnPlayRun').click(function() {
-                const path = $('#runnerFilePath').val();
-                if (!path) {
-                    showRunnerError('Please enter a file path');
-                    return;
-                }
-                runFileFromPath(path);
-            });
-
-            // Choose File button click
-            $('#btnChooseFile').click(function() {
-                $('#runnerFileInput').click();
-            });
-
-            // File input change
-            $('#runnerFileInput').change(function(e) {
-                const file = this.files[0];
-                if (file) {
-                    $('#fileSelected').text(file.name);
-                    currentRunnerFile = file;
-                    runFileUpload(file);
-                }
-            });
-
-            // Card error click to hide
-            $('#runnerError').click(function() {
-                $(this).hide();
-            });
-
-            // Drag and drop
-            const $card = $('#runnerCard');
-
-            $card.on('dragover', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-            });
-
-            $card.on('dragenter', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-            });
-
-            $card.on('drop', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
+                clearTimeout(dragTimeout);
+                $(this).removeClass('dragging');
 
                 const files = e.originalEvent.dataTransfer.files;
                 if (files && files.length > 0) {
