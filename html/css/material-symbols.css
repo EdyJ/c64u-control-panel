@@ -1,0 +1,58 @@
+/* Material Symbols Outlined - Subset */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;  /* Preferred icon size */
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+
+  /* Support for all WebKit browsers */
+  -webkit-font-smoothing: antialiased;
+  /* Support for Safari and Chrome */
+  text-rendering: optimizeLegibility;
+  /* Support for Firefox */
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Variable font axes (optional customization) */
+.material-symbols-outlined.fill {
+  font-variation-settings: 'FILL' 1;
+}
+
+.material-symbols-outlined.wght-300 {
+  font-variation-settings: 'wght' 300;
+}
+
+.material-symbols-outlined.wght-400 {
+  font-variation-settings: 'wght' 400;
+}
+
+.material-symbols-outlined.wght-500 {
+  font-variation-settings: 'wght' 500;
+}
+
+.material-symbols-outlined.wght-700 {
+  font-variation-settings: 'wght' 700;
+}
+
+.material-symbols-outlined.grad-low {
+  font-variation-settings: 'GRAD' -25;
+}
+
+.material-symbols-outlined.grad-high {
+  font-variation-settings: 'GRAD' 200;
+}
+
+.material-symbols-outlined.opsz-20 {
+  font-variation-settings: 'opsz' 20;
+}
+
+.material-symbols-outlined.opsz-48 {
+  font-variation-settings: 'opsz' 48;
+}
