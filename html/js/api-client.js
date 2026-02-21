@@ -278,6 +278,16 @@ function getSystemInfo(callback, errorCallback) {
         info: null
     };
 
+    let pendingRequests = 2;
+    const checkComplete = () => {
+        pendingRequests--;
+        if (pendingRequests === 0) {
+            showSpinner(false);
+        }
+    };
+
+    showSpinner(true);
+
     $.ajax({
         url: '/v1/version',
         method: 'GET',
@@ -294,10 +304,14 @@ function getSystemInfo(callback, errorCallback) {
                     hostname: result.info.hostname,
                     unique_id: result.info.unique_id
                 };
+                checkComplete();
                 if (callback) callback(combined);
+            } else {
+                checkComplete();
             }
         },
         error: function(jqXHR) {
+            checkComplete();
             if (errorCallback) errorCallback(parseApiError(jqXHR));
         }
     });
@@ -318,10 +332,14 @@ function getSystemInfo(callback, errorCallback) {
                     hostname: result.info.hostname,
                     unique_id: result.info.unique_id
                 };
+                checkComplete();
                 if (callback) callback(combined);
+            } else {
+                checkComplete();
             }
         },
         error: function(jqXHR) {
+            checkComplete();
             if (errorCallback) errorCallback(parseApiError(jqXHR));
         }
     });
@@ -339,19 +357,28 @@ function getSystemInfo(callback, errorCallback) {
 function machineMenuButton(callback, errorCallback) {
     const password = $('#apiPassword').val();
 
+    showSpinner(true);
+
     $.ajax({
         url: '/v1/machine:menu_button',
         method: 'PUT',
         headers: { "X-Password": password },
         success: function(data) {
+            showSpinner(false);
+            hideError();
             if (data.errors && data.errors.length > 0) {
-                if (errorCallback) errorCallback(data.errors.join('; '));
+                const errorMsg = data.errors.join('; ');
+                showError(errorMsg);
+                if (errorCallback) errorCallback(errorMsg);
             } else {
                 if (callback) callback(data);
             }
         },
         error: function(jqXHR) {
-            if (errorCallback) errorCallback(parseApiError(jqXHR));
+            showSpinner(false);
+            const errorMsg = parseApiError(jqXHR);
+            showError(errorMsg);
+            if (errorCallback) errorCallback(errorMsg);
         }
     });
 }
@@ -364,19 +391,28 @@ function machineMenuButton(callback, errorCallback) {
 function machinePause(callback, errorCallback) {
     const password = $('#apiPassword').val();
 
+    showSpinner(true);
+
     $.ajax({
         url: '/v1/machine:pause',
         method: 'PUT',
         headers: { "X-Password": password },
         success: function(data) {
+            showSpinner(false);
+            hideError();
             if (data.errors && data.errors.length > 0) {
-                if (errorCallback) errorCallback(data.errors.join('; '));
+                const errorMsg = data.errors.join('; ');
+                showError(errorMsg);
+                if (errorCallback) errorCallback(errorMsg);
             } else {
                 if (callback) callback(data);
             }
         },
         error: function(jqXHR) {
-            if (errorCallback) errorCallback(parseApiError(jqXHR));
+            showSpinner(false);
+            const errorMsg = parseApiError(jqXHR);
+            showError(errorMsg);
+            if (errorCallback) errorCallback(errorMsg);
         }
     });
 }
@@ -389,19 +425,28 @@ function machinePause(callback, errorCallback) {
 function machineResume(callback, errorCallback) {
     const password = $('#apiPassword').val();
 
+    showSpinner(true);
+
     $.ajax({
         url: '/v1/machine:resume',
         method: 'PUT',
         headers: { "X-Password": password },
         success: function(data) {
+            showSpinner(false);
+            hideError();
             if (data.errors && data.errors.length > 0) {
-                if (errorCallback) errorCallback(data.errors.join('; '));
+                const errorMsg = data.errors.join('; ');
+                showError(errorMsg);
+                if (errorCallback) errorCallback(errorMsg);
             } else {
                 if (callback) callback(data);
             }
         },
         error: function(jqXHR) {
-            if (errorCallback) errorCallback(parseApiError(jqXHR));
+            showSpinner(false);
+            const errorMsg = parseApiError(jqXHR);
+            showError(errorMsg);
+            if (errorCallback) errorCallback(errorMsg);
         }
     });
 }
@@ -414,19 +459,28 @@ function machineResume(callback, errorCallback) {
 function machineReset(callback, errorCallback) {
     const password = $('#apiPassword').val();
 
+    showSpinner(true);
+
     $.ajax({
         url: '/v1/machine:reset',
         method: 'PUT',
         headers: { "X-Password": password },
         success: function(data) {
+            showSpinner(false);
+            hideError();
             if (data.errors && data.errors.length > 0) {
-                if (errorCallback) errorCallback(data.errors.join('; '));
+                const errorMsg = data.errors.join('; ');
+                showError(errorMsg);
+                if (errorCallback) errorCallback(errorMsg);
             } else {
                 if (callback) callback(data);
             }
         },
         error: function(jqXHR) {
-            if (errorCallback) errorCallback(parseApiError(jqXHR));
+            showSpinner(false);
+            const errorMsg = parseApiError(jqXHR);
+            showError(errorMsg);
+            if (errorCallback) errorCallback(errorMsg);
         }
     });
 }
@@ -439,19 +493,28 @@ function machineReset(callback, errorCallback) {
 function machineReboot(callback, errorCallback) {
     const password = $('#apiPassword').val();
 
+    showSpinner(true);
+
     $.ajax({
         url: '/v1/machine:reboot',
         method: 'PUT',
         headers: { "X-Password": password },
         success: function(data) {
+            showSpinner(false);
+            hideError();
             if (data.errors && data.errors.length > 0) {
-                if (errorCallback) errorCallback(data.errors.join('; '));
+                const errorMsg = data.errors.join('; ');
+                showError(errorMsg);
+                if (errorCallback) errorCallback(errorMsg);
             } else {
                 if (callback) callback(data);
             }
         },
         error: function(jqXHR) {
-            if (errorCallback) errorCallback(parseApiError(jqXHR));
+            showSpinner(false);
+            const errorMsg = parseApiError(jqXHR);
+            showError(errorMsg);
+            if (errorCallback) errorCallback(errorMsg);
         }
     });
 }
@@ -464,19 +527,28 @@ function machineReboot(callback, errorCallback) {
 function machinePowerOff(callback, errorCallback) {
     const password = $('#apiPassword').val();
 
+    showSpinner(true);
+
     $.ajax({
         url: '/v1/machine:poweroff',
         method: 'PUT',
         headers: { "X-Password": password },
         success: function(data) {
+            showSpinner(false);
+            hideError();
             if (data.errors && data.errors.length > 0) {
-                if (errorCallback) errorCallback(data.errors.join('; '));
+                const errorMsg = data.errors.join('; ');
+                showError(errorMsg);
+                if (errorCallback) errorCallback(errorMsg);
             } else {
                 if (callback) callback(data);
             }
         },
         error: function(jqXHR) {
-            if (errorCallback) errorCallback(parseApiError(jqXHR));
+            showSpinner(false);
+            const errorMsg = parseApiError(jqXHR);
+            showError(errorMsg);
+            if (errorCallback) errorCallback(errorMsg);
         }
     });
 }
