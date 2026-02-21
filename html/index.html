@@ -10,10 +10,21 @@
 
     <script>
     // Fonts: objects (url + font metadata)
-    var requiredFonts = [];
+    var requiredFonts = [
+      {
+        url: "fonts/MaterialSymbols-subset.woff2",
+        family: "Material Symbols Outlined",
+        weight: "100 700",
+        style: "normal",
+        display: "swap",
+        format: "woff2"
+      }
+    ];
 
     // CSS: objects with url
-    var requiredCSS = [];
+    var requiredCSS = [
+        { url: "css/material-symbols.css" }
+    ];
 
     // JS: objects with url
     var requiredJS = [
@@ -684,6 +695,22 @@
         gap: 10px;
     }
 
+    /* Button with top icon */
+    .btn-icon-top {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 16px;
+    }
+
+    .btn-icon-top .material-symbols-outlined {
+        font-size: 25px;
+        line-height: 1;
+        font-weight: bold;
+        font-variation-settings: 'FILL' 1;
+    }
+
     /* API Call Styles */
     .api-call {
         border: 1px solid var(--border);
@@ -1149,7 +1176,7 @@
             <div class="card">
                 <div class="card-title">Tools</div>
                 <div class="tools-grid">
-                    <a href="memory_tool.html" class="tool-btn">Memory Browser</a>
+                    <a href="memory_tool.html" class="tool-btn">Memory Browser & Editor</a>
                     <a href="disk_flip.html" class="tool-btn">Quick Disk Flip</a>
                     <a href="drives_tool.html" class="tool-btn">Floppy Drives</a>
                     <a href="config_tool.html" class="tool-btn">Configuration</a>
@@ -1166,16 +1193,34 @@
                 <div class="card-subtitle">Direct control over the machine state</div>
                 <div class="machine-control-grid">
                     <div class="mc-pair">
-                        <button class="btn-success" id="btn-menu" title="Simulate Menu button press to enter or exit the Ultimate menu system">Menu</button>
-                        <button class="btn-danger" id="btn-poweroff" title="Power off the machine (U64 only)">Power Off</button>
+                        <button class="btn-success btn-icon-top" id="btn-menu" title="Simulate Menu button press to enter or exit the Ultimate menu system">
+                            <span class="material-symbols-outlined">&#xe5d2;</span>
+                            Menu
+                        </button>
+                        <button class="btn-danger btn-icon-top" id="btn-poweroff" title="Power off the machine (U64 only)">
+                            <span class="material-symbols-outlined">&#xf8c7;</span>
+                            Power Off
+                        </button>
                     </div>
                     <div class="mc-pair">
-                        <button class="btn-primary" id="btn-pause" title="Pause the CPU by pulling the DMA line low at a safe moment">Pause</button>
-                        <button class="btn-primary" id="btn-resume" title="Resume the machine from a paused state by releasing the DMA line">Resume</button>
+                        <button class="btn-primary btn-icon-top" id="btn-pause" title="Pause the CPU by pulling the DMA line low at a safe moment">
+                            <span class="material-symbols-outlined">&#xe034;</span>
+                            Pause
+                        </button>
+                        <button class="btn-primary btn-icon-top" id="btn-resume" title="Resume the machine from a paused state by releasing the DMA line">
+                            <span class="material-symbols-outlined">&#xe037;</span>
+                            Resume
+                        </button>
                     </div>
                     <div class="mc-pair">
-                        <button class="btn-warning" id="btn-reset" title="Send a reset signal to the machine without changing the current configuration">Reset</button>
-                        <button class="btn-warning" id="btn-reboot" title="Restart the machine, re-initializing the cartridge configuration and then sending a reset signal">Reboot</button>
+                        <button class="btn-warning btn-icon-top" id="btn-reset" title="Send a reset signal to the machine without changing the current configuration">
+                            <span class="material-symbols-outlined">&#xe042;</span>
+                            Reset
+                        </button>
+                        <button class="btn-warning btn-icon-top" id="btn-reboot" title="Restart the machine, re-initializing the cartridge configuration and then sending a reset signal">
+                            <span class="material-symbols-outlined">&#xe8ba;</span>
+                            Reboot
+                        </button>
                     </div>
                 </div>
             </div>

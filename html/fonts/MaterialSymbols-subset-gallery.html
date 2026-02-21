@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Material Symbols - Icon Gallery</title>
+  <style>
+    @font-face {
+      font-family: 'Material Symbols Outlined';
+      font-style: normal;
+      font-weight: 100 700;
+      src: url('MaterialSymbols-subset.woff2') format('woff2');
+      font-display: swap;
+    }
+
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 48px;
+      display: inline-block;
+      line-height: 1;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 20px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    /* Dark theme (default) */
+    body {
+      background: #1e1e1e;
+      color: #e0e0e0;
+    }
+
+    /* Light theme */
+    body.light {
+      background: #f5f5f5;
+      color: #333;
+    }
+
+    .header {
+      max-width: 1200px;
+      margin: 0 auto 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    h1 {
+      color: inherit;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: 2px solid currentColor;
+      border-radius: 8px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      color: inherit;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background-color 0.2s;
+    }
+
+    .theme-toggle:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    body.light .theme-toggle:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    .theme-toggle .material-symbols-outlined {
+      font-size: 20px;
+    }
+
+    .controls {
+      max-width: 1200px;
+      margin: 0 auto 30px;
+      background: #2d2d2d;
+      border-radius: 8px;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    body.light .controls {
+      background: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .control-label {
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .control-value {
+      color: #64b5f6;
+      font-family: monospace;
+    }
+
+    body.light .control-value {
+      color: #1976d2;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #444;
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    body.light input[type="range"] {
+      background: #ddd;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #64b5f6;
+      cursor: pointer;
+    }
+
+    body.light input[type="range"]::-webkit-slider-thumb {
+      background: #1976d2;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #64b5f6;
+      cursor: pointer;
+      border: none;
+    }
+
+    body.light input[type="range"]::-moz-range-thumb {
+      background: #1976d2;
+    }
+
+    .checkbox-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .icon-card {
+      background: #2d2d2d;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s;
+      cursor: pointer;
+    }
+
+    body.light .icon-card {
+      background: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .icon-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+
+    body.light .icon-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .icon-card .material-symbols-outlined {
+      color: #64b5f6;
+      margin-bottom: 10px;
+    }
+
+    body.light .icon-card .material-symbols-outlined {
+      color: #1976d2;
+    }
+
+    .icon-name {
+      font-size: 12px;
+      color: #b0b0b0;
+      word-break: break-word;
+    }
+
+    body.light .icon-name {
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Material Symbols - Icon Gallery</h1>
+    <button class="theme-toggle" onclick="toggleTheme()">
+      <span class="material-symbols-outlined">&#xf16f;</span>
+      <span id="theme-label">Light</span>
+    </button>
+  </div>
+
+  <div class="controls">
+    <div class="control-group">
+      <label class="control-label">
+        <span>Fill</span>
+        <span class="control-value" id="fill-value">0</span>
+      </label>
+      <input type="range" id="fill-slider" min="0" max="1" step="1" value="0" oninput="updateFill(this.value)">
+      <small style="opacity: 0.7;">0 = Outlined, 1 = Filled</small>
+    </div>
+
+    <div class="control-group">
+      <label class="control-label">
+        <span>Weight</span>
+        <span class="control-value" id="wght-value">400</span>
+      </label>
+      <input type="range" id="wght-slider" min="100" max="700" step="100" value="400" oninput="updateWeight(this.value)">
+      <small style="opacity: 0.7;">100 (Thin) - 700 (Bold)</small>
+    </div>
+
+    <div class="control-group">
+      <label class="control-label">
+        <span>Grade</span>
+        <span class="control-value" id="grad-value">0</span>
+      </label>
+      <input type="range" id="grad-slider" min="-25" max="200" step="25" value="0" oninput="updateGrade(this.value)">
+      <small style="opacity: 0.7;">-25 (Low) - 200 (High)</small>
+    </div>
+
+    <div class="control-group">
+      <label class="control-label">
+        <span>Optical Size</span>
+        <span class="control-value" id="opsz-value">48</span>
+      </label>
+      <input type="range" id="opsz-slider" min="20" max="48" step="4" value="48" oninput="updateOpticalSize(this.value)">
+      <small style="opacity: 0.7;">20 (Small) - 48 (Large)</small>
+    </div>
+  </div>
+  
+  <div class="gallery">
+    <div class="icon-card">
+      <span class="material-symbols-outlined">&#xe39e;</span>
+      <div class="icon-name">adjust</div>
+    </div>
+    
+    <div class="icon-card">
+      <span class="material-symbols-outlined">&#xe863;</span>
+      <div class="icon-name">autorenew</div>
+    </div>
+    
+    <div class="icon-card">
+      <span class="material-symbols-outlined">&#xf08c;</span>
+      <div class="icon-name">block</div>
+    </div>
+    
+    <div class="icon-card">
+      <span class="material-symbols-outlined">&#xe888;</span>
+      <div class="icon-name">cancel</div>
+    </div>
+    
+    <div class="icon-card">
+      <span class="material-symbols-outlined">&#xe5ca;</span>
+      <div class="icon-name">check</div>
+    </div>
+    
+    <div class="icon-card">
+      <span class="material-symbols-outlined">&#xf88b;</span>
+      <div class="icon-name">check_small</div>
+    </div>
+    
+    <div class="icon-card">
+      <span class="material-symbols-outlined">&#xe5cd;</span>
+      <div class="icon-name">close</div>
+    </div>
+    
+    <div class="icon-card">
+      <span class="material-symbols-outlined">&#xf508;</span>
+      <div class="icon-name">close_small</div>
+    </div>
+    
+    <div class="icon-card">
+      <span class="material-symbols-outlined">&#xf854;</span>
+      <div class="icon-name">cycle</div>
+    </div>
+    
+    <div class="icon-card">
+      <span class="material-symbols-outlined">&#xe99a;</span>
+      <div class="icon-name">dangerous</div>
+    </div>
+    
+    <div class="icon-card">
+      <span class="material-symbols-outlined">&#xf8b6;</span>
+      <div class="icon-name">error</div>
+    </div>
+    
+    <div class="icon-card">
+      <span class="material-symbols-outlined">&#xe5d2;</span>
+      <div class="icon-name">menu</div>
+    </div>
+    
+    <div class="icon-card">
+      <span class="material-symbols-outlined">&#xf16f;</span>
+      <div class="icon-name">mode_off_on</div>
+    </div>
+    
+    <div class="icon-card">
+      <span class="material-symbols-outlined">&#xf0d1;</span>
+      <div class="icon-name">not_started</div>
+    </div>
+    
+    <div class="icon-card">
+      <span class="material-symbols-outlined">&#xe034;</span>
+      <div class="icon-name">pause</div>
+    </div>
+    
+    <div class="icon-card">
+      <span class="material-symbols-outlined">&#xe1a2;</span>
+      <div class="icon-name">pause_circle</div>
+    </div>
+    
+    <div class="icon-card">
+      <span class="material-symbols-outlined">&#xe037;</span>
+      <div class="icon-name">play_arrow</div>
+    </div>
+    
+    <div class="icon-card">
+      <span class="material-symbols-outlined">&#xe1c4;</span>
+      <div class="icon-name">play_circle</div>
+    </div>
+    
+    <div class="icon-card">
+      <span class="material-symbols-outlined">&#xf137;</span>
+      <div class="icon-name">play_pause</div>
+    </div>
+    
+    <div class="icon-card">
+      <span class="material-symbols-outlined">&#xf8c7;</span>
+      <div class="icon-name">power_settings_new</div>
+    </div>
+    
+    <div class="icon-card">
+      <span class="material-symbols-outlined">&#xe042;</span>
+      <div class="icon-name">replay</div>
+    </div>
+    
+    <div class="icon-card">
+      <span class="material-symbols-outlined">&#xf053;</span>
+      <div class="icon-name">restart_alt</div>
+    </div>
+    
+    <div class="icon-card">
+      <span class="material-symbols-outlined">&#xe8b8;</span>
+      <div class="icon-name">settings</div>
+    </div>
+    
+    <div class="icon-card">
+      <span class="material-symbols-outlined">&#xe8ba;</span>
+      <div class="icon-name">settings_backup_restore</div>
+    </div>
+    
+    <div class="icon-card">
+      <span class="material-symbols-outlined">&#xe047;</span>
+      <div class="icon-name">stop</div>
+    </div>
+    
+    <div class="icon-card">
+      <span class="material-symbols-outlined">&#xef71;</span>
+      <div class="icon-name">stop_circle</div>
+    </div>
+    
+    <div class="icon-card">
+      <span class="material-symbols-outlined">&#xe627;</span>
+      <div class="icon-name">sync</div>
+    </div>
+  </div>
+
+  <script>
+    let fontSettings = {
+      FILL: 0,
+      wght: 400,
+      GRAD: 0,
+      opsz: 48
+    };
+
+    function updateFontVariation() {
+      const settings = `'FILL' ${fontSettings.FILL}, 'wght' ${fontSettings.wght}, 'GRAD' ${fontSettings.GRAD}, 'opsz' ${fontSettings.opsz}`;
+      const icons = document.querySelectorAll('.material-symbols-outlined');
+      icons.forEach(icon => {
+        icon.style.fontVariationSettings = settings;
+      });
+    }
+
+    function updateFill(value) {
+      fontSettings.FILL = parseInt(value);
+      document.getElementById('fill-value').textContent = value;
+      updateFontVariation();
+    }
+
+    function updateWeight(value) {
+      fontSettings.wght = parseInt(value);
+      document.getElementById('wght-value').textContent = value;
+      updateFontVariation();
+    }
+
+    function updateGrade(value) {
+      fontSettings.GRAD = parseInt(value);
+      document.getElementById('grad-value').textContent = value;
+      updateFontVariation();
+    }
+
+    function updateOpticalSize(value) {
+      fontSettings.opsz = parseInt(value);
+      document.getElementById('opsz-value').textContent = value;
+      updateFontVariation();
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('light');
+      const isLight = document.body.classList.contains('light');
+      document.getElementById('theme-label').textContent = isLight ? 'Dark' : 'Light';
+    }
+
+    // Initialize font variation settings
+    updateFontVariation();
+  </script>
+</body>
+</html>
