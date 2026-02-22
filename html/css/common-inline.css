@@ -346,8 +346,7 @@ button:hover {
 }
 
 /* Console/Code Display */
-.console-display,
-.result-box {
+.console-display {
     background: #121416;
     color: #7fdbff;
     padding: 15px;

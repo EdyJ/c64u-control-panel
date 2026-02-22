@@ -26,7 +26,8 @@
 
     // UI selectors to disable during load
     var contentItems = [
-      ".foldable"
+      "#configMgMt",
+      "#refreshBtn"
     ];
     </script>
 
@@ -385,8 +386,7 @@
     }
 
     /* Console/Code Display */
-    .console-display,
-    .result-box {
+    .console-display {
         background: #121416;
         color: #7fdbff;
         padding: 15px;
@@ -1037,14 +1037,14 @@
             </div>
 
             <!-- Configuration Management -->
-            <div class="card">
+            <div class="card" id="configMgMt">
                 <div class="card-title">Configuration Management</div>
                 <div class="control-group">
                     <button id="saveToFlash" class="btn-success">Save To Flash</button>
                     <button id="loadFromFlash" class="btn-warning">Load From Flash</button>
                     <button id="resetToDefault" class="btn-danger">Reset To Default</button>
                 </div>
-                <div class="result-box" id="configMgmtResult" style="display: none"></div>
+                <div class="info-box" id="configMgmtResult" style="display: none"></div>
             </div>
         </div>
 
