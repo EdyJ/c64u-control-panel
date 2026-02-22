@@ -2,7 +2,7 @@
 
 /* Hidden class for search filtering */
 .hidden {
-    display: none !important;
+    display: none;
 }
 
 /* Search Input */
@@ -37,7 +37,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 10px 15px;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    border-top: 1px solid var(--border);
 }
 
 .config-item:last-child {
@@ -93,3 +93,20 @@
 .config-item .success-check.visible {
     display: inline-block;
 }
+
+/* Info message */
+.info-message {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-dim);
+    font-style: italic;
+}
+
+/* Error message (inline) */
+.error-message-inline {
+    text-align: center;
+    padding: 20px;
+    color: var(--danger);
+    font-style: italic;
+}
+

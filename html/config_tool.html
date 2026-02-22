@@ -52,6 +52,10 @@
         --border: #3a3f44;
         --input-bg: #2d3136;
 
+        /* Foldables */
+        --fold-header-bg: #2d3136;
+        --fold-header-hover: #32383e;
+
         /* Spacing */
         --spacing-xs: 5px;
         --spacing-sm: 10px;
@@ -551,11 +555,15 @@
 
     /* Foldable Section Styles */
     .foldable {
+        background: var(--card-bg);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
         margin-bottom: 15px;
+        overflow: hidden;
     }
 
     .foldable-header {
-        background: #2c3136;
+        background: var(--fold-header-bg);
         padding: 12px 15px;
         font-weight: bold;
         cursor: pointer;
@@ -563,13 +571,10 @@
         justify-content: space-between;
         align-items: center;
         color: var(--primary);
-        border: 1px solid var(--border);
-        border-bottom: none;
-        border-radius: var(--radius-md) var(--radius-md) 0 0;
     }
 
     .foldable-header:hover {
-        background: #32383e;
+        background: var(--fold-header-hover);
     }
 
     .foldable-header .arrow {
@@ -588,11 +593,7 @@
     }
 
     .foldable-content {
-        background: var(--card-bg);
-        border: 1px solid var(--border);
-        border-top: none;
-        border-radius: 0 0 var(--radius-md) var(--radius-md);
-        padding: 15px;
+        padding: 0;
         display: none;
     }
 
@@ -601,6 +602,7 @@
         text-align: center;
         color: var(--text-dim);
         font-style: italic;
+        padding: 20px;
     }
 
     /* Status Item Styles */
@@ -679,22 +681,6 @@
         text-align: center;
         padding: 20px;
         color: var(--text-dim);
-        font-style: italic;
-    }
-
-    /* Info message */
-    .info-message {
-        text-align: center;
-        padding: 20px;
-        color: var(--text-dim);
-        font-style: italic;
-    }
-
-    /* Error message (inline) */
-    .error-message-inline {
-        text-align: center;
-        padding: 20px;
-        color: var(--danger);
         font-style: italic;
     }
 
