@@ -1,0 +1,95 @@
+/* config-tool.css - Configuration Tool Page Styles */
+
+/* Hidden class for search filtering */
+.hidden {
+    display: none !important;
+}
+
+/* Search Input */
+.search-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.search-controls input {
+    flex: 1;
+    padding: 10px;
+}
+
+/* Config Management Section */
+.control-group .btn-success, .control-group .btn-warning, .control-group .btn-danger {
+    flex: 1;
+}
+
+/* Section Controls */
+.section-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    justify-content: flex-end;
+}
+
+/* Config Item Row */
+.config-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.config-item:last-child {
+    border-bottom: none;
+}
+
+.config-item.hidden {
+    display: none;
+}
+
+.config-item-name {
+    font-weight: bold;
+    color: var(--text);
+    flex: 1;
+    margin-right: 15px;
+}
+
+.config-item-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.config-item input[type="text"],
+.config-item input[type="number"],
+.config-item select {
+    padding: 6px 10px;
+    font-size: 13px;
+    min-width: 150px;
+}
+
+.config-item .modify-btn,
+.config-item .revert-btn {
+    display: none;
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+.config-item .modify-btn.visible,
+.config-item .revert-btn.visible {
+    display: inline-block;
+}
+
+.config-item .success-check {
+    color: var(--success);
+    font-size: 16px;
+    font-weight: bold;
+    display: none;
+    min-width: 20px;
+    text-align: center;
+}
+
+.config-item .success-check.visible {
+    display: inline-block;
+}

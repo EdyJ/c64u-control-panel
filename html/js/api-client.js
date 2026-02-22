@@ -849,3 +849,243 @@ function runCrtUpload(fileData, filename, callback, errorCallback) {
         }
     });
 }
+
+// ============================================================================
+// CONFIGURATION MANAGEMENT
+// ============================================================================
+
+/**
+ * Get all configuration categories.
+ * Uses global spinner.
+ * @param {function} callback - Success callback, receives categories array
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function getConfigCategories(callback, errorCallback) {
+    const password = $('#apiPassword').val();
+
+    showSpinner(true);
+
+    $.ajax({
+        url: '/v1/configs',
+        method: 'GET',
+        headers: { "X-Password": password },
+        success: function(data) {
+            showSpinner(false);
+            hideError();
+            if (data.errors && data.errors.length > 0) {
+                const errorMsg = data.errors.join('; ');
+                showError(errorMsg);
+                if (errorCallback) errorCallback(errorMsg);
+            } else {
+                if (callback) callback(data.categories || []);
+            }
+        },
+        error: function(jqXHR) {
+            showSpinner(false);
+            const errorMsg = parseApiError(jqXHR);
+            showError(errorMsg);
+            if (errorCallback) errorCallback(errorMsg);
+        }
+    });
+}
+
+/**
+ * Get all items for a specific configuration category.
+ * Does NOT use global spinner - caller handles local spinner.
+ * @param {string} category - Configuration category name
+ * @param {function} callback - Success callback, receives items object
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function getConfigItems(category, callback, errorCallback) {
+    const password = $('#apiPassword').val();
+    const encodedCategory = encodeURIComponent(category);
+
+    $.ajax({
+        url: `/v1/configs/${encodedCategory}`,
+        method: 'GET',
+        headers: { "X-Password": password },
+        success: function(data) {
+            hideError();
+            const items = data[category];
+            if (callback) callback(items || {});
+        },
+        error: function(jqXHR) {
+            const errorMsg = parseApiError(jqXHR);
+            if (errorCallback) errorCallback(errorMsg);
+        }
+    });
+}
+
+/**
+ * Get detailed information for a specific configuration item.
+ * Does NOT use global spinner - caller handles local spinner.
+ * @param {string} category - Configuration category name
+ * @param {string} itemName - Item name
+ * @param {function} callback - Success callback, receives item details object
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function getConfigItemDetails(category, itemName, callback, errorCallback) {
+    const password = $('#apiPassword').val();
+    const encodedCategory = encodeURIComponent(category);
+    const encodedItem = encodeURIComponent(itemName);
+
+    $.ajax({
+        url: `/v1/configs/${encodedCategory}/${encodedItem}`,
+        method: 'GET',
+        headers: { "X-Password": password },
+        success: function(data) {
+            hideError();
+            const itemDetails = data[category] && data[category][itemName];
+            if (callback) callback(itemDetails);
+        },
+        error: function(jqXHR) {
+            const errorMsg = parseApiError(jqXHR);
+            if (errorCallback) errorCallback(errorMsg);
+        }
+    });
+}
+
+/**
+ * Set a configuration item value.
+ * Uses global spinner.
+ * @param {string} category - Configuration category name
+ * @param {string} itemName - Item name
+ * @param {string} value - New value to set
+ * @param {function} callback - Success callback
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function setConfigItem(category, itemName, value, callback, errorCallback) {
+    const password = $('#apiPassword').val();
+    const encodedCategory = encodeURIComponent(category);
+    const encodedItem = encodeURIComponent(itemName);
+
+    showSpinner(true);
+
+    $.ajax({
+        url: `/v1/configs/${encodedCategory}/${encodedItem}?value=${encodeURIComponent(value)}`,
+        method: 'PUT',
+        headers: { "X-Password": password },
+        success: function(data) {
+            showSpinner(false);
+            hideError();
+            if (data.errors && data.errors.length > 0) {
+                const errorMsg = data.errors.join('; ');
+                showError(errorMsg);
+                if (errorCallback) errorCallback(errorMsg);
+            } else {
+                if (callback) callback(data);
+            }
+        },
+        error: function(jqXHR) {
+            showSpinner(false);
+            const errorMsg = parseApiError(jqXHR);
+            showError(errorMsg);
+            if (errorCallback) errorCallback(errorMsg);
+        }
+    });
+}
+
+/**
+ * Save current configuration to flash memory.
+ * Uses global spinner.
+ * @param {function} callback - Success callback
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function saveConfigToFlash(callback, errorCallback) {
+    const password = $('#apiPassword').val();
+
+    showSpinner(true);
+
+    $.ajax({
+        url: '/v1/configs:save_to_flash',
+        method: 'PUT',
+        headers: { "X-Password": password },
+        success: function(data) {
+            showSpinner(false);
+            hideError();
+            if (data.errors && data.errors.length > 0) {
+                const errorMsg = data.errors.join('; ');
+                showError(errorMsg);
+                if (errorCallback) errorCallback(errorMsg);
+            } else {
+                if (callback) callback(data);
+            }
+        },
+        error: function(jqXHR) {
+            showSpinner(false);
+            const errorMsg = parseApiError(jqXHR);
+            showError(errorMsg);
+            if (errorCallback) errorCallback(errorMsg);
+        }
+    });
+}
+
+/**
+ * Load configuration from flash memory.
+ * Uses global spinner.
+ * @param {function} callback - Success callback
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function loadConfigFromFlash(callback, errorCallback) {
+    const password = $('#apiPassword').val();
+
+    showSpinner(true);
+
+    $.ajax({
+        url: '/v1/configs:load_from_flash',
+        method: 'PUT',
+        headers: { "X-Password": password },
+        success: function(data) {
+            showSpinner(false);
+            hideError();
+            if (data.errors && data.errors.length > 0) {
+                const errorMsg = data.errors.join('; ');
+                showError(errorMsg);
+                if (errorCallback) errorCallback(errorMsg);
+            } else {
+                if (callback) callback(data);
+            }
+        },
+        error: function(jqXHR) {
+            showSpinner(false);
+            const errorMsg = parseApiError(jqXHR);
+            showError(errorMsg);
+            if (errorCallback) errorCallback(errorMsg);
+        }
+    });
+}
+
+/**
+ * Reset configuration to factory defaults.
+ * Uses global spinner.
+ * @param {function} callback - Success callback
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function resetConfigToDefault(callback, errorCallback) {
+    const password = $('#apiPassword').val();
+
+    showSpinner(true);
+
+    $.ajax({
+        url: '/v1/configs:reset_to_default',
+        method: 'PUT',
+        headers: { "X-Password": password },
+        success: function(data) {
+            showSpinner(false);
+            hideError();
+            if (data.errors && data.errors.length > 0) {
+                const errorMsg = data.errors.join('; ');
+                showError(errorMsg);
+                if (errorCallback) errorCallback(errorMsg);
+            } else {
+                if (callback) callback(data);
+            }
+        },
+        error: function(jqXHR) {
+            showSpinner(false);
+            const errorMsg = parseApiError(jqXHR);
+            showError(errorMsg);
+            if (errorCallback) errorCallback(errorMsg);
+        }
+    });
+}
