@@ -37,8 +37,12 @@ All files are deployed to the C64U device's web server root directory at `/flash
 - CSS files are in the `/css/` subdirectory
 - JavaScript libraries are in the `/js/` subdirectory
 - Font files are in the `/fonts/` subdirectory
-- All tools link back to the root folder (`/`) via the header back link
-- common-inline.css and common-inline.js are actually inlined into each HTML file, so each one has its own copy of the file embedded in <STYLE> and <SCRIPT> tags, respectively. Any changes in these files or in the embedded copies must be manually synced the original and all copies.
+
+## Common-inline.css Pattern
+
+1. **Manual Inlining Protocol:** The common-inline.css file is not linked via <link> tags but is manually copied into each HTML file's inline <style> section. This is required due to the C64 Ultimate's web server limitations with concurrent file requests.
+
+2. **Manual Synchronization:** Any changes to the original common-inline.css file must be manually copied to all HTML files that inline it. This creates a maintenance challenge but ensures compatibility with the embedded web server.
 
 ## How to add new tools
 

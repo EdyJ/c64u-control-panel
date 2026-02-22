@@ -13,15 +13,14 @@ The project follows these principles:
 ### ✅ Simple and Straightforward
 - Use **HTML sections** for visual components
 - Apply **CSS classes** for consistent styling
-- **Do not create HTML components programmatically** via JavaScript
 - Keep markup declarative and readable
 
 ### ✅ CSS-Driven Consistency
-- Components share look through CSS, not through JavaScript generation
+- Components share look through CSS, not through inline styles
 - Developers write HTML directly, apply classes for styling
 
 ### ✅ Minimal JavaScript
-- JavaScript handles behavior and data, not DOM generation
+- JavaScript handles behavior and data, and DOM generation when it makes sense
 - Use jQuery for event binding and data manipulation
 - Keep HTML structure visible in source files
 
@@ -92,15 +91,6 @@ The project follows these principles:
 </div>
 ```
 
-### Template 6: Status Display
-```html
-<div id="status-display" style="margin-top: 15px; color: var(--text-dim);"></div>
-```
-
-### Template 7: Memory/Code Display
-```html
-<div id="memory-output" class="memory-display" style="display:none;"></div>
-```
 ---
 
 ## UX Patterns & Behaviors
@@ -113,12 +103,8 @@ Any page or tab that performs write operations must protect users from losing un
 
 ### 2. API Feedback
 - **Loading:** The global spinner (`#spinner`) must be visible during all asynchronous API calls.
-- **Success:** Briefly show a green checkmark (`✓`) or a success message near the action button.
+- **Success:** Optional: briefly show a green checkmark (`✓`) or a success message near the action button.
 - **Error:** Display critical errors in the global `#errorBox`. For validation or specific action failures, show an inline red cross (`✗`) with a descriptive message.
-
-### 3. Address Formatting
-- **Display:** Always format hexadecimal addresses with a `$` prefix for clarity (e.g., `$D020`).
-- **Input:** Input fields should be flexible, accepting hex values with or without a prefix. The input must be validated and padded to a 4-digit, uppercase hex string before being sent to the API.
 
 ---
 
@@ -172,4 +158,3 @@ Use CSS variables consistently:
 - `.btn-success` - Positive actions (green)
 - `.btn-danger` - Destructive actions (red)
 - `.btn-warning` - Warning actions (orange)
-
