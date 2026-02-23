@@ -7,6 +7,7 @@
 
 let configData = {};
 let searchTerms = [];
+let pendingCategoryLoads = 0;
 
 // ============================================================================
 // INITIALIZATION
@@ -29,8 +30,18 @@ window.initializeApp = function() {
 // ============================================================================
 
 function loadAllConfig() {
+    showSpinner(true);
+    disableContent();
+
     getConfigCategories(
         function(categories) {
+            pendingCategoryLoads = categories.length;
+
+            if (categories.length === 0) {
+                showSpinner(false);
+                enableContent();
+            }
+
             renderCategories(categories);
 
             for (const category of categories) {
@@ -38,6 +49,8 @@ function loadAllConfig() {
             }
         },
         function(error) {
+            showSpinner(false);
+            enableContent();
             showError('Error loading configuration: ' + error);
         }
     );
@@ -92,9 +105,9 @@ function renderCategories(categories) {
             $header.find('.arrow').text('▲');
 
             if (configData[category].loaded) {
-                if ($content.children().length === 0) {
-                    renderCategoryItems(category);
-                }
+                // if ($content.children().length === 0) {
+                    // renderCategoryItems(category);
+                // }
                 $content.slideDown(300);
             } else {
                 $content.removeClass('loading').addClass('loading').text('Loading...').slideDown(300);
@@ -147,15 +160,10 @@ function loadCategoryData(category) {
             }
         },
         function(error) {
-            configData[category].loaded = true;
             configData[category].error = error;
             const $foldable = $(`.foldable[data-category="${category}"]`);
             $foldable.find('.spinner').hide();
-
-            const $header = $foldable.find('.foldable-header');
-            if ($header.hasClass('open')) {
-                $foldable.find('.foldable-content').removeClass('loading').html('<div class="error-message-inline">Error: ' + error + '</div>');
-            }
+            completeCategoryLoad(category);
         }
     );
 }
@@ -166,12 +174,17 @@ function completeCategoryLoad(category, itemNames) {
     const $foldable = $(`.foldable[data-category="${category}"]`);
     $foldable.find('.spinner').hide();
 
-    const itemCount = itemNames.length;
-    $foldable.find('.category-title').append(`<span class="caption">(${itemCount})</span>`);
-
     const $content = $foldable.find('.foldable-content');
     $content.removeClass('loading');
-    renderCategoryItems(category);
+
+    if (configData[category].error === undefined) {
+        const itemCount = itemNames.length;
+        $foldable.find('.category-title').append(`<span class="caption">(${itemCount})</span>`);
+        renderCategoryItems(category);
+    } else {
+        $foldable.find('.category-title').append('<span class="error-message-inline">ERROR</span>');
+        $foldable.find('.foldable-content').removeClass('loading').html('<div class="error-message-inline">Error loading this category, try Refresh.<br>' + configData[category].error + '</div>');
+    }
 
     const $header = $foldable.find('.foldable-header');
     if ($header.hasClass('open')) {
@@ -179,6 +192,12 @@ function completeCategoryLoad(category, itemNames) {
     }
 
     applySearchFilter();
+
+    pendingCategoryLoads--;
+    if (pendingCategoryLoads <= 0) {
+        showSpinner(false);
+        enableContent();
+    }
 }
 
 // ============================================================================

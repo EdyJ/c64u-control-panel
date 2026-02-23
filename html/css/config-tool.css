@@ -108,5 +108,6 @@
     padding: 20px;
     color: var(--danger);
     font-style: italic;
+    font-weight: normal;
 }
 

@@ -566,7 +566,7 @@ function machinePowerOff(callback, errorCallback) {
  */
 function runSidPlay(path, songNr, callback, errorCallback) {
     const password = $('#apiPassword').val();
-    
+
     showSpinner(true);
 
     const params = { file: path };
@@ -604,7 +604,7 @@ function runSidPlay(path, songNr, callback, errorCallback) {
  */
 function runSidPlayUpload(fileData, filename, songNr, callback, errorCallback) {
     const password = $('#apiPassword').val();
-    
+
     showSpinner(true);
 
     $.ajax({
@@ -613,7 +613,7 @@ function runSidPlayUpload(fileData, filename, songNr, callback, errorCallback) {
         contentType: 'application/octet-stream',
         processData: false,
         data: fileData,
-        headers: { 
+        headers: {
             "X-Password": password,
             "Content-Disposition": `attachment; filename="${filename}"`
         },
@@ -642,7 +642,7 @@ function runSidPlayUpload(fileData, filename, songNr, callback, errorCallback) {
  */
 function runModPlay(path, callback, errorCallback) {
     const password = $('#apiPassword').val();
-    
+
     showSpinner(true);
 
     $.ajax({
@@ -676,7 +676,7 @@ function runModPlay(path, callback, errorCallback) {
  */
 function runModPlayUpload(fileData, filename, callback, errorCallback) {
     const password = $('#apiPassword').val();
-    
+
     showSpinner(true);
 
     $.ajax({
@@ -685,7 +685,7 @@ function runModPlayUpload(fileData, filename, callback, errorCallback) {
         contentType: 'application/octet-stream',
         processData: false,
         data: fileData,
-        headers: { 
+        headers: {
             "X-Password": password,
             "Content-Disposition": `attachment; filename="${filename}"`
         },
@@ -714,7 +714,7 @@ function runModPlayUpload(fileData, filename, callback, errorCallback) {
  */
 function runPrg(path, callback, errorCallback) {
     const password = $('#apiPassword').val();
-    
+
     showSpinner(true);
 
     $.ajax({
@@ -748,7 +748,7 @@ function runPrg(path, callback, errorCallback) {
  */
 function runPrgUpload(fileData, filename, callback, errorCallback) {
     const password = $('#apiPassword').val();
-    
+
     showSpinner(true);
 
     $.ajax({
@@ -757,7 +757,7 @@ function runPrgUpload(fileData, filename, callback, errorCallback) {
         contentType: 'application/octet-stream',
         processData: false,
         data: fileData,
-        headers: { 
+        headers: {
             "X-Password": password,
             "Content-Disposition": `attachment; filename="${filename}"`
         },
@@ -786,7 +786,7 @@ function runPrgUpload(fileData, filename, callback, errorCallback) {
  */
 function runCrt(path, callback, errorCallback) {
     const password = $('#apiPassword').val();
-    
+
     showSpinner(true);
 
     $.ajax({
@@ -820,7 +820,7 @@ function runCrt(path, callback, errorCallback) {
  */
 function runCrtUpload(fileData, filename, callback, errorCallback) {
     const password = $('#apiPassword').val();
-    
+
     showSpinner(true);
 
     $.ajax({
@@ -829,7 +829,7 @@ function runCrtUpload(fileData, filename, callback, errorCallback) {
         contentType: 'application/octet-stream',
         processData: false,
         data: fileData,
-        headers: { 
+        headers: {
             "X-Password": password,
             "Content-Disposition": `attachment; filename="${filename}"`
         },
@@ -863,14 +863,11 @@ function runCrtUpload(fileData, filename, callback, errorCallback) {
 function getConfigCategories(callback, errorCallback) {
     const password = $('#apiPassword').val();
 
-    showSpinner(true);
-
     $.ajax({
         url: '/v1/configs',
         method: 'GET',
         headers: { "X-Password": password },
         success: function(data) {
-            showSpinner(false);
             hideError();
             if (data.errors && data.errors.length > 0) {
                 const errorMsg = data.errors.join('; ');
@@ -881,7 +878,6 @@ function getConfigCategories(callback, errorCallback) {
             }
         },
         error: function(jqXHR) {
-            showSpinner(false);
             const errorMsg = parseApiError(jqXHR);
             showError(errorMsg);
             if (errorCallback) errorCallback(errorMsg);
