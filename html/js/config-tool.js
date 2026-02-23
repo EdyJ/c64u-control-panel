@@ -464,7 +464,7 @@ $('#collapseAll').click(function() {
 
 function showConfigMgmtResult(msg, isError = false) {
     const $box = $('#configMgmtResult');
-    $box.show().text(msg).css('color', isError ? 'var(--danger)' : '#7fdbff');
+    $box.show().text(msg).css('color', isError ? 'var(--danger)' : 'var(--text-dim)');
 }
 
 function reloadAllConfig() {
