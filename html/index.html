@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Control Panel</title>
+    <title>C64 Ultimate Control Panel</title>
     <link id="app-favicon" rel="icon" href="data:,">
 
     <!-- Local requests section -->
@@ -445,7 +445,7 @@
         }
 
         .grid-50-50 {
-            grid-template-columns: 1fr;
+            grid-template-columns: 1fr !important;
         }
     }
 
@@ -548,7 +548,7 @@
     }
 
     /* Grid Layouts */
-    .grid-7-3 {
+    .grid-70-30 {
         display: grid;
         grid-template-columns: 7fr 3fr;
         gap: 20px;
@@ -559,6 +559,7 @@
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 20px;
+        margin-bottom: 20px;
     }
 
     /* Foldable Section Styles */
@@ -1161,7 +1162,7 @@
     <div class="container">
         <!-- Header -->
         <header>
-            <h1>Ultimate Control Panel</h1>
+            <h1>C64 Ultimate Control Panel</h1>
             <div class="header-actions">
                 <span id="spinner" class="spinner" style="display:none;"></span>
                 <button id="refreshBtn" class="btn-success">Refresh</button>
@@ -1178,7 +1179,7 @@
         <div id="errorBox" class="error-box"></div>
 
         <!-- Top Grid: System Information and Tools -->
-        <div class="grid-7-3">
+        <div class="grid-70-30">
             <!-- System Information Card -->
             <div class="card">
                 <div class="card-title">System Information</div>

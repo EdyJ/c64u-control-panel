@@ -397,7 +397,7 @@ button:hover {
     }
 
     .grid-50-50 {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
     }
 }
 
@@ -500,7 +500,7 @@ button:hover {
 }
 
 /* Grid Layouts */
-.grid-7-3 {
+.grid-70-30 {
     display: grid;
     grid-template-columns: 7fr 3fr;
     gap: 20px;
@@ -511,6 +511,7 @@ button:hover {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
+    margin-bottom: 20px;
 }
 
 /* Foldable Section Styles */

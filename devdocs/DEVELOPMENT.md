@@ -19,12 +19,15 @@ All files are deployed to the C64U device's web server root directory at `/flash
 ├── config_tool.html        # Configuration viewer and editor
 ├── disk_flip.html          # Disk flip utility
 ├── (other tool files)
+├── fonts/                  # Font files
+│   ├── C64ProMono.woff2
+│   └── (other font files)
 ├── css/
-│   ├── common-inline.css   # Shared styles and CSS variables, embedded into html files and kept in sync manually
+│   ├── common-inline.css   # Shared styles and CSS variables, embedded into html files and synced manually
 │   ├── mem-tool.css        # Memory display and editing styles
 │   └── (other CSS files)
 └── js/
-    ├── common-inline.js    # Page loader, embedded into html files and kept in sync manually
+    ├── common-inline.js    # Page loader, embedded into html files and synced manually
     ├── api-client.js       # API wrapper functions (memory, config, drives, etc.)
     ├── ui-components.js    # UI utility functions (spinner, errors, formatting)
     ├── tab-lifecycle.js    # Tab management and lifecycle implementation

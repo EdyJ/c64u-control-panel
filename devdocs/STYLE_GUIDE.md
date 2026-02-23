@@ -20,7 +20,7 @@ The project follows these principles:
 - Developers write HTML directly, apply classes for styling
 
 ### ✅ Minimal JavaScript
-- JavaScript handles behavior and data, and DOM generation when it makes sense
+- JavaScript handles behavior and data. DOM generation only when it makes sense
 - Use jQuery for event binding and data manipulation
 - Keep HTML structure visible in source files
 
