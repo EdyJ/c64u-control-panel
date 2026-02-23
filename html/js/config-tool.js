@@ -511,14 +511,8 @@ $('#loadFromFlash').click(function() {
             setTimeout(() => reloadAllConfig(), 500);
         },
         function(error) {
-            if (error.indexOf('HTTP 502') !== -1) {
-                showConfigMgmtResult('Configuration loaded from flash. Reloading interface...');
-                $btn.prop('disabled', false);
-                setTimeout(() => reloadAllConfig(), 1000);
-            } else {
-                showConfigMgmtResult(`Error: ${error}`, true);
-                $btn.prop('disabled', false);
-            }
+            showConfigMgmtResult(`Error: ${error}`, true);
+            $btn.prop('disabled', false);
         }
     );
 });
@@ -539,14 +533,8 @@ $('#resetToDefault').click(function() {
             setTimeout(() => reloadAllConfig(), 500);
         },
         function(error) {
-            if (error.indexOf('HTTP 502') !== -1) {
-                showConfigMgmtResult('Configuration reset to defaults. Reloading interface...');
-                $btn.prop('disabled', false);
-                setTimeout(() => reloadAllConfig(), 1000);
-            } else {
-                showConfigMgmtResult(`Error: ${error}`, true);
-                $btn.prop('disabled', false);
-            }
+            showConfigMgmtResult(`Error: ${error}`, true);
+            $btn.prop('disabled', false);
         }
     );
 });

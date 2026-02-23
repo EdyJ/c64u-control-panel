@@ -1044,9 +1044,13 @@ function loadConfigFromFlash(callback, errorCallback) {
         },
         error: function(jqXHR) {
             showSpinner(false);
-            const errorMsg = parseApiError(jqXHR);
-            showError(errorMsg);
-            if (errorCallback) errorCallback(errorMsg);
+            if (jqXHR.status === 502) {
+                if (callback) callback({});
+            } else {
+                const errorMsg = parseApiError(jqXHR);
+                showError(errorMsg);
+                if (errorCallback) errorCallback(errorMsg);
+            }
         }
     });
 }
@@ -1079,9 +1083,13 @@ function resetConfigToDefault(callback, errorCallback) {
         },
         error: function(jqXHR) {
             showSpinner(false);
-            const errorMsg = parseApiError(jqXHR);
-            showError(errorMsg);
-            if (errorCallback) errorCallback(errorMsg);
+            if (jqXHR.status === 502) {
+                if (callback) callback({});
+            } else {
+                const errorMsg = parseApiError(jqXHR);
+                showError(errorMsg);
+                if (errorCallback) errorCallback(errorMsg);
+            }
         }
     });
 }
