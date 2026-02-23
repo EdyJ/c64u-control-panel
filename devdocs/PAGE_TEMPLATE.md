@@ -16,7 +16,7 @@ Protocol and template files to create simple web pages that don't cause concurre
 - Loaded fonts may be referenced with the `font-family` only, example:
 
     ```css
-    font-family: 'C64ProMono', monospace;
+    font-family: 'C64ProMono';
     ```
 
 ---

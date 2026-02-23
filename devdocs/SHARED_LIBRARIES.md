@@ -126,13 +126,6 @@ Provides reusable UI utility functions for common operations. These functions ma
    - Creates an overlay with a textarea and handles ESC/Enter keys
    - Used by hex-editor and disasm-editor for paste dialogs
 
-### Design Principles
-
-- **Simple functions** - No modules, namespaces, or classes
-- **DOM manipulation** - Functions work with existing HTML elements via jQuery
-- **No HTML generation** - Functions manipulate elements, they don't create them
-- **Validation helpers** - Return null or false for invalid input, not exceptions
-
 ### Code Reference
 
 See `ui-components.js` in the `/flash/html/js/` directory for complete implementation examples.

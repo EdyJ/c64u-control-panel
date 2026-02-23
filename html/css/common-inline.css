@@ -13,6 +13,10 @@
     --border: #3a3f44;
     --input-bg: #2d3136;
 
+    /* Foldables */
+    --fold-header-bg: #2d3136;
+    --fold-header-hover: #32383e;
+
     /* Spacing */
     --spacing-xs: 5px;
     --spacing-sm: 10px;
@@ -229,7 +233,7 @@ label {
 
 .form-field-small {
     flex-grow: 0;
-    width: 120px;
+    width: 80px;
 }
 
 /* File Input (hidden) */
@@ -475,7 +479,7 @@ button:hover {
 }
 
 .card.dragging {
-    border: 2px dashed var(--primary);
+    outline: 2px dashed var(--primary);
     background: rgba(52, 152, 219, 0.1);
 }
 
@@ -511,11 +515,15 @@ button:hover {
 
 /* Foldable Section Styles */
 .foldable {
+    background: var(--card-bg);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
     margin-bottom: 15px;
+    overflow: hidden;
 }
 
 .foldable-header {
-    background: #2c3136;
+    background: var(--fold-header-bg);
     padding: 12px 15px;
     font-weight: bold;
     cursor: pointer;
@@ -523,13 +531,10 @@ button:hover {
     justify-content: space-between;
     align-items: center;
     color: var(--primary);
-    border: 1px solid var(--border);
-    border-bottom: none;
-    border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 
 .foldable-header:hover {
-    background: #32383e;
+    background: var(--fold-header-hover);
 }
 
 .foldable-header .arrow {
@@ -537,7 +542,6 @@ button:hover {
 }
 
 .foldable-header .spinner {
-    display: none;
     margin-left: 10px;
 }
 
@@ -549,11 +553,7 @@ button:hover {
 }
 
 .foldable-content {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-top: none;
-    border-radius: 0 0 var(--radius-md) var(--radius-md);
-    padding: 15px;
+    padding: 0;
     display: none;
 }
 
@@ -562,6 +562,7 @@ button:hover {
     text-align: center;
     color: var(--text-dim);
     font-style: italic;
+    padding: 20px;
 }
 
 /* Status Item Styles */
@@ -627,3 +628,23 @@ button:hover {
     gap: 10px;
     margin-top: 15px;
 }
+
+/* Input hint text */
+.input-hint {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 4px;
+}
+
+/* Loading indicator */
+.loading-indicator {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-dim);
+    font-style: italic;
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
