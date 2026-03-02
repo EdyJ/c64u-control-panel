@@ -1093,3 +1093,384 @@ function resetConfigToDefault(callback, errorCallback) {
         }
     });
 }
+
+// ============================================================================
+// DRIVE OPERATIONS
+// ============================================================================
+
+/**
+ * Get status of all drives.
+ * @param {function} callback - Success callback, receives drive data object
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function getDrives(callback, errorCallback) {
+    const password = $('#apiPassword').val();
+
+    $.ajax({
+        url: '/v1/drives',
+        method: 'GET',
+        headers: { "X-Password": password },
+        success: function(data) {
+            hideError();
+            if (data.errors && data.errors.length > 0) {
+                const errorMsg = data.errors.join('; ');
+                showError(errorMsg);
+                if (errorCallback) errorCallback(errorMsg);
+            } else {
+                if (callback) callback(data);
+            }
+        },
+        error: function(jqXHR) {
+            const errorMsg = parseApiError(jqXHR);
+            showError(errorMsg);
+            if (errorCallback) errorCallback(errorMsg);
+        }
+    });
+}
+
+/**
+ * Mount a disk image to a drive from device file path.
+ * @param {string} drive - Drive identifier ('a' or 'b')
+ * @param {string} imagePath - Path to disk image on device
+ * @param {string} mode - Optional mount mode ('readwrite', 'readonly', 'unlinked')
+ * @param {function} callback - Success callback
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function mountDisk(drive, imagePath, mode, callback, errorCallback) {
+    const password = $('#apiPassword').val();
+
+    showSpinner(true);
+
+    const params = { image: imagePath };
+    if (mode) params.mode = mode;
+
+    $.ajax({
+        url: `/v1/drives/${drive}:mount`,
+        method: 'PUT',
+        headers: { "X-Password": password },
+        data: params,
+        success: function(data) {
+            showSpinner(false);
+            hideError();
+            if (data.errors && data.errors.length > 0) {
+                const errorMsg = data.errors.join('; ');
+                showError(errorMsg);
+                if (errorCallback) errorCallback(errorMsg);
+            } else {
+                if (callback) callback(data);
+            }
+        },
+        error: function(jqXHR) {
+            showSpinner(false);
+            const errorMsg = parseApiError(jqXHR);
+            showError(errorMsg);
+            if (errorCallback) errorCallback(errorMsg);
+        }
+    });
+}
+
+/**
+ * Upload and mount a disk image to a drive.
+ * @param {string} drive - Drive identifier ('a' or 'b')
+ * @param {ArrayBuffer} fileData - File content as ArrayBuffer
+ * @param {string} filename - Original filename
+ * @param {string} mode - Optional mount mode ('readwrite', 'readonly', 'unlinked')
+ * @param {function} callback - Success callback
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function mountDiskUpload(drive, fileData, filename, mode, callback, errorCallback) {
+    const password = $('#apiPassword').val();
+
+    showSpinner(true);
+
+    const params = {};
+    if (mode) params.mode = mode;
+    const queryString = $.param(params);
+    const url = `/v1/drives/${drive}:mount` + (queryString ? '?' + queryString : '');
+
+    $.ajax({
+        url: url,
+        method: 'POST',
+        contentType: 'application/octet-stream',
+        processData: false,
+        data: fileData,
+        headers: {
+            "X-Password": password,
+            "Content-Disposition": `attachment; filename="${filename}"`
+        },
+        success: function(data) {
+            showSpinner(false);
+            hideError();
+            if (data.errors && data.errors.length > 0) {
+                const errorMsg = data.errors.join('; ');
+                showError(errorMsg);
+                if (errorCallback) errorCallback(errorMsg);
+            } else {
+                if (callback) callback(data);
+            }
+        },
+        error: function(jqXHR) {
+            showSpinner(false);
+            const errorMsg = parseApiError(jqXHR);
+            showError(errorMsg);
+            if (errorCallback) errorCallback(errorMsg);
+        }
+    });
+}
+
+/**
+ * Reset a drive.
+ * @param {string} drive - Drive identifier ('a' or 'b')
+ * @param {function} callback - Success callback
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function resetDrive(drive, callback, errorCallback) {
+    const password = $('#apiPassword').val();
+
+    showSpinner(true);
+
+    $.ajax({
+        url: `/v1/drives/${drive}:reset`,
+        method: 'PUT',
+        headers: { "X-Password": password },
+        success: function(data) {
+            showSpinner(false);
+            hideError();
+            if (data.errors && data.errors.length > 0) {
+                const errorMsg = data.errors.join('; ');
+                showError(errorMsg);
+                if (errorCallback) errorCallback(errorMsg);
+            } else {
+                if (callback) callback(data);
+            }
+        },
+        error: function(jqXHR) {
+            showSpinner(false);
+            const errorMsg = parseApiError(jqXHR);
+            showError(errorMsg);
+            if (errorCallback) errorCallback(errorMsg);
+        }
+    });
+}
+
+/**
+ * Remove mounted disk from a drive.
+ * @param {string} drive - Drive identifier ('a' or 'b')
+ * @param {function} callback - Success callback
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function removeDisk(drive, callback, errorCallback) {
+    const password = $('#apiPassword').val();
+
+    showSpinner(true);
+
+    $.ajax({
+        url: `/v1/drives/${drive}:remove`,
+        method: 'PUT',
+        headers: { "X-Password": password },
+        success: function(data) {
+            showSpinner(false);
+            hideError();
+            if (data.errors && data.errors.length > 0) {
+                const errorMsg = data.errors.join('; ');
+                showError(errorMsg);
+                if (errorCallback) errorCallback(errorMsg);
+            } else {
+                if (callback) callback(data);
+            }
+        },
+        error: function(jqXHR) {
+            showSpinner(false);
+            const errorMsg = parseApiError(jqXHR);
+            showError(errorMsg);
+            if (errorCallback) errorCallback(errorMsg);
+        }
+    });
+}
+
+/**
+ * Turn a drive on.
+ * @param {string} drive - Drive identifier ('a' or 'b')
+ * @param {function} callback - Success callback
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function driveOn(drive, callback, errorCallback) {
+    const password = $('#apiPassword').val();
+
+    showSpinner(true);
+
+    $.ajax({
+        url: `/v1/drives/${drive}:on`,
+        method: 'PUT',
+        headers: { "X-Password": password },
+        success: function(data) {
+            showSpinner(false);
+            hideError();
+            if (data.errors && data.errors.length > 0) {
+                const errorMsg = data.errors.join('; ');
+                showError(errorMsg);
+                if (errorCallback) errorCallback(errorMsg);
+            } else {
+                if (callback) callback(data);
+            }
+        },
+        error: function(jqXHR) {
+            showSpinner(false);
+            const errorMsg = parseApiError(jqXHR);
+            showError(errorMsg);
+            if (errorCallback) errorCallback(errorMsg);
+        }
+    });
+}
+
+/**
+ * Turn a drive off.
+ * @param {string} drive - Drive identifier ('a' or 'b')
+ * @param {function} callback - Success callback
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function driveOff(drive, callback, errorCallback) {
+    const password = $('#apiPassword').val();
+
+    showSpinner(true);
+
+    $.ajax({
+        url: `/v1/drives/${drive}:off`,
+        method: 'PUT',
+        headers: { "X-Password": password },
+        success: function(data) {
+            showSpinner(false);
+            hideError();
+            if (data.errors && data.errors.length > 0) {
+                const errorMsg = data.errors.join('; ');
+                showError(errorMsg);
+                if (errorCallback) errorCallback(errorMsg);
+            } else {
+                if (callback) callback(data);
+            }
+        },
+        error: function(jqXHR) {
+            showSpinner(false);
+            const errorMsg = parseApiError(jqXHR);
+            showError(errorMsg);
+            if (errorCallback) errorCallback(errorMsg);
+        }
+    });
+}
+
+/**
+ * Load a ROM file to a drive from device file path.
+ * @param {string} drive - Drive identifier ('a' or 'b')
+ * @param {string} filePath - Path to ROM file on device
+ * @param {function} callback - Success callback
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function loadRom(drive, filePath, callback, errorCallback) {
+    const password = $('#apiPassword').val();
+
+    showSpinner(true);
+
+    $.ajax({
+        url: `/v1/drives/${drive}:load_rom`,
+        method: 'PUT',
+        headers: { "X-Password": password },
+        data: { file: filePath },
+        success: function(data) {
+            showSpinner(false);
+            hideError();
+            if (data.errors && data.errors.length > 0) {
+                const errorMsg = data.errors.join('; ');
+                showError(errorMsg);
+                if (errorCallback) errorCallback(errorMsg);
+            } else {
+                if (callback) callback(data);
+            }
+        },
+        error: function(jqXHR) {
+            showSpinner(false);
+            const errorMsg = parseApiError(jqXHR);
+            showError(errorMsg);
+            if (errorCallback) errorCallback(errorMsg);
+        }
+    });
+}
+
+/**
+ * Upload and load a ROM file to a drive.
+ * @param {string} drive - Drive identifier ('a' or 'b')
+ * @param {ArrayBuffer} fileData - File content as ArrayBuffer
+ * @param {string} filename - Original filename
+ * @param {function} callback - Success callback
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function loadRomUpload(drive, fileData, filename, callback, errorCallback) {
+    const password = $('#apiPassword').val();
+
+    showSpinner(true);
+
+    $.ajax({
+        url: `/v1/drives/${drive}:load_rom`,
+        method: 'POST',
+        contentType: 'application/octet-stream',
+        processData: false,
+        data: fileData,
+        headers: {
+            "X-Password": password,
+            "Content-Disposition": `attachment; filename="${filename}"`
+        },
+        success: function(data) {
+            showSpinner(false);
+            hideError();
+            if (data.errors && data.errors.length > 0) {
+                const errorMsg = data.errors.join('; ');
+                showError(errorMsg);
+                if (errorCallback) errorCallback(errorMsg);
+            } else {
+                if (callback) callback(data);
+            }
+        },
+        error: function(jqXHR) {
+            showSpinner(false);
+            const errorMsg = parseApiError(jqXHR);
+            showError(errorMsg);
+            if (errorCallback) errorCallback(errorMsg);
+        }
+    });
+}
+
+/**
+ * Set drive emulation mode.
+ * @param {string} drive - Drive identifier ('a' or 'b')
+ * @param {string} mode - Drive mode ('1541', '1571', or '1581')
+ * @param {function} callback - Success callback
+ * @param {function} errorCallback - Error callback, receives error message string
+ */
+function setDriveMode(drive, mode, callback, errorCallback) {
+    const password = $('#apiPassword').val();
+
+    showSpinner(true);
+
+    $.ajax({
+        url: `/v1/drives/${drive}:set_mode`,
+        method: 'PUT',
+        headers: { "X-Password": password },
+        data: { mode: mode },
+        success: function(data) {
+            showSpinner(false);
+            hideError();
+            if (data.errors && data.errors.length > 0) {
+                const errorMsg = data.errors.join('; ');
+                showError(errorMsg);
+                if (errorCallback) errorCallback(errorMsg);
+            } else {
+                if (callback) callback(data);
+            }
+        },
+        error: function(jqXHR) {
+            showSpinner(false);
+            const errorMsg = parseApiError(jqXHR);
+            showError(errorMsg);
+            if (errorCallback) errorCallback(errorMsg);
+        }
+    });
+}
