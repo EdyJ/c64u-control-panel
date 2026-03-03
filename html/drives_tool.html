@@ -1040,13 +1040,19 @@
         <div class="drive-content">
             <!-- Drive Status Grid -->
             <div class="drive-grid">
-                <div class="card" id="drive-a-status">
-                    <div class="card-title">Drive A <span id="badge-a" class="badge"></span></div>
-                    <div class="status-grid" id="content-a">Loading...</div>
+                <div class="drive-card" id="drive-a">
+                    <div class="drive-header">
+                        <span class="drive-label">Drive A</span>
+                        <span class="status-badge" id="badge-a"></span>
+                    </div>
+                    <div class="drive-info" id="content-a">Loading...</div>
                 </div>
-                <div class="card" id="drive-b-status">
-                    <div class="card-title">Drive B <span id="badge-b" class="badge"></span></div>
-                    <div class="status-grid" id="content-b">Loading...</div>
+                <div class="drive-card" id="drive-b">
+                    <div class="drive-header">
+                        <span class="drive-label">Drive B</span>
+                        <span class="status-badge" id="badge-b"></span>
+                    </div>
+                    <div class="drive-info" id="content-b">Loading...</div>
                 </div>
             </div>
 
@@ -1222,13 +1228,20 @@
     var selectedDrive = 'a';
 
     function updateDriveStatus(clearResults) {
+        $('#refreshBtn').addClass('input-disabled');
+        showSpinner(true);
+
         if (clearResults) {
             $('.result-box').removeClass('visible').text('');
+            $('.drive-info').css('color', '');
         }
 
         getDrives(function(data) {
+            showSpinner(false);
+            $('#refreshBtn').removeClass('input-disabled');
+
             if (!data || !data.drives || !Array.isArray(data.drives)) {
-                $('.status-grid').text('Error: Unexpected data format.');
+                $('.drive-info').css('color', 'var(--danger)').text('Error: Unexpected data format.');
                 return;
             }
 
@@ -1242,29 +1255,38 @@
                 var drive = driveMap[id];
                 var $content = $('#content-' + id);
                 var $badge = $('#badge-' + id);
+                var $card = $('#drive-' + id);
 
                 if (drive) {
+                    $content.css('color', '');
+
+                    var busId = drive.bus_id || '?';
+                    $card.find('.drive-label').text('Drive ' + id.toUpperCase() + ' (' + busId + ')');
+
                     var html = '';
-                    html += '<div class="status-item"><span class="status-label">Enabled:</span><span class="status-value">' + drive.enabled + '</span></div>';
-                    html += '<div class="status-item"><span class="status-label">Bus ID:</span><span class="status-value">' + drive.bus_id + '</span></div>';
-                    html += '<div class="status-item"><span class="status-label">Type:</span><span class="status-value">' + drive.type + '</span></div>';
-                    html += '<div class="status-item"><span class="status-label">ROM:</span><span class="status-value">' + (drive.rom || 'Default') + '</span></div>';
-                    html += '<div class="status-item status-item-image"><span class="status-label">Mounted Image:</span><span class="status-value">' + (drive.image_file || 'None') + '</span></div>';
+                    html += '<div class="info-row"><span class="info-label">Enabled:</span><span class="info-value">' + drive.enabled + '</span></div>';
+                    html += '<div class="info-row"><span class="info-label">Bus ID:</span><span class="info-value">' + drive.bus_id + '</span></div>';
+                    html += '<div class="info-row"><span class="info-label">Type:</span><span class="info-value">' + drive.type + '</span></div>';
+                    html += '<div class="info-row"><span class="info-label">ROM:</span><span class="info-value">' + (drive.rom || 'Default') + '</span></div>';
+                    html += '<div class="info-row info-row-mounted"><span class="info-label">Mounted Image:</span><span class="info-value">' + (drive.image_file || 'None') + '</span></div>';
 
                     $content.html(html);
 
                     if (drive.enabled) {
-                        $badge.text('ON').removeClass('off');
+                        $badge.text('ON').removeClass('bg-danger').addClass('bg-success');
                     } else {
-                        $badge.text('OFF').addClass('off');
+                        $badge.text('OFF').removeClass('bg-success').addClass('bg-danger');
                     }
                 } else {
-                    $content.text('Drive not found in API response.');
-                    $badge.text('').removeClass('off');
+                    $content.css('color', '').text('Drive not found in API response.');
+                    $badge.text('').removeClass('bg-success').removeClass('bg-danger');
                 }
             });
         }, function(error) {
-            $('.status-grid').text('Error: ' + error);
+            showSpinner(false);
+            $('#refreshBtn').removeClass('input-disabled');
+            $('#badge-a, #badge-b').text('ERR').removeClass('bg-success').addClass('bg-danger');
+            $('.drive-info').css('color', 'var(--danger)').text('Error: ' + error);
         });
     }
 

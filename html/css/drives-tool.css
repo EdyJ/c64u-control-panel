@@ -7,6 +7,75 @@
     margin-bottom: var(--spacing-md);
 }
 
+.drive-card {
+    background: var(--card-bg);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    padding: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.drive-header {
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: var(--primary);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.drive-label {
+    /* Label text styling */
+}
+
+.drive-info {
+    font-size: 14px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    padding: 2px 0;
+}
+
+.info-label {
+    color: var(--text-dim);
+}
+
+.info-value {
+    font-family: monospace;
+    color: var(--text);
+}
+
+.status-badge {
+    font-size: 11px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: white;
+}
+
+.bg-success {
+    background: var(--success);
+}
+
+.bg-danger {
+    background: var(--danger);
+}
+
+.info-row-mounted {
+    flex-direction: column;
+}
+
+.info-row-mounted .info-value {
+    word-break: break-all;
+    color: var(--primary);
+}
+
 .drive-selector {
     display: flex;
     gap: var(--spacing-sm);
@@ -103,29 +172,6 @@
     display: block;
 }
 
-.status-item-image {
-    margin-top: var(--spacing-xs);
-    flex-direction: column;
-    align-items: flex-start;
-}
-
-.status-item-image .status-value {
-    word-break: break-all;
-    color: var(--primary);
-}
-
-.badge {
-    font-size: 12px;
-    padding: 2px 8px;
-    border-radius: 10px;
-    background: var(--success);
-    color: white;
-}
-
-.badge.off {
-    background: var(--danger);
-}
-
 .simple-commands {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -136,7 +182,7 @@
     margin-bottom: 0;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 500px) {
     .drive-grid {
         grid-template-columns: 1fr;
     }
